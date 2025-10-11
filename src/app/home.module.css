@@ -1,0 +1,98 @@
+.pageContainer {
+    background-color: #f8fafc;
+    min-height: 100vh;
+    font-family: system-ui, sans-serif;
+}
+
+.mainContent {
+    padding: 32px;
+}
+
+.mainDisplay {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* 左侧占2份，右侧占1份 */
+    gap: 32px;
+    margin-bottom: 48px;
+}
+
+.featuredGame {
+    background-color: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.featuredImage {
+    height: 350px;
+    background-color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #94a3b8;
+}
+
+.featuredInfo {
+    padding: 24px;
+}
+
+.featuredInfo h2 { margin: 0 0 8px 0; color: #1e293b; }
+.featuredInfo p { margin: 0; color: #475569; }
+
+.gameList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.listItem {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.listItemImage {
+    width: 60px;
+    height: 60px;
+    background-color: #e2e8f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+.listItemInfo {
+    width: 100%;
+}
+
+.listItemInfo h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.listItemInfo > div {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.popularSection h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 24px;
+}
+
+.popularGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4列布局 */
+    gap: 24px;
+}
