@@ -101,24 +101,6 @@ export default function CPInfoPage() {
   // ========== 主页面渲染 ==========
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 顶部导航栏 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="flex items-center justify-between px-6 py-4">
-          {/* 左侧：Logo + 标题 */}
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
-              <span className="text-xs text-gray-500">LOGO</span>
-            </div>
-            <h1 className="text-xl font-semibold text-gray-900">GameLaunchPad</h1>
-          </div>
-          
-          {/* 右侧：厂商名称 */}
-          <div className="px-4 py-2 bg-gray-100 rounded-md">
-            <span className="text-sm text-gray-700">{cpInfo.cp_name}</span>
-          </div>
-        </div>
-      </header>
-
       {/* 主内容区 */}
       <div className="flex">
         {/* 左侧导航栏 */}
