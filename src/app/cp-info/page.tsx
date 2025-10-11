@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image';
 import { useRouter } from 'next/navigation'
 import { getCPInfo } from '@/services/api'
 import type { CPInfo } from '@/types/cp-info'
@@ -255,7 +256,7 @@ export default function CPInfoPage() {
                     {/* LOGO 预览 */}
                     <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center bg-gray-50">
                       {cpInfo.cp_icon ? (
-                        <img 
+                        <Image
                           src={cpInfo.cp_icon} 
                           alt="厂商LOGO" 
                           className="w-full h-full object-cover rounded-md"
