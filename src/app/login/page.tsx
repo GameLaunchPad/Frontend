@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 // Next.js 中用于页面导航的 hook
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 
 // 创建一个独立的 CSS 模块文件来实现样式隔离
 import styles from './login.module.css';
@@ -12,7 +12,7 @@ const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
-    const router = useRouter();
+    // const router = useRouter();
 
     const handleLogin = (e) => {
         e.preventDefault();
