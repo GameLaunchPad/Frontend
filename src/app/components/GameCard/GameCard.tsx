@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './GameCard.module.css';
 
-const GameCard = ({ title, rating, type }) => {
+const GameCard = ({ title, rating, type }: { title: string, rating: string, type: string }) => {
     return (
         <div className={styles.card}>
             <div className={styles.cardImage}>游戏头图</div>

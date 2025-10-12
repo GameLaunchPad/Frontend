@@ -14,7 +14,7 @@ const LoginPage = () => {
     const [rememberMe, setRememberMe] = useState(false);
     // const router = useRouter();
 
-    const handleLogin = (e) => {
+    const handleLogin = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
         // 在这里可以添加调用后端 API 进行登录验证的逻辑
         console.log('登录信息:', { username, password, rememberMe });
