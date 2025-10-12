@@ -1,13 +1,11 @@
 "use client";
 import React from 'react';
-import Header from './components/Header/Header'; // 引入Header组件
 import GameCard from './components/GameCard/GameCard'; // 引入GameCard组件
 import styles from './home.module.css'; // 主页面的样式
 
 export default function HomePage() {
   return (
     <div className={styles.pageContainer}>
-      <Header />
       <main className={styles.mainContent}>
 
         <section className={styles.mainDisplay}>
