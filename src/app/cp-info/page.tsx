@@ -120,7 +120,7 @@ export default function CPInfoPage() {
           <Box sx={{ overflow: 'auto' }}>
             <List>
               <ListItem disablePadding>
-                <ListItemButton href='/game-management'>
+                <ListItemButton href='/games'>
                   <ListItemText primary="Game Management" />
                 </ListItemButton>
               </ListItem>
