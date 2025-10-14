@@ -1,13 +1,27 @@
 import React from 'react';
 import {
-  Box, Drawer, Toolbar, List, ListItem, ListItemText, Divider, ListItemButton
+  Box,
+  Card,
+  CardContent,
+  Divider,
+  Drawer,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemButton,
+  MenuItem,
+  TextField,
+  Toolbar,
+  Typography,
 } from '@mui/material';
 
 export default function GamePad() {
   return (
-    <div>
+    <Box sx={{ display: 'flex' }}>
       <EdgeDrawer/>
-    </div>
+      <GameDashboard/>
+    </Box>
   );
 }
 
@@ -65,4 +79,77 @@ function EdgeDrawer() {
         </Box>
       </Drawer>
     );
+}
+
+function GameDashboard() {
+  return (
+   <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Typography variant="h3" gutterBottom>
+        My Games
+      </Typography>
+      <Typography variant="h5" gutterBottom>
+        Game Management &gt; My Games
+      </Typography>
+      <Divider/>
+      <Box mt={4}>
+        <Grid container spacing={2} justifyContent="center">
+          <Card sx={{ flex: 1 }}>
+            <CardContent>
+              <Typography variant="h5" component="div">
+                N/A
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Total
+              </Typography>
+            </CardContent>
+          </Card>
+          <Card sx={{ flex: 1 }}>
+            <CardContent>
+              <Typography variant="h5" component="div">
+                N/A
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Published
+              </Typography>
+            </CardContent>
+          </Card>
+          <Card sx={{ flex: 1 }}>
+            <CardContent>
+              <Typography variant="h5" component="div">
+                N/A
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Reviewing 
+              </Typography>
+            </CardContent>
+          </Card>
+          <Card sx={{ flex: 1 }}>
+            <CardContent>
+              <Typography variant="h5" component="div">
+                N/A
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Drafts
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Box>
+      <Box mt={4}>
+        <Grid container spacing={2}>
+          <TextField label="Search a game" />
+          <TextField select label="Status" sx={{ width: '20ch' }}>
+            <MenuItem>
+              All Status
+            </MenuItem>
+          </TextField>
+          <TextField select label="Platform" sx={{ width: '20ch' }}>
+            <MenuItem>
+              All Platforms
+            </MenuItem>
+          </TextField>
+        </Grid>
+      </Box>
+    </Box>
+  );
 }
