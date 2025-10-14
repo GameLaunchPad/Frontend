@@ -54,7 +54,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export function NavBar(): React.JSX.Element {
+export default function NavBar(): React.JSX.Element {
   const setAnchorElNav = React.useState<null | HTMLElement>(null)[1];
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
@@ -71,7 +71,7 @@ export function NavBar(): React.JSX.Element {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position='relative' sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <GamepadIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
