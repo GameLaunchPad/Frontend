@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation'
 import { getCPInfo } from '@/services/api'
 import type { CPInfo } from '@/types/cp-info'
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemText, Toolbar } from '@mui/material';
@@ -15,7 +15,7 @@ export default function CPInfoPage() {
   const [error, setError] = useState<string | null>(null)
   
   // useRouter 用于页面跳转
-  const router = useRouter()
+  // const router = useRouter()
 
   // ========== 数据获取 ==========
   // useEffect 在组件加载时自动执行
@@ -64,9 +64,9 @@ export default function CPInfoPage() {
   }
 
   // ========== 页面跳转处理 ==========
-  const handleNavigate = (path: string) => {
-    router.push(path)
-  }
+  // const handleNavigate = (path: string) => {
+  //   router.push(path)
+  // }
 
   // ========== 加载状态 ==========
   if (loading) {

@@ -40,7 +40,7 @@ function EdgeDrawer() {
         <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
           <List>
-            {['My Games', 'New Game', 'Review Queue'].map((text, index) => (
+            {['My Games', 'New Game', 'Review Queue'].map((text) => (
               <ListItem key={text} disablePadding>
                 <ListItemButton>
                   <ListItemText primary={text} />
@@ -68,7 +68,7 @@ function EdgeDrawer() {
           </List>
           <Divider />
           <List>
-            {['Data Analysis', 'Download Statistics', 'User Feedbacks'].map((text, index) => (
+            {['Data Analysis', 'Download Statistics', 'User Feedbacks'].map((text) => (
               <ListItem key={text} disablePadding>
                 <ListItemButton>
                   <ListItemText primary={text} />
