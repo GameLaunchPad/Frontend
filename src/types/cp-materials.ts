@@ -1,4 +1,10 @@
-// 对应文档中的 CPMaterial 结构
+// src/types/cp-materials.ts
+
+import type { ApiResponse, ReviewRemark, ReviewResult } from './common'
+
+/**
+ * 厂商材料
+ */
 export interface CPMaterial {
   material_id: string
   cp_id: string
@@ -13,31 +19,71 @@ export interface CPMaterial {
   modify_time: number
 }
 
-// 材料状态
+/**
+ * 材料状态
+ */
 export enum MaterialStatus {
   Unset = 0,
-  Draft = 1,      // 草稿
-  Reviewing = 2,  // 审核中
-  Online = 3,     // 已发布
-  Rejected = 4    // 已拒绝
+  Draft = 1,
+  Reviewing = 2,
+  Online = 3,
+  Rejected = 4
 }
 
-// 提交模式
+/**
+ * 提交模式
+ */
 export enum SubmitMode {
   Unset = 0,
-  SubmitDraft = 1,   // 保存草稿
-  SubmitReview = 2   // 提交审核
+  SubmitDraft = 1,
+  SubmitReview = 2
 }
 
-// API 响应格式
-export interface ApiResponse<T> {
-  code: number
-  message: string
-  data?: T
-}
+// ========== API 请求/响应类型 ==========
 
-// 创建材料的请求参数
+/**
+ * 创建厂商材料
+ */
 export interface CreateCPMaterialRequest {
   cp_material: Partial<CPMaterial>
   submit_mode: SubmitMode
 }
+
+export interface CreateCPMaterialData {
+  cp_id: string
+  material_id: string
+}
+
+export type CreateCPMaterialResponse = ApiResponse<CreateCPMaterialData>
+
+/**
+ * 更新厂商材料
+ */
+export interface UpdateCPMaterialRequest {
+  material_id: number
+  cp_material: Partial<CPMaterial>
+  submit_mode: SubmitMode
+}
+
+export type UpdateCPMaterialResponse = ApiResponse<void>
+
+/**
+ * 审核厂商材料
+ */
+export interface ReviewCPMaterialRequest {
+  material_id: number
+  cp_id: number
+  review_result: ReviewResult
+  review_remark: ReviewRemark
+}
+
+export type ReviewCPMaterialResponse = ApiResponse<void>
+
+/**
+ * 获取厂商材料
+ */
+export interface GetCPMaterialData {
+  cp_material: CPMaterial
+}
+
+export type GetCPMaterialResponse = ApiResponse<GetCPMaterialData>

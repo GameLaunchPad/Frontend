@@ -1,22 +1,26 @@
-// 模拟 API 延迟
+// src/utils/mock.ts
+
+import type { ApiResponse } from '@/types/common'
+
 export const mockDelay = (ms: number = 1000) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// 模拟成功响应
-export const mockSuccess = <T>(data: T) => {
+export const mockSuccess = <T>(data: T): ApiResponse<T> => {
   return {
-    code: 0,
-    message: 'success',
-    data
+    data,
+    base_resp: {
+      code: '0',      // 字符串类型
+      msg: 'success',
+    },
   }
 }
 
-// 模拟错误响应
-export const mockError = (message: string) => {
+export const mockError = (message: string): ApiResponse<never> => {
   return {
-    code: -1,
-    message,
-    data: null
+    base_resp: {
+      code: '-1',
+      msg: message,
+    },
   }
 }
