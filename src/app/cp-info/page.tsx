@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation'
 import { getCPInfo } from '@/services/api'
 import type { CPInfo } from '@/types/cp-info'
+import { Box, Drawer, List, ListItem, ListItemButton, ListItemText, Toolbar } from '@mui/material';
 
 export default function CPInfoPage() {
   // ========== 状态管理 ==========
@@ -98,35 +99,39 @@ export default function CPInfoPage() {
 
   const verifyStatus = getVerifyStatus(cpInfo.verify_status)
 
+  const drawerWidth = 240;
+
   // ========== 主页面渲染 ==========
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 主内容区 */}
       <div className="flex">
         {/* 左侧导航栏 */}
-        <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-73px)]">
-          <div className="p-4">
-            <h2 className="text-sm font-medium text-gray-500 mb-4">侧边导航</h2>
-            
-            <nav className="space-y-2">
-              {/* 游戏管理按钮 */}
-              <button
-                onClick={() => handleNavigate('/game-management')}
-                className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-md border border-gray-300 transition-colors"
-              >
-                游戏管理
-              </button>
-              
-              {/* 资质材料按钮 */}
-              <button
-                onClick={() => handleNavigate('/cp-materials')}
-                className="w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-md border border-gray-300 transition-colors"
-              >
-                资质材料
-              </button>
-            </nav>
-          </div>
-        </aside>
+
+        <Drawer
+          variant="permanent"
+          sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+          }}
+        >
+          <Toolbar />
+          <Box sx={{ overflow: 'auto' }}>
+            <List>
+              <ListItem disablePadding>
+                <ListItemButton href='/game-management'>
+                  <ListItemText primary="Game Management" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton href='/cp-materials'>
+                  <ListItemText primary="Materials" />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </Box>
+        </Drawer>
 
         {/* 右侧主内容 */}
         <main className="flex-1 p-8">
