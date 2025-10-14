@@ -13,7 +13,6 @@ import Menu from '@mui/material/Menu';
 import Tooltip from '@mui/material/Tooltip';
 import Avatar from '@mui/material/Avatar';
 import GamepadIcon from '@mui/icons-material/Gamepad';
-import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import { alpha, styled } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
@@ -64,12 +63,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export function NavBar(): React.JSX.Element {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+  const setAnchorElNav = React.useState<null | HTMLElement>(null)[1];
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
@@ -82,7 +77,6 @@ export function NavBar(): React.JSX.Element {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
-
 
   return (
     <AppBar position="static">
