@@ -10,8 +10,6 @@ import { alpha, styled } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import { BrowserRouter, useNavigate } from 'react-router-dom';
 
-const pages = ['Games', 'Categories', 'Trending'];
-
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
@@ -92,15 +90,25 @@ export default function NavBar(): React.JSX.Element {
             GameLaunchPad
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                {page}
-              </Button>
-            ))}
+            <Button
+              onClick={handleCloseNavMenu}
+              sx={{ my: 2, color: 'white', display: 'block' }}
+              href='/games'
+            >
+              Games
+            </Button>
+            <Button
+              onClick={handleCloseNavMenu}
+              sx={{ my: 2, color: 'white', display: 'block' }}
+            >
+              Categories
+            </Button>
+            <Button
+              onClick={handleCloseNavMenu}
+              sx={{ my: 2, color: 'white', display: 'block' }}
+            >
+              Trending
+            </Button>
           </Box>
           <Box sx={{ flexGrow: 1 }}>
           <Search>
