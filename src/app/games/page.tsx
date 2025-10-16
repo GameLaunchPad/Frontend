@@ -14,6 +14,8 @@ import {
   TextField,
   Toolbar,
   Typography,
+  ButtonGroup,
+  Button,
 } from '@mui/material';
 
 export default function GamePad() {
@@ -136,18 +138,28 @@ function GameDashboard() {
         </Grid>
       </Box>
       <Box mt={4}>
-        <Grid container spacing={2}>
-          <TextField label="Search a game" />
-          <TextField select label="Status" sx={{ width: '20ch' }}>
-            <MenuItem>
-              All Status
-            </MenuItem>
-          </TextField>
-          <TextField select label="Platform" sx={{ width: '20ch' }}>
-            <MenuItem>
-              All Platforms
-            </MenuItem>
-          </TextField>
+        <Grid container spacing={2} sx={{ alignItems: "center" }}>
+          <Grid container size="grow">
+            <TextField label="Search a game" />
+            <TextField select label="Status" sx={{ width: '20ch' }}>
+              <MenuItem>
+                All Status
+              </MenuItem>
+            </TextField>
+            <TextField select label="Platform" sx={{ width: '20ch' }}>
+              <MenuItem>
+                All Platforms
+              </MenuItem>
+            </TextField>
+          </Grid>
+          <Grid container size={2}>
+          </Grid>
+          <Grid container size={2} sx={{ justifyContent: 'end' }}>
+            <ButtonGroup size="large">
+              <Button>Card</Button>
+              <Button>List</Button>
+            </ButtonGroup>
+          </Grid>
         </Grid>
       </Box>
     </Box>
