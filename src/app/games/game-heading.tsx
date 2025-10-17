@@ -2,7 +2,7 @@ import { Button, Grid, Typography } from "@mui/material";
 
 export default function GameHeading({ heading, subheading, actions }: { heading: string, subheading: string, actions: string[] }) {
     return (
-        <Grid container spacing={2} sx={{ alignItems: "center" }}>
+        <Grid container spacing={2} sx={{ alignItems: "center", marginBottom: 2 }}>
             <Grid container size={4}>
                 <Typography variant="h4">
                     {heading}
