@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Box, ButtonBase, Chip, Divider, Grid, Paper, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
+import { Avatar, Box, ButtonBase, Chip, CircularProgress, CircularProgressProps, Divider, Grid, Paper, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
 import GameHeading from "./game-heading";
 import React from "react";
 
@@ -83,11 +83,41 @@ function CreationProgress() {
     return (
         <Paper variant="elevation" sx={{ flex: 1, p: 2, alignContent: 'center', justifyItems: 'center' }}>
             <Typography variant="h6">Creation Progress</Typography>
-            <Avatar src={avatarSrc} sx={{ width: 80, height: 80, m: 2 }} />
+            <Box p={2}>
+                <CircularProgressWithLabel enableTrackSlot variant="determinate" value={25} size={120} />
+            </Box>
             <Typography variant="h6">The 1st step: Basic Information</Typography>
             <Typography variant="body1">Please fill in the basic game information</Typography>
         </Paper>
     );
+}
+
+function CircularProgressWithLabel(
+  props: CircularProgressProps & { value: number },
+) {
+  return (
+    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+      <CircularProgress variant="determinate" {...props} />
+      <Box
+        sx={{
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Typography
+          fontSize={20}
+          component="div"
+          sx={{ color: 'text.secondary' }}
+        >{`${Math.round(props.value)}%`}</Typography>
+      </Box>
+    </Box>
+  );
 }
 
 function UploadAvatars() {
