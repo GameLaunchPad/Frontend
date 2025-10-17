@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Box, ButtonBase, Chip, CircularProgress, CircularProgressProps, Divider, Grid, List, ListItem, ListItemIcon, ListItemText, Paper, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
+import { Avatar, Box, ButtonBase, Chip, CircularProgress, CircularProgressProps, Divider, Grid, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
 import GameHeading from "./game-heading";
 import React from "react";
 import { LooksOne, LooksTwo } from "@mui/icons-material";
@@ -28,20 +28,18 @@ export default function NewGame() {
                     ))}
                 </Stepper>
             </Box>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    '& > :not(style)': {
-                        m: 1,
-                    },
-                }}
-            >
-                <BasicInfo />
-                <LivePreview />
-                <CreationProgress />
-                <Tips />
-            </Box>
+            <Grid container spacing={2}>
+                <Grid size={8}>
+                    <BasicInfo />
+                </Grid>
+                <Grid size={4}>
+                    <Stack>
+                        <LivePreview />
+                        <CreationProgress />
+                        <Tips />
+                    </Stack>
+                </Grid>
+            </Grid>
         </Box >
     );
 }
