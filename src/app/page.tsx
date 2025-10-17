@@ -2,39 +2,36 @@
 import React from 'react';
 import GameCard from './components/GameCard/GameCard'; // 引入GameCard组件
 import styles from './home.module.css'; // 主页面的样式
+import { Box, Card, CardContent, CardMedia, Grid, IconButton, Skeleton, Stack, Typography } from '@mui/material';
 
 export default function HomePage() {
+  const gameNames = ["Game 1", "Game 2", "Game 3", "Game 4"];
+
   return (
     <div className={styles.pageContainer}>
       <main className={styles.mainContent}>
 
-        <section className={styles.mainDisplay}>
-          {/* 左侧主要内容 */}
-          <div className={styles.featuredGame}>
-            <div className={styles.featuredImage}>主要游戏头图</div>
-            <div className={styles.featuredInfo}>
-              <h2>游戏名称</h2>
-              <p>游戏描述和特色介绍</p>
-            </div>
-          </div>
+          <Grid container spacing={3} marginBottom={3}>
+            <Grid size="grow">
+              <Card>
+                <CardMedia>
+                  <Skeleton variant="rectangular" height={360} />
+                </CardMedia>
+                <CardContent>
+                  <Typography variant="subtitle1">Game Name</Typography>
+                  <Typography variant="subtitle2">Game Introduction</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
 
-          {/* 右侧游戏列表 */}
-          <aside className={styles.gameList}>
-            {/* 模拟4个列表项 */}
-            {[...Array(4)].map((_, index) => (
-              <div className={styles.listItem} key={index}>
-                <div className={styles.listItemImage}>图</div>
-                <div className={styles.listItemInfo}>
-                  <h4>游戏名称</h4>
-                  <div>
-                    <span>评分</span>
-                    <span>分类</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </aside>
-        </section>
+            <Grid size={4}>
+              <Stack spacing={2}>
+                {gameNames.map(name => {
+                  return <HorizontalGameCard name={name} rating="5.0" category="Category"/>
+                })}
+              </Stack>
+            </Grid>
+          </Grid>
 
         <section className={styles.popularSection}>
           <h2>热门游戏与话题</h2>
@@ -49,5 +46,21 @@ export default function HomePage() {
 
       </main>
     </div>
+  );
+}
+
+function HorizontalGameCard({name, rating, category}: {name: string, rating: string, category: string}) {
+  return (
+    <Card sx={{ display: 'flex' }}>
+      <CardMedia>
+        <Skeleton variant="rectangular" width={100} height={100} />
+      </CardMedia>
+      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+        <CardContent sx={{ flex: '1 0 auto' }}>
+          <Typography variant="subtitle1">{name}</Typography>
+          <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>{rating} {category}</Typography>
+        </CardContent>
+      </Box>
+    </Card>
   );
 }
