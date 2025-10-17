@@ -1,8 +1,9 @@
 "use client";
 
-import { Avatar, Box, ButtonBase, Chip, CircularProgress, CircularProgressProps, Divider, Grid, Paper, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
+import { Avatar, Box, ButtonBase, Chip, CircularProgress, CircularProgressProps, Divider, Grid, List, ListItem, ListItemIcon, ListItemText, Paper, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
 import GameHeading from "./game-heading";
 import React from "react";
+import { LooksOne, LooksTwo } from "@mui/icons-material";
 
 let avatarSrc: string | undefined;
 let setAvatarSrc: (src: string) => void;
@@ -39,6 +40,7 @@ export default function NewGame() {
                 <BasicInfo />
                 <LivePreview />
                 <CreationProgress />
+                <Tips />
             </Box>
         </Box >
     );
@@ -93,31 +95,31 @@ function CreationProgress() {
 }
 
 function CircularProgressWithLabel(
-  props: CircularProgressProps & { value: number },
+    props: CircularProgressProps & { value: number },
 ) {
-  return (
-    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-      <CircularProgress variant="determinate" {...props} />
-      <Box
-        sx={{
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Typography
-          fontSize={20}
-          component="div"
-          sx={{ color: 'text.secondary' }}
-        >{`${Math.round(props.value)}%`}</Typography>
-      </Box>
-    </Box>
-  );
+    return (
+        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+            <CircularProgress variant="determinate" {...props} />
+            <Box
+                sx={{
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    right: 0,
+                    position: 'absolute',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <Typography
+                    fontSize={20}
+                    component="div"
+                    sx={{ color: 'text.secondary' }}
+                >{`${Math.round(props.value)}%`}</Typography>
+            </Box>
+        </Box>
+    );
 }
 
 function UploadAvatars() {
@@ -165,5 +167,39 @@ function UploadAvatars() {
                 onChange={handleAvatarChange}
             />
         </ButtonBase>
+    );
+}
+
+function Tips() {
+    return (
+        <List>
+            <ListItem>
+                <ListItemText primary="Tips" />
+            </ListItem>
+            <ListItem>
+                <ListItemIcon>
+                    <LooksOne />
+                </ListItemIcon>
+                <ListItemText primary="Tip 1" />
+            </ListItem>
+            <ListItem>
+                <ListItemIcon>
+                    <LooksTwo />
+                </ListItemIcon>
+                <ListItemText primary="Tip 2" />
+            </ListItem>
+            <ListItem>
+                <ListItemIcon>
+                    <LooksTwo />
+                </ListItemIcon>
+                <ListItemText primary="Tip 3" />
+            </ListItem>
+            <ListItem>
+                <ListItemIcon>
+                    <LooksTwo />
+                </ListItemIcon>
+                <ListItemText primary="Tip 4" />
+            </ListItem>
+        </List>
     );
 }
