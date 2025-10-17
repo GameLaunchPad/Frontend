@@ -20,6 +20,7 @@ import {
   CardActions,
   Chip,
 } from '@mui/material';
+import GameHeading from './game-heading';
 
 export default function GamePad() {
   return (
@@ -89,12 +90,10 @@ function EdgeDrawer() {
 function GameDashboard() {
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        My Games
-      </Typography>
-      <Typography variant="h6" gutterBottom>
-        Game Management &gt; My Games
-      </Typography>
+      <GameHeading
+        heading="My Games" subheading="Game Management &gt; My Games"
+        actions={["Batch Operation", "New Game"]}
+      />
       <Divider />
       <Box mt={4}>
         <Grid container spacing={2} justifyContent="center">
