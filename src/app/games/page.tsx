@@ -89,10 +89,10 @@ function EdgeDrawer() {
 function GameDashboard() {
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-      <Typography variant="h3" gutterBottom>
+      <Typography variant="h4" gutterBottom>
         My Games
       </Typography>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h6" gutterBottom>
         Game Management &gt; My Games
       </Typography>
       <Divider />
