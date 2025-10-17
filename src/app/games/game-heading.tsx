@@ -15,7 +15,7 @@ export default function GameHeading({ heading, subheading, actions }: { heading:
             </Grid>
             <Grid container size="grow" sx={{ justifyContent: 'end' }}>
                 {actions.map((action) => {
-                    return <Button variant="outlined">{action}</Button>
+                    return <Button key={action} variant="outlined">{action}</Button>
                 })}
             </Grid>
         </Grid>
