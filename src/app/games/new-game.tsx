@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Box, ButtonBase, Chip, CircularProgress, CircularProgressProps, Divider, Grid, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
+import { Avatar, Box, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, Paper, Radio, RadioGroup, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
 import GameHeading from "./game-heading";
 import React from "react";
 import { LooksOne, LooksTwo } from "@mui/icons-material";
@@ -30,10 +30,14 @@ export default function NewGame() {
             </Box>
             <Grid container spacing={2}>
                 <Grid size={8}>
-                    <BasicInfo />
+                    <Stack spacing={2}>
+                        <BasicInfo />
+                        <SupportedPlatforms />
+                        <DownloadConfig />
+                    </Stack>
                 </Grid>
                 <Grid size={4}>
-                    <Stack>
+                    <Stack spacing={2}>
                         <LivePreview />
                         <CreationProgress />
                         <Tips />
@@ -170,34 +174,72 @@ function UploadAvatars() {
 
 function Tips() {
     return (
-        <List>
-            <ListItem>
-                <ListItemText primary="Tips" />
-            </ListItem>
-            <ListItem>
-                <ListItemIcon>
-                    <LooksOne />
-                </ListItemIcon>
-                <ListItemText primary="Tip 1" />
-            </ListItem>
-            <ListItem>
-                <ListItemIcon>
-                    <LooksTwo />
-                </ListItemIcon>
-                <ListItemText primary="Tip 2" />
-            </ListItem>
-            <ListItem>
-                <ListItemIcon>
-                    <LooksTwo />
-                </ListItemIcon>
-                <ListItemText primary="Tip 3" />
-            </ListItem>
-            <ListItem>
-                <ListItemIcon>
-                    <LooksTwo />
-                </ListItemIcon>
-                <ListItemText primary="Tip 4" />
-            </ListItem>
-        </List>
+        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+            <List>
+                <ListItem>
+                    <ListItemText primary="Tips" />
+                </ListItem>
+                <ListItem>
+                    <ListItemIcon>
+                        <LooksOne />
+                    </ListItemIcon>
+                    <ListItemText primary="Tip 1" />
+                </ListItem>
+                <ListItem>
+                    <ListItemIcon>
+                        <LooksTwo />
+                    </ListItemIcon>
+                    <ListItemText primary="Tip 2" />
+                </ListItem>
+                <ListItem>
+                    <ListItemIcon>
+                        <LooksTwo />
+                    </ListItemIcon>
+                    <ListItemText primary="Tip 3" />
+                </ListItem>
+                <ListItem>
+                    <ListItemIcon>
+                        <LooksTwo />
+                    </ListItemIcon>
+                    <ListItemText primary="Tip 4" />
+                </ListItem>
+            </List>
+        </Paper>
+    );
+}
+
+function SupportedPlatforms() {
+    return (
+        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+            <Typography variant="h6">Supported Platforms</Typography>
+            <FormControlLabel control={<Checkbox />} label="Android" />
+            <FormControlLabel control={<Checkbox />} label="iOS" />
+            <FormControlLabel control={<Checkbox />} label="Web" />
+        </Paper>
+    );
+}
+
+function DownloadConfig() {
+    return (
+        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+            <Typography variant="h6">Download Configurations</Typography>
+            <Stack spacing={2}>
+                <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+                    <Typography variant="h6">Android Configuration</Typography>
+                    <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
+                    <TextField select label="Minimum SDK Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} />
+                </Paper>
+                <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+                    <Typography variant="h6">iOS Configuration</Typography>
+                    <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
+                    <TextField select label="Minimum iOS Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} />
+                </Paper>
+                <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+                    <Typography variant="h6">Web Configuration</Typography>
+                    <TextField label="URL" placeholder="https://game.example.com" margin="normal" />
+                    <TextField select label="Supported Browsers" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} />
+                </Paper>
+            </Stack>
+        </Paper>
     );
 }
