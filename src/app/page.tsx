@@ -2,7 +2,7 @@
 import React from 'react';
 import GameCard from './components/GameCard/GameCard'; // 引入GameCard组件
 import styles from './home.module.css'; // 主页面的样式
-import { Box, Card, CardContent, CardMedia, Grid, IconButton, Skeleton, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Grid, Skeleton, Stack, Typography } from '@mui/material';
 
 export default function HomePage() {
   const gameNames = ["Game 1", "Game 2", "Game 3", "Game 4"];
@@ -27,7 +27,7 @@ export default function HomePage() {
             <Grid size={4}>
               <Stack spacing={2}>
                 {gameNames.map(name => {
-                  return <HorizontalGameCard name={name} rating="5.0" category="Category"/>
+                  return <HorizontalGameCard key={name} name={name} rating="5.0" category="Category"/>
                 })}
               </Stack>
             </Grid>
