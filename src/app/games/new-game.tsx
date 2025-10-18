@@ -2,7 +2,7 @@
 
 import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
 import GameHeading from "./game-heading";
-import React from "react";
+import React, { useState } from "react";
 import { LooksOne, LooksTwo } from "@mui/icons-material";
 
 let avatarSrc: string | undefined;
@@ -10,6 +10,18 @@ let setAvatarSrc: (src: string) => void;
 
 export default function NewGame() {
     const steps = ["Basic Information", "Platform Setup", "Game Resources", "Review & Submit"];
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const RenderContent = () => {
+        switch (currentPage) {
+            case 1:
+                return <FirstPage />;
+            case 2:
+                return <SecondPage />;
+            default:
+                return <Typography>Step Completed</Typography>;
+        }
+    };
 
     return (
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
@@ -20,7 +32,7 @@ export default function NewGame() {
             />
             <Divider />
             <Box mt={4}>
-                <Stepper alternativeLabel>
+                <Stepper activeStep={currentPage * 2 - 2} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
                             <StepLabel>{label}</StepLabel>
@@ -28,22 +40,7 @@ export default function NewGame() {
                     ))}
                 </Stepper>
             </Box>
-            <Grid container spacing={2} mt={2}>
-                <Grid size={8}>
-                    <Stack spacing={2}>
-                        <BasicInfo />
-                        <SupportedPlatforms />
-                        <DownloadConfig />
-                    </Stack>
-                </Grid>
-                <Grid size={4}>
-                    <Stack spacing={2}>
-                        <LivePreview />
-                        <CreationProgress />
-                        <Tips />
-                    </Stack>
-                </Grid>
-            </Grid>
+            <RenderContent />
             <Grid container spacing={2} mt={4}>
                 <Grid container>
                     <Button variant="outlined">Go Back to My Games</Button>
@@ -52,12 +49,47 @@ export default function NewGame() {
                 <Grid size="grow">
                 </Grid>
                 <Grid container>
-                    <Button variant="outlined">Reset Form</Button>
-                    <Button variant="contained">Next Step</Button>
+                    <Button
+                        variant="outlined"
+                        onClick={() => setCurrentPage(1)}
+                    >
+                        Reset Form
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={() => setCurrentPage((page) => page + 1)}
+                    >
+                        Next Step
+                    </Button>
                 </Grid>
             </Grid>
         </Box>
     );
+}
+
+function FirstPage() {
+    return (
+        <Grid container spacing={2} mt={2}>
+            <Grid size={8}>
+                <Stack spacing={2}>
+                    <BasicInfo />
+                    <SupportedPlatforms />
+                    <DownloadConfig />
+                </Stack>
+            </Grid>
+            <Grid size={4}>
+                <Stack spacing={2}>
+                    <LivePreview />
+                    <CreationProgress />
+                    <Tips />
+                </Stack>
+            </Grid>
+        </Grid>
+    );
+}
+
+function SecondPage() {
+    return (<></>);
 }
 
 function BasicInfo() {
