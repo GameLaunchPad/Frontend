@@ -57,7 +57,7 @@ function BasicInfo() {
             <Grid container component="form" spacing={3} mt={2}>
                 <TextField
                     label="Name"
-                    sx={{ width: '50ch' }}
+                    sx={{ flex: 1 }}
                     value={gameName}
                     onChange={(e) => { setGameName(e.target.name) }}
                 />
