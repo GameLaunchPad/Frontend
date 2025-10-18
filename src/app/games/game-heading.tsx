@@ -7,7 +7,7 @@ export default function GameHeading({ heading, subheading, actions }: { heading:
                 <Typography variant="h4">
                     {heading}
                 </Typography>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
                     {subheading}
                 </Typography>
             </Grid>
