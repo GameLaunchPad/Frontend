@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Box, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
 import GameHeading from "./game-heading";
 import React from "react";
 import { LooksOne, LooksTwo } from "@mui/icons-material";
@@ -44,7 +44,19 @@ export default function NewGame() {
                     </Stack>
                 </Grid>
             </Grid>
-        </Box >
+            <Grid container spacing={2} mt={4}>
+                <Grid container>
+                    <Button variant="outlined">Go Back to My Games</Button>
+                    <Button variant="outlined">Save Draft</Button>
+                </Grid>
+                <Grid size="grow">
+                </Grid>
+                <Grid container>
+                    <Button variant="outlined">Reset Form</Button>
+                    <Button variant="contained">Next Step</Button>
+                </Grid>
+            </Grid>
+        </Box>
     );
 }
 
