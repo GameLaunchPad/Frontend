@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Box, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
+import { Avatar, Box, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
 import GameHeading from "./game-heading";
 import React from "react";
 import { LooksOne, LooksTwo } from "@mui/icons-material";
@@ -61,7 +61,11 @@ function BasicInfo() {
                     value={gameName}
                     onChange={(e) => { setGameName(e.target.name) }}
                 />
-                <TextField select label="Type" sx={{ width: '30ch' }} />
+                <TextField select label="Type" sx={{ width: '30ch' }}>
+                    <MenuItem>
+                        Type
+                    </MenuItem>
+                </TextField>
                 <TextField fullWidth multiline label="Introduction" minRows={5} />
                 <UploadAvatars />
             </Grid>
@@ -227,17 +231,29 @@ function DownloadConfig() {
                 <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
                     <Typography variant="h6">Android Configuration</Typography>
                     <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
-                    <TextField select label="Minimum SDK Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} />
+                    <TextField select label="Minimum SDK Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }}>
+                        <MenuItem>
+                            SDK Version
+                        </MenuItem>
+                    </TextField>
                 </Paper>
                 <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
                     <Typography variant="h6">iOS Configuration</Typography>
                     <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
-                    <TextField select label="Minimum iOS Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} />
+                    <TextField select label="Minimum iOS Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} >
+                        <MenuItem>
+                            iOS Version
+                        </MenuItem>
+                    </TextField>
                 </Paper>
                 <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
                     <Typography variant="h6">Web Configuration</Typography>
                     <TextField label="URL" placeholder="https://game.example.com" margin="normal" />
-                    <TextField select label="Supported Browsers" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} />
+                    <TextField select label="Supported Browsers" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} >
+                        <MenuItem>
+                            Browser
+                        </MenuItem>
+                    </TextField>
                 </Paper>
             </Stack>
         </Paper>
