@@ -1,9 +1,10 @@
 "use client";
 
-import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
 import GameHeading from "../game-heading";
 import React, { useState, useEffect } from "react";
-import { LooksOne, LooksTwo } from "@mui/icons-material";
+import { CloudUpload, LooksOne, LooksTwo } from "@mui/icons-material";
+import Image from "next/image";
 
 interface FirstPageProps {
     gameName: string;
@@ -40,6 +41,9 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                         onPlatformChange={onPlatformChange}
                     />
                     <DownloadConfig />
+                    <GameScreenshots />
+                    <Artifacts />
+                    <ChangeLogs />
                 </Stack>
             </Grid>
             <Grid size={3} sx={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
@@ -133,8 +137,7 @@ interface BasicInfoProps {
     onGameTypeChange: (type: string) => void;
 }
 
-function BasicInfo({ gameName, onGameNameChange, gameIntro, onGameIntroChange, gameType, onGameTypeChange }: BasicInfoProps)  {
-
+function BasicInfo({ gameName, onGameNameChange, gameIntro, onGameIntroChange, gameType, onGameTypeChange }: BasicInfoProps) {
     return (
         <Paper variant="elevation" sx={{ flex: 3, p: 2 }}>
             <Typography variant="h6">Basic Information</Typography>
@@ -283,6 +286,126 @@ function UploadAvatars({ onAvatarUpdate, initialAvatarSrc }: UploadAvatarsProps)
                 onChange={handleAvatarChange}
             />
         </ButtonBase>
+    );
+}
+
+function GameScreenshots() {
+    return (
+        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+            <Typography variant="h6" gutterBottom>Game Screenshots</Typography>
+            <Button
+                variant="outlined"
+                color="primary"
+                component="label"
+                startIcon={<CloudUpload />}
+                sx={{ width: '100%' }}
+            >
+                Upload Game Screenshots
+                <Input type="file" hidden />
+            </Button>
+            <Grid container spacing={2} sx={{ marginTop: 2 }}>
+                {['game_screenshot_1.png', 'game_screenshot_2.png', 'game_screenshot_3.png'].map((file, idx) => (
+                    <Grid key={idx}>
+                        <Card>
+                            <CardContent>
+                                <Image width={100} height={100} src={`/${file}`} alt={`Screenshot ${idx + 1}`} style={{ width: '100%' }} />
+                                <Typography variant="body2" align="center" color="textSecondary">
+                                    {file}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                ))}
+            </Grid>
+        </Paper>
+    );
+}
+
+function Artifacts() {
+    return (
+        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+            <Typography variant="h6" gutterBottom>Artifacts</Typography>
+            <Grid container spacing={2}>
+                <Grid size={5}>
+                    <TextField
+                        label="Android Installer"
+                        fullWidth
+                    />
+                    <Typography mt={1} variant="body2" color="textSecondary">
+                        File Size: N/A MB
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                        Upload Time: 2024-09-25 14:30
+                    </Typography>
+                </Grid>
+                <Grid size={5}>
+                    <TextField
+                        label="iOS Installer"
+                        fullWidth
+                        disabled
+                    />
+                    <Typography variant="body2" color="textSecondary">
+                        (Not Supported)
+                    </Typography>
+                </Grid>
+                <Grid>
+                    <Typography mb={1}>
+                        Web Application
+                    </Typography>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        component="label"
+                        startIcon={<CloudUpload />}
+                        sx={{ width: '100%' }}
+                    >
+                        Upload Artifacts
+                        <Input
+                            type="file"
+                            hidden
+                        />
+                    </Button>
+                    <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
+                        The homepage should be index.html
+                    </Typography>
+                </Grid>
+            </Grid>
+        </Paper>
+    );
+}
+
+function ChangeLogs() {
+    return (
+        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+            <Typography variant="h6" gutterBottom>Changelog</Typography>
+            <TextField
+                label="Version Name"
+                fullWidth
+                margin="normal"
+            />
+            <TextField
+                label="Version Code"
+                fullWidth
+                margin="normal"
+            />
+            <TextField
+                label="Changelogs"
+                multiline
+                rows={4}
+                fullWidth
+                margin="normal"
+            />
+            <TextField
+                label="Mininum System Requiement"
+                fullWidth
+                margin="normal"
+            />
+            <TextField
+                label="Recommended System Requirement"
+                fullWidth
+                margin="normal"
+            />
+        </Paper>
     );
 }
 
