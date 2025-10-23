@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
-import GameHeading from "./game-heading";
+import GameHeading from "../game-heading";
 import React, { useState } from "react";
 import { LooksOne, LooksTwo, CloudUpload } from "@mui/icons-material";
 import Image from "next/image";
