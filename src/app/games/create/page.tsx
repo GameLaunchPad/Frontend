@@ -6,6 +6,12 @@ import React, { useState, useEffect } from "react";
 import { CloudUpload, LooksOne, LooksTwo } from "@mui/icons-material";
 import Image from "next/image";
 
+interface PlatformSupport {
+    android: boolean;
+    ios: boolean;
+    web: boolean;
+}
+
 interface FirstPageProps {
     gameName: string;
     onGameNameChange: (name: string) => void;
@@ -15,8 +21,8 @@ interface FirstPageProps {
     onAvatarUpdate: (src: string) => void;
     gameType: string;
     onGameTypeChange: (type: string) => void;
-    platforms: { android: boolean; ios: boolean; web: boolean; };
-    onPlatformChange: (platforms: { android: boolean; ios: boolean; web: boolean; }) => void;
+    platforms: PlatformSupport,
+    onPlatformChange: (platforms: PlatformSupport) => void;
 }
 
 function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, avatarSrc, onAvatarUpdate, gameType, onGameTypeChange, platforms, onPlatformChange, }: FirstPageProps) {
@@ -206,7 +212,7 @@ interface LivePreviewProps {
     name: string;
     introduction: string;
     avatarSrc?: string;
-    platforms: { android: boolean; ios: boolean; web: boolean; };
+    platforms: PlatformSupport;
     gameType: string;
 }
 
@@ -446,8 +452,8 @@ function Tips() {
 }
 
 interface SupportedPlatformsProps {
-    platforms: { android: boolean; ios: boolean; web: boolean; };
-    onPlatformChange: (platforms: { android: boolean; ios: boolean; web: boolean; }) => void;
+    platforms: PlatformSupport;
+    onPlatformChange: (platforms: PlatformSupport) => void;
 }
 
 function SupportedPlatforms({ platforms, onPlatformChange }: SupportedPlatformsProps) {
