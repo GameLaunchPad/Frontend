@@ -8,7 +8,7 @@ import GamepadIcon from '@mui/icons-material/Gamepad';
 import SearchIcon from '@mui/icons-material/Search';
 import { alpha, styled } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
-import { BrowserRouter, useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -143,9 +143,7 @@ export default function NavBar(): React.JSX.Element {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              <BrowserRouter>
-                <UserItems/>
-              </BrowserRouter>
+              <UserItems onCloseMenu={handleCloseUserMenu}/>
             </Menu>
           </Box>
         </Toolbar>
@@ -154,21 +152,30 @@ export default function NavBar(): React.JSX.Element {
   );
 }
 
-function UserItems() {
+interface UserItemsProps {
+    onCloseMenu: () => void;
+}
+
+function UserItems({ onCloseMenu }: UserItemsProps) {
   const isLogin = false; // Set to false temporarily
-  const navigate = useNavigate();
+  const router = useRouter();
+
+  const handleNavigateAndClose = (path: string) => {
+        router.push(path);
+        onCloseMenu();
+  };
 
   return isLogin ? (
     <div>
-      <MenuItem key="Profile" onClick={() => navigate("/profile")}>
+      <MenuItem key="Profile" onClick={() => router.push("/profile")}>
         <Typography sx={{ textAlign: 'center' }}>Profile</Typography>
       </MenuItem>
-      <MenuItem key="Dashboard" onClick={() => navigate("/dashboard")}>
+      <MenuItem key="Dashboard" onClick={() => router.push("/dashboard")}>
         <Typography sx={{ textAlign: 'center' }}>Dashboard</Typography>
       </MenuItem>
     </div>
   ) : (
-    <MenuItem key="Login" onClick={() => navigate("/login")}>
+    <MenuItem key="Login" onClick={() => handleNavigateAndClose("/login")}>
       <Typography sx={{ textAlign: 'center' }}>Login</Typography>
     </MenuItem>
   )
