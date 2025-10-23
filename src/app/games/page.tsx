@@ -1,4 +1,6 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import {
   Box,
   Card,
@@ -96,6 +98,9 @@ function EdgeDrawer() {
 }
 
 function GameDashboard() {
+  enum Layout { Card, List };
+  const [layout, setLayout] = useState(Layout.Card);
+
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <GameHeading
@@ -166,18 +171,30 @@ function GameDashboard() {
           </Grid>
           <Grid container size={2} sx={{ justifyContent: 'end' }}>
             <ButtonGroup size="large">
-              <Button>Card</Button>
-              <Button>List</Button>
+              <Button onClick={() => setLayout(Layout.Card)}>Card</Button>
+              <Button onClick={() => setLayout(Layout.List)}>List</Button>
             </ButtonGroup>
           </Grid>
         </Grid>
       </Box>
       <Box mt={4}>
-        <Grid container spacing={2} columns={3}>
-          <GameCard />
-        </Grid>
+        {layout == Layout.Card ? <CardLayout /> : <ListLayout />}
       </Box>
     </Box>
+  );
+}
+
+function CardLayout() {
+  return (
+    <Grid container spacing={2} columns={3}>
+      <GameCard />
+    </Grid>
+  );
+}
+
+function ListLayout() {
+  return (
+    <></>
   );
 }
 
