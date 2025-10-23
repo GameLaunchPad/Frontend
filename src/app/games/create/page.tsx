@@ -2,11 +2,66 @@
 
 import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
 import GameHeading from "../game-heading";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { LooksOne, LooksTwo } from "@mui/icons-material";
 
-let avatarSrc: string | undefined;
-let setAvatarSrc: (src: string) => void;
+interface FirstPageProps {
+    gameName: string;
+    onGameNameChange: (name: string) => void;
+    gameIntro: string;
+    onGameIntroChange: (intro: string) => void;
+    avatarSrc?: string;
+    onAvatarUpdate: (src: string) => void;
+    gameType: string;
+    onGameTypeChange: (type: string) => void;
+    platforms: { android: boolean; ios: boolean; web: boolean; };
+    onPlatformChange: (platforms: { android: boolean; ios: boolean; web: boolean; }) => void;
+}
+
+function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, avatarSrc, onAvatarUpdate, gameType, onGameTypeChange, platforms, onPlatformChange, }: FirstPageProps) {
+    return (
+        <Grid container spacing={2} mt={2}>
+            <Grid item size={9}>
+                <Stack spacing={3}>
+                    <BasicInfo
+                        gameName={gameName}
+                        onGameNameChange={onGameNameChange}
+                        gameIntro={gameIntro}
+                        onGameIntroChange={onGameIntroChange}
+                        gameType={gameType}
+                        onGameTypeChange={onGameTypeChange}
+                    />
+                    <Paper variant="elevation" sx={{ p: 2 }}>
+                        <Typography variant="body2" sx={{ mb: 1 }}>Game Icon *</Typography>
+                        <UploadAvatars onAvatarUpdate={onAvatarUpdate} initialAvatarSrc={avatarSrc} />
+                    </Paper>
+                    <SupportedPlatforms
+                        platforms={platforms}
+                        onPlatformChange={onPlatformChange}
+                    />
+                    <DownloadConfig />
+                </Stack>
+            </Grid>
+            <Grid item size={3} sx={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
+                <Stack spacing={4}>
+                    <LivePreview
+                        name={gameName}
+                        introduction={gameIntro}
+                        avatarSrc={avatarSrc}
+                        platforms={platforms}
+                        gameType={gameType}
+                    />
+                    <CreationProgress />
+                    <Tips />
+                </Stack>
+            </Grid>
+        </Grid>
+    );
+}
+
+function SecondPage() {
+    return (<></>);
+}
 
 export default function NewGame() {
     const steps = ["Basic Information", "Platform Setup", "Game Resources", "Review & Submit"];
@@ -15,17 +70,12 @@ export default function NewGame() {
     const [gameName, setGameName] = useState('');
     const [gameIntro, setGameIntro] = useState('');
     const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
-
-    const RenderContent = () => {
-        switch (currentPage) {
-            case 1:
-                return <FirstPage />;
-            case 2:
-                return <SecondPage />;
-            default:
-                return <Typography>Step Completed</Typography>;
-        }
-    };
+    const [gameType, setGameType] = useState('');
+    const [platforms, setPlatforms] = useState({
+        android: false,
+        ios: false,
+        web: false,
+    });
 
     return (
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
@@ -44,7 +94,22 @@ export default function NewGame() {
                     ))}
                 </Stepper>
             </Box>
-            <RenderContent />
+            {currentPage === 1 && (
+                <FirstPage
+                    gameName={gameName}
+                    onGameNameChange={setGameName}
+                    gameIntro={gameIntro}
+                    onGameIntroChange={setGameIntro}
+                    avatarSrc={avatarSrc}
+                    onAvatarUpdate={setAvatarSrc}
+                    gameType={gameType}
+                    onGameTypeChange={setGameType}
+                    platforms={platforms}
+                    onPlatformChange={setPlatforms}
+                />
+            )}
+            {currentPage === 2 && <SecondPage />}
+            {currentPage > 2 && <Typography>Step Completed</Typography>}
             <Grid container spacing={2} mt={4}>
                 <Grid container>
                     <Button variant="outlined">Go Back to My Games</Button>
@@ -71,33 +136,16 @@ export default function NewGame() {
     );
 }
 
-function FirstPage() {
-    return (
-        <Grid container spacing={2} mt={2}>
-            <Grid size={8}>
-                <Stack spacing={2}>
-                    <BasicInfo />
-                    <SupportedPlatforms />
-                    <DownloadConfig />
-                </Stack>
-            </Grid>
-            <Grid size={4}>
-                <Stack spacing={2}>
-                    <LivePreview />
-                    <CreationProgress />
-                    <Tips />
-                </Stack>
-            </Grid>
-        </Grid>
-    );
+interface BasicInfoProps {
+    gameName: string;
+    onGameNameChange: (name: string) => void;
+    gameIntro: string;
+    onGameIntroChange: (intro: string) => void;
+    gameType: string;
+    onGameTypeChange: (type: string) => void;
 }
 
-function SecondPage() {
-    return (<></>);
-}
-
-function BasicInfo() {
-    const [gameName, setGameName] = React.useState('');
+function BasicInfo({ gameName, onGameNameChange, gameIntro, onGameIntroChange, gameType, onGameTypeChange }: BasicInfoProps)  {
 
     return (
         <Paper variant="elevation" sx={{ flex: 3, p: 2 }}>
@@ -107,12 +155,14 @@ function BasicInfo() {
                     label="Name"
                     sx={{ width: '50ch' }}
                     value={gameName}
-                    onChange={(e) => { setGameName(e.target.value) }}
+                    onChange={(e) => onGameNameChange(e.target.value)}
                 />
                 <TextField
                     select
                     label="Type"
                     sx={{ width: '30ch' }}
+                    value={gameType}
+                    onChange={(e) => onGameTypeChange(e.target.value)}
                     SelectProps={{
                         MenuProps: {
                             PaperProps: {
@@ -148,22 +198,41 @@ function BasicInfo() {
                     <MenuItem value="Stealth">Stealth</MenuItem>
                     <MenuItem value="Survival">Survival</MenuItem>
                 </TextField>
-                <TextField fullWidth multiline label="Introduction" minRows={5} />
-                <UploadAvatars />
+                <TextField
+                    fullWidth
+                    multiline
+                    label="Introduction"
+                    minRows={5}
+                    value={gameIntro}
+                    onChange={(e) => onGameIntroChange(e.target.value)}
+                />
             </Grid>
         </Paper>
     );
 }
 
-function LivePreview() {
+interface LivePreviewProps {
+    name: string;
+    introduction: string;
+    avatarSrc?: string;
+    platforms: { android: boolean; ios: boolean; web: boolean; };
+    gameType: string;
+}
+
+function LivePreview({ name, introduction, avatarSrc, platforms, gameType }: LivePreviewProps) {
     return (
         <Paper variant="elevation" sx={{ flex: 1, p: 2, alignContent: 'center', justifyItems: 'center' }}>
             <Typography variant="h6">Live Preview</Typography>
             <Avatar src={avatarSrc} sx={{ width: 80, height: 80, m: 2 }} />
-            <Typography variant="h6">Name</Typography>
-            <Typography variant="body1">Introduction</Typography>
+            <Typography variant="h6">{name || 'Name'}</Typography>
+            <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                {gameType || 'Type'}
+            </Typography>
+            <Typography variant="body1">{introduction || 'Introduction'}</Typography>
             <Box mt={2}>
-                <Chip label="Android" />
+                {platforms.android && <Chip label="Android" size="small" sx={{ mr: 0.5 }} />}
+                {platforms.ios && <Chip label="iOS" size="small" sx={{ mr: 0.5 }} />}
+                {platforms.web && <Chip label="Web" size="small" />}
             </Box>
         </Paper>
     );
@@ -210,14 +279,26 @@ function CircularProgressWithLabel(
     );
 }
 
-function UploadAvatars() {
-    [avatarSrc, setAvatarSrc] = React.useState<string | undefined>(undefined);
+interface UploadAvatarsProps {
+    onAvatarUpdate: (src: string) => void;
+    initialAvatarSrc?: string;
+}
+
+function UploadAvatars({ onAvatarUpdate, initialAvatarSrc }: UploadAvatarsProps) {
+    const [previewSrc, setPreviewSrc] = useState<string | undefined>(initialAvatarSrc);
+
+    useEffect(() => {
+        setPreviewSrc(initialAvatarSrc);
+    }, [initialAvatarSrc]);
+
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = () => {
-                setAvatarSrc(reader.result as string);
+                const result = reader.result as string;
+                setPreviewSrc(result);
+                onAvatarUpdate(result);
             };
             reader.readAsDataURL(file);
         }
@@ -237,7 +318,7 @@ function UploadAvatars() {
                 },
             }}
         >
-            <Avatar alt="Upload new avatar" src={avatarSrc} sx={{ width: 80, height: 80 }} />
+            <Avatar alt="Upload new avatar" src={previewSrc} sx={{ width: 80, height: 80 }} />
             <input
                 type="file"
                 accept="image/*"
@@ -294,13 +375,25 @@ function Tips() {
     );
 }
 
-function SupportedPlatforms() {
+interface SupportedPlatformsProps {
+    platforms: { android: boolean; ios: boolean; web: boolean; };
+    onPlatformChange: (platforms: { android: boolean; ios: boolean; web: boolean; }) => void;
+}
+
+function SupportedPlatforms({ platforms, onPlatformChange }: SupportedPlatformsProps) {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        onPlatformChange({
+            ...platforms,
+            [event.target.name]: event.target.checked,
+        });
+    };
+
     return (
         <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
             <Typography variant="h6">Supported Platforms</Typography>
-            <FormControlLabel control={<Checkbox />} label="Android" />
-            <FormControlLabel control={<Checkbox />} label="iOS" />
-            <FormControlLabel control={<Checkbox />} label="Web" />
+            <FormControlLabel control={<Checkbox checked={platforms.android} onChange={handleChange} name="android" />} label="Android" />
+            <FormControlLabel control={<Checkbox checked={platforms.ios} onChange={handleChange} name="ios" />} label="iOS" />
+            <FormControlLabel control={<Checkbox checked={platforms.web} onChange={handleChange} name="web" />} label="Web" />
         </Paper>
     );
 }
