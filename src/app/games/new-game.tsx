@@ -1,9 +1,9 @@
 "use client";
 
-import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
 import GameHeading from "./game-heading";
 import React, { useState } from "react";
-import { LooksOne, LooksTwo } from "@mui/icons-material";
+import { LooksOne, LooksTwo, CloudUpload } from "@mui/icons-material";
 
 let avatarSrc: string | undefined;
 let setAvatarSrc: (src: string) => void;
@@ -89,8 +89,132 @@ function FirstPage() {
 }
 
 function SecondPage() {
-    return (<></>);
-}
+    return (
+        <Box sx={{ width: '100%', padding: 2 }}>
+            <Card sx={{ marginBottom: 2 }}>
+                <CardContent>
+                    <Typography variant="h6" gutterBottom>Game Screenshots</Typography>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        component="label"
+                        startIcon={<CloudUpload />}
+                        sx={{ width: '100%' }}
+                    >
+                        Upload Game Screenshots
+                        <Input type="file" hidden />
+                    </Button>
+                    <Grid container spacing={2} sx={{ marginTop: 2 }}>
+                        {['game_screenshot_1.png', 'game_screenshot_2.png', 'game_screenshot_3.png'].map((file, idx) => (
+                            <Grid item xs={4} key={idx}>
+                                <Card>
+                                    <CardContent>
+                                        <img src={`/${file}`} alt={`Screenshot ${idx + 1}`} style={{ width: '100%' }} />
+                                        <Typography variant="body2" align="center" color="textSecondary">
+                                            {file}
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </CardContent>
+            </Card>
+
+            <Card sx={{ marginBottom: 2 }}>
+                <CardContent>
+                    <Typography variant="h6" gutterBottom>Installers</Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                            <TextField
+                                label="Android Installer"
+                                value="mygame_v1.0.apk"
+                                fullWidth
+                            />
+                            <Typography variant="body2" color="textSecondary">
+                                File Size: N/A MB
+                            </Typography>
+                            <Typography variant="body2" color="textSecondary">
+                                Upload Time: 2024-09-25 14:30
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <TextField
+                                label="iOS Installer"
+                                fullWidth
+                                InputProps={{ readOnly: true }}
+                                disabled
+                            />
+                            <Typography variant="body2" color="textSecondary">
+                                (Not Supported)
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                </CardContent>
+            </Card>
+
+            <Card sx={{ marginBottom: 2 }}>
+                <CardContent>
+                    <Typography variant="h6" gutterBottom>Web Application</Typography>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        component="label"
+                        startIcon={<CloudUpload />}
+                        sx={{ width: '100%' }}
+                    >
+                        Upload Artifacts
+                        <Input
+                            type="file"
+                            hidden
+                        />
+                    </Button>
+                    <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
+                        The homepage should be index.html
+                    </Typography>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardContent>
+                    <Typography variant="h6" gutterBottom>Changelog</Typography>
+                    <TextField
+                        label="Version Name"
+                        value="1.0.0"
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Version Code"
+                        value="1"
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Changelog"
+                        multiline
+                        rows={4}
+                        value="The first version"
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Mininum System Requiement"
+                        value="Android 5.0+"
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Recommended System Requirement"
+                        value="Android 8.0+"
+                        fullWidth
+                        margin="normal"
+                    />
+                </CardContent>
+            </Card>
+        </Box>
+    );
+};
 
 function BasicInfo() {
     const [gameName, setGameName] = React.useState('');
