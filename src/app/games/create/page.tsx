@@ -48,7 +48,7 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                     />
                     {(platforms.android == true || platforms.ios == true || platforms.web == true) && <DownloadConfig platforms={platforms} />}
                     <GameScreenshots />
-                    <Artifacts />
+                    <Artifacts platforms={platforms} />
                     <ChangeLogs />
                 </Stack>
             </Grid>
@@ -323,54 +323,63 @@ function GameScreenshots() {
     );
 }
 
-function Artifacts() {
+function Artifacts({ platforms }: { platforms: PlatformSupport }) {
+    const AndroidInstaller = () => (
+        <Grid size={5}>
+            <TextField
+                label="Android Installer"
+                fullWidth
+            />
+            <Typography mt={1} variant="body2" color="textSecondary">
+                File Size: N/A MB
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+                Upload Time: 2024-09-25 14:30
+            </Typography>
+        </Grid>
+    );
+
+    const IosInstaller = () => (
+        <Grid size={5}>
+            <TextField
+                label="iOS Installer"
+                fullWidth
+                disabled
+            />
+        </Grid>
+    );
+
+    const WebApp = () => (
+        <Grid>
+            <Typography mb={1}>
+                Web Application
+            </Typography>
+            <Button
+                variant="outlined"
+                color="primary"
+                component="label"
+                startIcon={<CloudUpload />}
+                sx={{ width: '100%' }}
+            >
+                Upload Artifacts
+                <Input
+                    type="file"
+                    hidden
+                />
+            </Button>
+            <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
+                The homepage should be index.html
+            </Typography>
+        </Grid>
+    );
+
     return (
         <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
             <Typography variant="h6" gutterBottom>Artifacts</Typography>
             <Grid container spacing={2}>
-                <Grid size={5}>
-                    <TextField
-                        label="Android Installer"
-                        fullWidth
-                    />
-                    <Typography mt={1} variant="body2" color="textSecondary">
-                        File Size: N/A MB
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                        Upload Time: 2024-09-25 14:30
-                    </Typography>
-                </Grid>
-                <Grid size={5}>
-                    <TextField
-                        label="iOS Installer"
-                        fullWidth
-                        disabled
-                    />
-                    <Typography variant="body2" color="textSecondary">
-                        (Not Supported)
-                    </Typography>
-                </Grid>
-                <Grid>
-                    <Typography mb={1}>
-                        Web Application
-                    </Typography>
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        component="label"
-                        startIcon={<CloudUpload />}
-                        sx={{ width: '100%' }}
-                    >
-                        Upload Artifacts
-                        <Input
-                            type="file"
-                            hidden
-                        />
-                    </Button>
-                    <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
-                        The homepage should be index.html
-                    </Typography>
-                </Grid>
+                {platforms.android && <AndroidInstaller />}
+                {platforms.ios && <IosInstaller />}
+                {platforms.web && <WebApp />}
             </Grid>
         </Paper>
     );
