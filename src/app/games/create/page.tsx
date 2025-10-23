@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
 import GameHeading from "../game-heading";
 import React, { useState, useEffect } from "react";
 import { LooksOne, LooksTwo } from "@mui/icons-material";
@@ -64,7 +64,6 @@ function SecondPage() {
 }
 
 export default function NewGame() {
-    const steps = ["Basic Information", "Platform Setup", "Game Resources", "Review & Submit"];
     const [currentPage, setCurrentPage] = useState(1);
 
     const [gameName, setGameName] = useState('');
@@ -85,15 +84,6 @@ export default function NewGame() {
                 actions={["Save Draft", "Preview"]}
             />
             <Divider />
-            <Box mt={4}>
-                <Stepper activeStep={currentPage * 2 - 2} alternativeLabel>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
-                        </Step>
-                    ))}
-                </Stepper>
-            </Box>
             {currentPage === 1 && (
                 <FirstPage
                     gameName={gameName}
