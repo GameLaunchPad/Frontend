@@ -21,7 +21,7 @@ interface FirstPageProps {
 function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, avatarSrc, onAvatarUpdate, gameType, onGameTypeChange, platforms, onPlatformChange, }: FirstPageProps) {
     return (
         <Grid container spacing={2} mt={2}>
-            <Grid item size={9}>
+            <Grid size={9}>
                 <Stack spacing={3}>
                     <BasicInfo
                         gameName={gameName}
@@ -42,7 +42,7 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                     <DownloadConfig />
                 </Stack>
             </Grid>
-            <Grid item size={3} sx={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
+            <Grid size={3} sx={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
                 <Stack spacing={4}>
                     <LivePreview
                         name={gameName}
