@@ -6,10 +6,10 @@ import React, { useState, useEffect } from "react";
 import { CloudUpload, LooksOne, LooksTwo } from "@mui/icons-material";
 import Image from "next/image";
 
-interface PlatformSupport {
-    android: boolean;
-    ios: boolean;
-    web: boolean;
+class PlatformSupport {
+    android: boolean = false;
+    ios: boolean = false;
+    web: boolean = false;
 }
 
 interface FirstPageProps {
@@ -46,7 +46,7 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                         platforms={platforms}
                         onPlatformChange={onPlatformChange}
                     />
-                    <DownloadConfig />
+                    {(platforms.android == true || platforms.ios == true || platforms.web == true) && <DownloadConfig platforms={platforms} />}
                     <GameScreenshots />
                     <Artifacts />
                     <ChangeLogs />
@@ -79,11 +79,7 @@ export default function NewGame() {
     const [gameIntro, setGameIntro] = useState('');
     const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
     const [gameType, setGameType] = useState('');
-    const [platforms, setPlatforms] = useState({
-        android: false,
-        ios: false,
-        web: false,
-    });
+    const [platforms, setPlatforms] = useState(new PlatformSupport());
 
     return (
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
@@ -474,38 +470,50 @@ function SupportedPlatforms({ platforms, onPlatformChange }: SupportedPlatformsP
     );
 }
 
-function DownloadConfig() {
+function DownloadConfig({ platforms }: { platforms: PlatformSupport }) {
+    const AndroidConfig = () => (
+        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+            <Typography variant="h6">Android Configuration</Typography>
+            <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
+            <TextField select label="Minimum SDK Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }}>
+                <MenuItem>
+                    SDK Version
+                </MenuItem>
+            </TextField>
+        </Paper>
+    );
+
+    const IosConfig = () => (
+        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+            <Typography variant="h6">iOS Configuration</Typography>
+            <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
+            <TextField select label="Minimum iOS Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} >
+                <MenuItem>
+                    iOS Version
+                </MenuItem>
+            </TextField>
+        </Paper>
+    );
+
+    const WebConfig = () => (
+        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
+            <Typography variant="h6">Web Configuration</Typography>
+            <TextField label="URL" placeholder="https://game.example.com" margin="normal" />
+            <TextField select label="Supported Browsers" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} >
+                <MenuItem>
+                    Browser
+                </MenuItem>
+            </TextField>
+        </Paper>
+    );
+
     return (
         <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
             <Typography variant="h6">Download Configurations</Typography>
             <Stack spacing={2}>
-                <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-                    <Typography variant="h6">Android Configuration</Typography>
-                    <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
-                    <TextField select label="Minimum SDK Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }}>
-                        <MenuItem>
-                            SDK Version
-                        </MenuItem>
-                    </TextField>
-                </Paper>
-                <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-                    <Typography variant="h6">iOS Configuration</Typography>
-                    <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
-                    <TextField select label="Minimum iOS Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} >
-                        <MenuItem>
-                            iOS Version
-                        </MenuItem>
-                    </TextField>
-                </Paper>
-                <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-                    <Typography variant="h6">Web Configuration</Typography>
-                    <TextField label="URL" placeholder="https://game.example.com" margin="normal" />
-                    <TextField select label="Supported Browsers" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} >
-                        <MenuItem>
-                            Browser
-                        </MenuItem>
-                    </TextField>
-                </Paper>
+                {platforms.android && <AndroidConfig />}
+                {platforms.ios && <IosConfig />}
+                {platforms.web && <WebConfig />}
             </Stack>
         </Paper>
     );
