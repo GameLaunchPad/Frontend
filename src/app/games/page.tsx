@@ -46,13 +46,21 @@ function EdgeDrawer() {
       <Toolbar />
       <Box sx={{ overflow: 'auto' }}>
         <List>
-          {['My Games', 'New Game', 'Review Queue'].map((text) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          <ListItem key="My Games" disablePadding>
+            <ListItemButton>
+              <ListItemText primary="My Games" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="New Game" disablePadding>
+            <ListItemButton href="/games/create">
+              <ListItemText primary="New Game" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="Review Queue" disablePadding>
+            <ListItemButton>
+              <ListItemText primary="Review Queue" />
+            </ListItemButton>
+          </ListItem>
         </List>
         <Divider />
         <List>
