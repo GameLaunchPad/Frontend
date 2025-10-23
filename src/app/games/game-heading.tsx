@@ -1,23 +1,40 @@
-import { Button, Grid, Typography } from "@mui/material";
+import { Button, Grid, Typography, Box, Stack } from "@mui/material";
+import Link from 'next/link';
 
 export default function GameHeading({ heading, subheading, actions }: { heading: string, subheading: string, actions: string[] }) {
     return (
-        <Grid container spacing={2} sx={{ alignItems: "center", marginBottom: 2 }}>
-            <Grid container size={4}>
+        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+
+            {/* 左侧标题部分 */}
+            <Box sx={{ flexGrow: 1, mr: 2 }}>
                 <Typography variant="h4">
                     {heading}
                 </Typography>
-                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                <Typography variant="subtitle2" color="text.secondary">
                     {subheading}
                 </Typography>
-            </Grid>
-            <Grid container size="grow">
-            </Grid>
-            <Grid container size="grow" sx={{ justifyContent: 'end' }}>
-                {actions.map((action) => {
-                    return <Button key={action} variant="outlined">{action}</Button>
-                })}
-            </Grid>
-        </Grid>
+            </Box>
+
+            {/* 右侧按钮部分 */}
+            <Box>
+                 <Stack direction="row" spacing={1}>
+                    {actions.map((action) => (
+                        action === "New Game" ? (
+                            // 移除 legacyBehavior, passHref 通常也不再需要显式添加
+                            // Button 直接作为 Link 的子元素
+                            <Link key={action} href="/games/create">
+                                <Button variant="outlined"> {/* 移除 component="a" */}
+                                    {action}
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Button key={action} variant="outlined">
+                                {action}
+                            </Button>
+                        )
+                    ))}
+                 </Stack>
+            </Box>
+        </Box>
     );
 }

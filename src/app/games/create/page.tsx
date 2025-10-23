@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";
-import GameHeading from "./game-heading";
+import GameHeading from "../game-heading";
 import React, { useState } from "react";
 import { LooksOne, LooksTwo } from "@mui/icons-material";
 
@@ -11,6 +11,10 @@ let setAvatarSrc: (src: string) => void;
 export default function NewGame() {
     const steps = ["Basic Information", "Platform Setup", "Game Resources", "Review & Submit"];
     const [currentPage, setCurrentPage] = useState(1);
+
+    const [gameName, setGameName] = useState('');
+    const [gameIntro, setGameIntro] = useState('');
+    const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
 
     const RenderContent = () => {
         switch (currentPage) {
@@ -101,14 +105,48 @@ function BasicInfo() {
             <Grid container component="form" spacing={3} mt={2}>
                 <TextField
                     label="Name"
-                    sx={{ flex: 1 }}
+                    sx={{ width: '50ch' }}
                     value={gameName}
-                    onChange={(e) => { setGameName(e.target.name) }}
+                    onChange={(e) => { setGameName(e.target.value) }}
                 />
-                <TextField select label="Type" sx={{ width: '30ch' }}>
-                    <MenuItem>
-                        Type
+                <TextField
+                    select
+                    label="Type"
+                    sx={{ width: '30ch' }}
+                    SelectProps={{
+                        MenuProps: {
+                            PaperProps: {
+                                style: {
+                                    maxHeight: 250,
+                                },
+                            },
+                        },
+                    }}
+                >
+                    <MenuItem value="">
+                        <em>Select Type</em>
                     </MenuItem>
+                    <MenuItem value="Action">Action</MenuItem>
+                    <MenuItem value="Adventure">Adventure</MenuItem>
+                    <MenuItem value="RPG">RPG (Role-Playing Game)</MenuItem>
+                    <MenuItem value="Strategy">Strategy</MenuItem>
+                    <MenuItem value="Simulation">Simulation</MenuItem>
+                    <MenuItem value="Sports">Sports</MenuItem>
+                    <MenuItem value="Racing">Racing</MenuItem>
+                    <MenuItem value="Fighting">Fighting</MenuItem>
+                    <MenuItem value="Puzzle">Puzzle</MenuItem>
+                    <MenuItem value="Platformer">Platformer</MenuItem>
+                    <MenuItem value="Shooter">Shooter</MenuItem>
+                    <MenuItem value="MMO">MMO (Massively Multiplayer Online)</MenuItem>
+                    <MenuItem value="Music">Music/Rhythm</MenuItem>
+                    <MenuItem value="Casual">Casual</MenuItem>
+                    <MenuItem value="Card & Board">Card & Board Game</MenuItem>
+                    <MenuItem value="Educational">Educational</MenuItem>
+                    <MenuItem value="Sandbox">Sandbox</MenuItem>
+                    <MenuItem value="Open World">Open World</MenuItem>
+                    <MenuItem value="Horror">Horror</MenuItem>
+                    <MenuItem value="Stealth">Stealth</MenuItem>
+                    <MenuItem value="Survival">Survival</MenuItem>
                 </TextField>
                 <TextField fullWidth multiline label="Introduction" minRows={5} />
                 <UploadAvatars />
