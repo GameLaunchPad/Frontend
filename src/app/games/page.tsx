@@ -194,7 +194,17 @@ function CardLayout() {
 
 function ListLayout() {
   return (
-    <></>
+    <List>
+      <ListItem>
+        <ListItemText primary="Game Name" secondary="N/A Downloads, N/A Rating, N/A Version" />
+        <ListItemText secondary="Android" />
+        <ButtonGroup variant="text">
+          <Button>View</Button>
+          <Button>Edit</Button>
+          <Button>Statistics</Button>
+        </ButtonGroup>
+      </ListItem>
+    </List>
   );
 }
 
