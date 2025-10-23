@@ -80,7 +80,6 @@ export default function NewGame() {
             <GameHeading
                 heading="New Game"
                 subheading="Game Management &gt; New Game"
-                actions={["Save Draft", "Preview"]}
             />
             <Divider />
             {currentPage === 1 && (

@@ -1,7 +1,7 @@
 import { Button, Grid, Typography, Box, Stack } from "@mui/material";
 import Link from 'next/link';
 
-export default function GameHeading({ heading, subheading, actions }: { heading: string, subheading: string, actions: string[] }) {
+export default function GameHeading({ heading, subheading, actions }: { heading: string, subheading: string, actions?: string[] }) {
     return (
         <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
 
@@ -18,7 +18,7 @@ export default function GameHeading({ heading, subheading, actions }: { heading:
             {/* 右侧按钮部分 */}
             <Box>
                  <Stack direction="row" spacing={1}>
-                    {actions.map((action) => (
+                    {actions && actions.map((action) => (
                         action === "New Game" ? (
                             // 移除 legacyBehavior, passHref 通常也不再需要显式添加
                             // Button 直接作为 Link 的子元素
