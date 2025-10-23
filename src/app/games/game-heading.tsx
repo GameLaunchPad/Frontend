@@ -1,4 +1,4 @@
-import { Button, Grid, Typography, Box, Stack } from "@mui/material";
+import { Button, Typography, Box, Stack } from "@mui/material";
 import Link from 'next/link';
 
 export default function GameHeading({ heading, subheading, actions }: { heading: string, subheading: string, actions?: string[] }) {
