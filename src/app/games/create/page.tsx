@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, CircularProgress, CircularProgressProps, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, ButtonBase, Checkbox, Chip, Divider, FormControlLabel, Grid, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
 import GameHeading from "../game-heading";
 import React, { useState, useEffect } from "react";
 import { LooksOne, LooksTwo } from "@mui/icons-material";
@@ -51,7 +51,6 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                         platforms={platforms}
                         gameType={gameType}
                     />
-                    <CreationProgress />
                     <Tips />
                 </Stack>
             </Grid>
@@ -225,47 +224,6 @@ function LivePreview({ name, introduction, avatarSrc, platforms, gameType }: Liv
                 {platforms.web && <Chip label="Web" size="small" />}
             </Box>
         </Paper>
-    );
-}
-
-function CreationProgress() {
-    return (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2, alignContent: 'center', justifyItems: 'center' }}>
-            <Typography variant="h6">Creation Progress</Typography>
-            <Box p={2}>
-                <CircularProgressWithLabel enableTrackSlot variant="determinate" value={25} size={120} />
-            </Box>
-            <Typography variant="h6">The 1st step: Basic Information</Typography>
-            <Typography variant="body1">Please fill in the basic game information</Typography>
-        </Paper>
-    );
-}
-
-function CircularProgressWithLabel(
-    props: CircularProgressProps & { value: number },
-) {
-    return (
-        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-            <CircularProgress variant="determinate" {...props} />
-            <Box
-                sx={{
-                    top: 0,
-                    left: 0,
-                    bottom: 0,
-                    right: 0,
-                    position: 'absolute',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <Typography
-                    fontSize={20}
-                    component="div"
-                    sx={{ color: 'text.secondary' }}
-                >{`${Math.round(props.value)}%`}</Typography>
-            </Box>
-        </Box>
     );
 }
 
