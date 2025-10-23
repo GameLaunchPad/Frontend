@@ -4,6 +4,7 @@ import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, Cir
 import GameHeading from "./game-heading";
 import React, { useState } from "react";
 import { LooksOne, LooksTwo, CloudUpload } from "@mui/icons-material";
+import Image from "next/image";
 
 let avatarSrc: string | undefined;
 let setAvatarSrc: (src: string) => void;
@@ -109,7 +110,7 @@ function SecondPage() {
                             <Grid key={idx}>
                                 <Card>
                                     <CardContent>
-                                        <img src={`/${file}`} alt={`Screenshot ${idx + 1}`} style={{ width: '100%' }} />
+                                        <Image src={`/${file}`} alt={`Screenshot ${idx + 1}`} style={{ width: '100%' }} />
                                         <Typography variant="body2" align="center" color="textSecondary">
                                             {file}
                                         </Typography>
