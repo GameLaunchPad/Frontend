@@ -21,12 +21,13 @@ import {
   Chip,
 } from '@mui/material';
 import GameHeading from './game-heading';
+import NewGame from './new-game';
 
 export default function GamePad() {
   return (
     <Box sx={{ display: 'flex' }}>
       <EdgeDrawer />
-      <GameDashboard />
+      <NewGame />
     </Box>
   );
 }
