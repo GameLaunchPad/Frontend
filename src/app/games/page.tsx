@@ -34,7 +34,8 @@ import {
   GetApp,
   Android,
   Apple,
-  Language as WebIcon
+  Language as WebIcon,
+  Visibility
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { getAllGames, PublishedGame } from '@/utils/gameLocalStorage';
@@ -744,6 +745,7 @@ function ListLayout({ games }: LayoutProps) {
               <Button 
                 variant="outlined"
                 size="small"
+                startIcon={<Visibility />}
                 sx={{ 
                   textTransform: 'none', 
                   fontWeight: 600,
@@ -965,6 +967,7 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
       <CardActions sx={{ justifyContent: 'center', py: 1.5 }}>
         <Button 
           size="small"
+          startIcon={<Visibility />}
           sx={{ 
             textTransform: 'none', 
             fontWeight: 600,
