@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Drawer, 
   Box, 
@@ -22,9 +22,33 @@ import {
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { isAdmin } from '../../utils/auth';
 
 function SidebarContent() {
   const pathname = usePathname();
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
+
+  // Check user role on component mount and when auth state changes
+  useEffect(() => {
+    const checkUserRole = () => {
+      setUserIsAdmin(isAdmin());
+    };
+
+    checkUserRole();
+
+    // Listen for auth state changes
+    const handleAuthChange = () => {
+      checkUserRole();
+    };
+
+    window.addEventListener('authStateChange', handleAuthChange);
+    window.addEventListener('authChange', handleAuthChange);
+    
+    return () => {
+      window.removeEventListener('authStateChange', handleAuthChange);
+      window.removeEventListener('authChange', handleAuthChange);
+    };
+  }, []);
 
   // 菜单项配置
   const gameMenuItems = [
@@ -37,7 +61,8 @@ function SidebarContent() {
     { text: 'Certificate Management', icon: <Description />, href: '/cp-materials' },
   ];
 
-  const otherMenuItems = [
+  // 只有 admin 用户才能看到的菜单项
+  const adminMenuItems = [
     { text: 'Review Management', icon: <RateReview />, href: '/review_tool/review.html', external: true },
   ];
 
@@ -210,26 +235,29 @@ function SidebarContent() {
           ))}
         </List>
 
-        <Divider sx={{ my: 2, mx: 2 }} />
+        {/* 只有 admin 用户才能看到的管理工具 */}
+        {userIsAdmin && (
+          <>
+            <Divider sx={{ my: 2, mx: 2 }} />
 
-        {/* Other Tools */}
-        <Typography 
-          variant="caption" 
-          sx={{ 
-            px: 2, 
-            py: 1, 
-            display: 'block',
-            color: 'text.secondary',
-            fontWeight: 700,
-            fontSize: '0.7rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}
-        >
-          Tools & Analytics
-        </Typography>
-        <List component="nav" sx={{ py: 0 }}>
-          {otherMenuItems.map((item) => (
+            {/* Admin Tools */}
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                px: 2, 
+                py: 1, 
+                display: 'block',
+                color: 'text.secondary',
+                fontWeight: 700,
+                fontSize: '0.7rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+            >
+              Admin Tools
+            </Typography>
+            <List component="nav" sx={{ py: 0 }}>
+              {adminMenuItems.map((item) => (
             <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
               {item.external ? (
                 <ListItemButton 
@@ -295,6 +323,8 @@ function SidebarContent() {
             </ListItem>
           ))}
         </List>
+          </>
+        )}
       </Box>
 
       {/* 底部版本信息 */}

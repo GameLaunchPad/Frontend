@@ -64,7 +64,7 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
       } else {
         // Login logic
         const validAccounts = [
-          { user: 'user', pass: 'user123' },
+          { user: 'user@u.nus.edu', pass: 'admin123' },
           { user: 'admin', pass: 'admin123' }
         ];
         
@@ -75,7 +75,8 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
         if (foundAccount) {
           const userData = {
             username: foundAccount.user,
-            avatar: undefined
+            avatar: undefined,
+            role: foundAccount.user === 'admin' ? 'admin' as const : 'user' as const
           };
           
           setAuthToken('demo-token', userData);

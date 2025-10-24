@@ -3,6 +3,7 @@
 export interface UserData {
   username: string;
   avatar?: string;
+  role?: 'admin' | 'user';
 }
 
 export const setAuthToken = (token: string, userData: UserData) => {
@@ -45,5 +46,35 @@ export const getAuthStatus = (): { isAuthenticated: boolean; userData: UserData 
       isAuthenticated: false,
       userData: null
     };
+  }
+};
+
+// Check if user has admin role
+export const isAdmin = (): boolean => {
+  try {
+    const userDataStr = localStorage.getItem('userData');
+    if (userDataStr) {
+      const userData = JSON.parse(userDataStr);
+      return userData.role === 'admin';
+    }
+    return false;
+  } catch (error) {
+    console.error('Error checking admin role:', error);
+    return false;
+  }
+};
+
+// Check if user has specific role
+export const hasRole = (role: 'admin' | 'user'): boolean => {
+  try {
+    const userDataStr = localStorage.getItem('userData');
+    if (userDataStr) {
+      const userData = JSON.parse(userDataStr);
+      return userData.role === role;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error checking user role:', error);
+    return false;
   }
 };
