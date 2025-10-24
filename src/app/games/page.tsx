@@ -229,7 +229,7 @@ function CardLayout({ games, filterKeyword }: LayoutProps) {
 
 function ListLayout({ games, filterKeyword }: LayoutProps) {
   if (filterKeyword !== "") {
-    games.filter(({ gameName }) => gameName.includes(filterKeyword));
+    games = games.filter(({ gameName }) => gameName.includes(filterKeyword));
   }
 
   return (
