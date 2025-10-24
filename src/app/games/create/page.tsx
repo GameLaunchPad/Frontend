@@ -5,12 +5,7 @@ import GameHeading from "../game-heading";
 import React, { useState, useEffect } from "react";
 import { CloudUpload, LooksOne, LooksTwo } from "@mui/icons-material";
 import Image from "next/image";
-
-class PlatformSupport {
-    android: boolean = false;
-    ios: boolean = false;
-    web: boolean = false;
-}
+import { PlatformSupport } from "../page";
 
 interface FirstPageProps {
     gameName: string;

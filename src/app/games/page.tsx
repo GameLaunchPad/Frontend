@@ -30,9 +30,25 @@ export default function GamePad() {
   );
 }
 
+export class PlatformSupport {
+  android = false;
+  ios = false;
+  web = false;
+}
+
+class GameInfo {
+  constructor(
+    public gameName = "",
+    public downloads = 0,
+    public rating = 0.0,
+    public version = "",
+    public platforms = new PlatformSupport()
+  ) { }
+}
+
 // function EdgeDrawer() {
 //   const drawerWidth = 240;
-
+//
 //   return (
 //     <Drawer
 //       variant="permanent"
@@ -97,6 +113,11 @@ export default function GamePad() {
 function GameDashboard() {
   enum Layout { Card, List };
   const [layout, setLayout] = useState(Layout.Card);
+  const games = [
+    new GameInfo("Genshin Impact", 17348, 4.7, "6.1.0", { android: true, ios: true, web: false }),
+    new GameInfo("Prince of Persia: The Lost Crown", 16253, 4.6, "1.1.0", { android: true, ios: true, web: false }),
+    new GameInfo("Call of Duty", 3275, 4.4, "1.0.52", { android: true, ios: true, web: true }),
+  ];
 
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
@@ -175,52 +196,67 @@ function GameDashboard() {
         </Grid>
       </Box>
       <Box mt={4}>
-        {layout == Layout.Card ? <CardLayout /> : <ListLayout />}
+        {layout == Layout.Card ? <CardLayout games={games} /> : <ListLayout games={games} />}
       </Box>
     </Box>
   );
 }
 
-function CardLayout() {
+interface LayoutProps {
+  games: GameInfo[]
+}
+
+function CardLayout({ games }: LayoutProps) {
   return (
-    <Grid container spacing={2} columns={3}>
-      <GameCard />
+    <Grid container spacing={2}>
+      {games.map((game) =>
+        <Grid size={4}>
+          <GameCard gameInfo={game} />
+        </Grid>
+      )}
     </Grid>
   );
 }
 
-function ListLayout() {
+function ListLayout({ games }: LayoutProps) {
   return (
     <List>
-      <ListItem>
-        <ListItemText primary="Game Name" secondary="N/A Downloads, N/A Rating, N/A Version" />
-        <ListItemText secondary="Android" />
-        <ButtonGroup variant="text">
-          <Button>View</Button>
-          <Button>Edit</Button>
-          <Button>Statistics</Button>
-        </ButtonGroup>
-      </ListItem>
+      {games.map(({ gameName, downloads, rating, version, platforms }) => (
+        <ListItem>
+          <ListItemText primary={gameName} secondary={`${downloads} Downloads, ${rating} Rating, Version ${version}`} />
+          <Box>
+            {platforms.android && <Chip label="Android" sx={{ marginRight: 1 }} />}
+            {platforms.ios && <Chip label="iOS" sx={{ marginRight: 1 }} />}
+            {platforms.web && <Chip label="Web" sx={{ marginRight: 1 }} />}
+          </Box>
+          <ButtonGroup variant="text">
+            <Button>View</Button>
+            <Button>Edit</Button>
+            <Button>Statistics</Button>
+          </ButtonGroup>
+        </ListItem>))}
     </List>
   );
 }
 
-function GameCard() {
+function GameCard({ gameInfo }: { gameInfo: GameInfo }) {
   return (
     <Card sx={{ minWidth: 400, paddingLeft: 2, paddingRight: 2 }}>
       <CardMedia sx={{ height: 140 }} />
       <Chip label="Released" color="success" sx={{ position: 'sticky', bottom: '90%', left: '100%', zIndex: '1' }} />
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
-          Game Name
+          {gameInfo.gameName}
         </Typography>
       </CardContent>
-      <Chip label="Android" />
+      {gameInfo.platforms.android && <Chip label="Android" sx={{ marginRight: 1 }} />}
+      {gameInfo.platforms.ios && <Chip label="iOS" sx={{ marginRight: 1 }} />}
+      {gameInfo.platforms.web && <Chip label="Web" sx={{ marginRight: 1 }} />}
       <Grid mt={2} container spacing={2} justifyContent="center">
         <Card sx={{ flex: 1.5 }}>
           <CardContent>
             <Typography variant="h5" component="div">
-              N/A
+              {gameInfo.downloads}
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
               Downloads
@@ -230,7 +266,7 @@ function GameCard() {
         <Card sx={{ flex: 1.5 }}>
           <CardContent>
             <Typography variant="h5" component="div">
-              N/A
+              {gameInfo.rating}
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
               Rating
@@ -240,7 +276,7 @@ function GameCard() {
         <Card sx={{ flex: 1.5 }}>
           <CardContent>
             <Typography variant="h5" component="div">
-              N/A
+              {gameInfo.version}
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
               Version
