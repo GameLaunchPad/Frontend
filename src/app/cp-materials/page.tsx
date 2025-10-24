@@ -169,46 +169,21 @@ export default function CPMaterialsPage() {
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3, minHeight: '100vh', bgcolor: 'grey.50' }}>
       <Box sx={{ maxWidth: 'xl', mx: 'auto' }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-          Upload Materials / Submit for Review
-        </Typography>
+        {/* Header with Back Button */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
+          <Button 
+            variant="outlined" 
+            color="primary"
+            href="/cp-info"
+          >
+            Material Management
+          </Button>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+            Upload Materials / Submit for Review
+          </Typography>
+        </Box>
         
         <Paper elevation={1} sx={{ borderRadius: 2 }}>
-          {/* Top button bar */}
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            p: 3, 
-            borderBottom: 1, 
-            borderColor: 'divider' 
-          }}>
-            <Button variant="outlined" color="primary">
-              Material Management
-            </Button>
-            
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button 
-                variant="outlined"
-                onClick={() => handleSubmit(SubmitMode.SubmitDraft)}
-                disabled={submitting}
-                startIcon={submitting ? <CircularProgress size={16} /> : null}
-              >
-                {submitting ? 'Processing...' : 'Save Draft'}
-              </Button>
-              <Button variant="outlined" color="primary">
-                View History
-              </Button>
-              <Button 
-                variant="contained"
-                onClick={() => handleSubmit(SubmitMode.SubmitReview)}
-                disabled={submitting}
-                startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
-              >
-                {submitting ? 'Submitting...' : 'Submit for Review'}
-              </Button>
-            </Box>
-          </Box>
 
           {/* Form Content */}
           <Box sx={{ p: 3 }}>
@@ -408,6 +383,36 @@ export default function CPMaterialsPage() {
                   </Box>
                 )}
               </Grid>
+            </Box>
+
+            {/* Bottom Action Buttons */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              gap: 2, 
+              pt: 3,
+              borderTop: 1,
+              borderColor: 'divider',
+              mt: 3
+            }}>
+              <Button 
+                variant="outlined"
+                size="large"
+                onClick={() => handleSubmit(SubmitMode.SubmitDraft)}
+                disabled={submitting}
+                startIcon={submitting ? <CircularProgress size={16} /> : null}
+              >
+                {submitting ? 'Processing...' : 'Save Draft'}
+              </Button>
+              <Button 
+                variant="contained"
+                size="large"
+                onClick={() => handleSubmit(SubmitMode.SubmitReview)}
+                disabled={submitting}
+                startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
+              >
+                {submitting ? 'Submitting...' : 'Submit for Review'}
+              </Button>
             </Box>
           </Box>
         </Paper>
