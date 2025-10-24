@@ -7,12 +7,6 @@ import type { CPInfo } from '@/types/cp-info'
 import { loadCPMaterialData, ReviewStatus } from '@/utils/localStorage'
 import { 
   Box, 
-  Drawer, 
-  List, 
-  ListItem, 
-  ListItemButton, 
-  ListItemText, 
-  Toolbar,
   Paper,
   Typography,
   Grid,
@@ -24,13 +18,11 @@ import {
   CardContent,
   Avatar,
   Divider,
-  ListItemIcon,
   InputAdornment
 } from '@mui/material'
 import { 
   Business, 
   Description, 
-  Gamepad,
   VerifiedUser,
   ContactMail,
   Phone,
