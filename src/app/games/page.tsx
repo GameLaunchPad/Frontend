@@ -119,6 +119,8 @@ function GameDashboard() {
     new GameInfo("Call of Duty", 3275, 4.4, "1.0.52", { android: true, ios: true, web: true }),
   ];
 
+  const [filterKeyword, setFilterKeyword] = useState('');
+
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <GameHeading
@@ -173,7 +175,7 @@ function GameDashboard() {
       <Box mt={4}>
         <Grid container spacing={2} sx={{ alignItems: "center" }}>
           <Grid container size="grow">
-            <TextField label="Search a game" />
+            <TextField label="Search a game" value={filterKeyword} onChange={(e) => setFilterKeyword(e.target.value)} />
             <TextField select label="Status" sx={{ width: '20ch' }}>
               <MenuItem>
                 All Status
@@ -196,21 +198,28 @@ function GameDashboard() {
         </Grid>
       </Box>
       <Box mt={4}>
-        {layout == Layout.Card ? <CardLayout games={games} /> : <ListLayout games={games} />}
+        {layout == Layout.Card
+          ? <CardLayout games={games} filterKeyword={filterKeyword} />
+          : <ListLayout games={games} filterKeyword={filterKeyword} />}
       </Box>
     </Box>
   );
 }
 
 interface LayoutProps {
-  games: GameInfo[]
+  games: GameInfo[];
+  filterKeyword: string;
 }
 
-function CardLayout({ games }: LayoutProps) {
+function CardLayout({ games, filterKeyword }: LayoutProps) {
+  if (filterKeyword !== "") {
+    games = games.filter(({ gameName }) => gameName.includes(filterKeyword));
+  }
+
   return (
     <Grid container spacing={2}>
       {games.map((game) =>
-        <Grid size={4}>
+        <Grid key={game.gameName} size={4}>
           <GameCard gameInfo={game} />
         </Grid>
       )}
@@ -218,11 +227,15 @@ function CardLayout({ games }: LayoutProps) {
   );
 }
 
-function ListLayout({ games }: LayoutProps) {
+function ListLayout({ games, filterKeyword }: LayoutProps) {
+  if (filterKeyword !== "") {
+    games.filter(({ gameName }) => gameName.includes(filterKeyword));
+  }
+
   return (
     <List>
       {games.map(({ gameName, downloads, rating, version, platforms }) => (
-        <ListItem>
+        <ListItem key={gameName}>
           <ListItemText primary={gameName} secondary={`${downloads} Downloads, ${rating} Rating, Version ${version}`} />
           <Box>
             {platforms.android && <Chip label="Android" sx={{ marginRight: 1 }} />}
