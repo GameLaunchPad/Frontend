@@ -1,11 +1,11 @@
 "use client";
 
-import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
-import GameHeading from "../game-heading";
+import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography, Alert, CircularProgress } from "@mui/material";
 import React, { useState, useEffect } from "react";
-import { CloudUpload, LooksOne, LooksTwo } from "@mui/icons-material";
+import { CloudUpload, LooksOne, LooksTwo, Gamepad, ArrowBack, Android, Apple, Language as WebIcon, Info, Image as ImageIcon, Code, NoteAdd, CheckCircle, Save } from "@mui/icons-material";
 import Image from "next/image";
 import { PlatformSupport } from "../page";
+import { saveGameFormData, loadGameFormData, clearGameFormData } from '@/utils/gameLocalStorage';
 
 interface FirstPageProps {
     gameName: string;
@@ -14,13 +14,25 @@ interface FirstPageProps {
     onGameIntroChange: (intro: string) => void;
     avatarSrc?: string;
     onAvatarUpdate: (src: string) => void;
+    headerImage?: string;
+    onHeaderImageUpdate: (src: string) => void;
     gameType: string;
     onGameTypeChange: (type: string) => void;
     platforms: PlatformSupport,
     onPlatformChange: (platforms: PlatformSupport) => void;
+    platformConfigs: {
+        androidPackageName: string;
+        androidDownloadUrl: string;
+        iosPackageName: string;
+        iosDownloadUrl: string;
+        webUrl: string;
+    };
+    onPlatformConfigsChange: (configs: any) => void;
+    screenshots: string[];
+    onScreenshotsChange: (screenshots: string[]) => void;
 }
 
-function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, avatarSrc, onAvatarUpdate, gameType, onGameTypeChange, platforms, onPlatformChange, }: FirstPageProps) {
+function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, avatarSrc, onAvatarUpdate, headerImage, onHeaderImageUpdate, gameType, onGameTypeChange, platforms, onPlatformChange, platformConfigs, onPlatformConfigsChange, screenshots, onScreenshotsChange }: FirstPageProps) {
     return (
         <Grid container spacing={2} mt={2}>
             <Grid size={9}>
@@ -33,18 +45,65 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                         gameType={gameType}
                         onGameTypeChange={onGameTypeChange}
                     />
-                    <Paper variant="elevation" sx={{ p: 2 }}>
-                        <Typography variant="body2" sx={{ mb: 1 }}>Game Icon *</Typography>
+                    <Paper 
+                        elevation={2} 
+                        sx={{ 
+                            p: 3,
+                            borderRadius: 3,
+                            border: '1px solid',
+                            borderColor: 'grey.200'
+                        }}
+                    >
+                        <Box sx={{ mb: 3 }}>
+                            <Typography 
+                                variant="h6" 
+                                sx={{ 
+                                    fontWeight: 700, 
+                                    mb: 0.5,
+                                    color: 'primary.main',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1
+                                }}
+                            >
+                                🎮 Game Icon
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                Upload your game&apos;s icon (required)
+                            </Typography>
+                            <Divider />
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                         <UploadAvatars onAvatarUpdate={onAvatarUpdate} initialAvatarSrc={avatarSrc} />
+                            <Box>
+                                <Typography variant="body2" color="text.secondary">
+                                    Recommended size: 512x512px
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Format: PNG, JPG
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Max size: 5MB
+                                </Typography>
+                            </Box>
+                        </Box>
                     </Paper>
+                    <HeaderImageUpload 
+                        headerImage={headerImage}
+                        onHeaderImageUpdate={onHeaderImageUpdate}
+                    />
                     <SupportedPlatforms
                         platforms={platforms}
                         onPlatformChange={onPlatformChange}
+                        platformConfigs={platformConfigs}
+                        onPlatformConfigsChange={onPlatformConfigsChange}
                     />
                     {(platforms.android == true || platforms.ios == true || platforms.web == true) && <DownloadConfig platforms={platforms} />}
-                    <GameScreenshots />
+                    <GameScreenshots 
+                        screenshots={screenshots}
+                        onScreenshotsChange={onScreenshotsChange}
+                    />
                     <Artifacts platforms={platforms} />
-                    <ChangeLogs />
                 </Stack>
             </Grid>
             <Grid size={3} sx={{ position: 'sticky', top: 80, alignSelf: 'flex-start' }}>
@@ -53,8 +112,10 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                         name={gameName}
                         introduction={gameIntro}
                         avatarSrc={avatarSrc}
+                        headerImage={headerImage}
                         platforms={platforms}
                         gameType={gameType}
+                        platformConfigs={platformConfigs}
                     />
                     <Tips />
                 </Stack>
@@ -73,10 +134,81 @@ export default function NewGame() {
     const [gameName, setGameName] = useState('');
     const [gameIntro, setGameIntro] = useState('');
     const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
+    const [headerImage, setHeaderImage] = useState<string | undefined>(undefined);
     const [gameType, setGameType] = useState('');
     const [platforms, setPlatforms] = useState(new PlatformSupport());
+    const [platformConfigs, setPlatformConfigs] = useState({
+        androidPackageName: '',
+        androidDownloadUrl: '',
+        iosPackageName: '',
+        iosDownloadUrl: '',
+        webUrl: ''
+    });
+    const [screenshots, setScreenshots] = useState<string[]>([]);
 
     const [open, setOpen] = React.useState(false);
+    const [showAutoSaveHint, setShowAutoSaveHint] = useState(false);
+    const [showSaveDraftDialog, setShowSaveDraftDialog] = useState(false);
+    
+    // 从 Local Storage 加载数据
+    useEffect(() => {
+        const savedData = loadGameFormData()
+        if (savedData) {
+            setGameName(savedData.gameName)
+            setGameIntro(savedData.gameIntro)
+            setGameType(savedData.gameType)
+            setAvatarSrc(savedData.avatarSrc || undefined)
+            setHeaderImage(savedData.headerImage || undefined)
+            setPlatforms({
+                android: savedData.platforms.android,
+                ios: savedData.platforms.ios,
+                web: savedData.platforms.web
+            })
+            setPlatformConfigs({
+                androidPackageName: savedData.platformConfigs?.androidPackageName || '',
+                androidDownloadUrl: savedData.platformConfigs?.androidDownloadUrl || '',
+                iosPackageName: savedData.platformConfigs?.iosPackageName || '',
+                iosDownloadUrl: savedData.platformConfigs?.iosDownloadUrl || '',
+                webUrl: savedData.platformConfigs?.webUrl || ''
+            })
+            setScreenshots(savedData.screenshots || [])
+            console.log('📦 已从缓存恢复游戏表单数据')
+        }
+    }, [])
+    
+    // 保存表单数据到 Local Storage（防抖）
+    useEffect(() => {
+        // 显示自动保存提示
+        setShowAutoSaveHint(true)
+        
+        const timer = setTimeout(() => {
+            saveGameFormData({
+                gameName,
+                gameIntro,
+                gameType,
+                avatarSrc: avatarSrc || '',
+                headerImage: headerImage || '',
+                platforms: {
+                    android: platforms.android,
+                    ios: platforms.ios,
+                    web: platforms.web
+                },
+                platformConfigs: {
+                    androidPackageName: platformConfigs.androidPackageName,
+                    androidDownloadUrl: platformConfigs.androidDownloadUrl,
+                    iosPackageName: platformConfigs.iosPackageName,
+                    iosDownloadUrl: platformConfigs.iosDownloadUrl,
+                    webUrl: platformConfigs.webUrl
+                },
+                screenshots: screenshots,
+                savedAt: Date.now()
+            })
+            // 隐藏提示
+            setTimeout(() => setShowAutoSaveHint(false), 2000)
+        }, 500)  // 500ms 防抖
+        
+        return () => clearTimeout(timer)
+    }, [gameName, gameIntro, gameType, avatarSrc, headerImage, platforms, platformConfigs, screenshots])
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -85,17 +217,158 @@ export default function NewGame() {
     const handleClose = (confirmed: boolean) => {
         setOpen(false);
 
-        if (confirmed)
-            window.location.reload();
+        if (confirmed) {
+            // 清除 localStorage
+            clearGameFormData()
+            // 重置表单
+            setGameName('')
+            setGameIntro('')
+            setGameType('')
+            setAvatarSrc(undefined)
+            setHeaderImage(undefined)
+            setPlatforms(new PlatformSupport())
+            setPlatformConfigs({
+                androidPackageName: '',
+                androidDownloadUrl: '',
+                iosPackageName: '',
+                iosDownloadUrl: '',
+                webUrl: ''
+            })
+            setScreenshots([])
+            console.log('✅ 表单已重置，缓存已清除')
+        }
+    };
+    
+    const handleSaveDraft = () => {
+        // 手动保存草稿
+        saveGameFormData({
+            gameName,
+            gameIntro,
+            gameType,
+            avatarSrc: avatarSrc || '',
+            headerImage: headerImage || '',
+            platforms: {
+                android: platforms.android,
+                ios: platforms.ios,
+                web: platforms.web
+            },
+            platformConfigs: {
+                androidPackageName: platformConfigs.androidPackageName,
+                androidDownloadUrl: platformConfigs.androidDownloadUrl,
+                iosPackageName: platformConfigs.iosPackageName,
+                iosDownloadUrl: platformConfigs.iosDownloadUrl,
+                webUrl: platformConfigs.webUrl
+            },
+            screenshots: screenshots,
+            savedAt: Date.now()
+        })
+        setShowSaveDraftDialog(true)
     };
 
     return (
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-            <GameHeading
-                heading="New Game"
-                subheading="Game Management &gt; New Game"
-            />
-            <Divider />
+        <Box component="main" sx={{ flexGrow: 1, p: 3, minHeight: '100vh', bgcolor: 'grey.50' }}>
+            <Box sx={{ maxWidth: 'xl', mx: 'auto' }}>
+                {/* Back Button */}
+                <Button 
+                    startIcon={<ArrowBack />}
+                    variant="text" 
+                    color="primary"
+                    href="/games"
+                    sx={{ mb: 2 }}
+                >
+                    Back to My Games
+                </Button>
+                
+                {/* Beautiful Title Card */}
+                <Box sx={{ mb: 4 }}>
+                    <Card 
+                        elevation={0}
+                        sx={{ 
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: 'white',
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                            position: 'relative',
+                            '&::before': {
+                                content: '""',
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                width: '300px',
+                                height: '300px',
+                                background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                                transform: 'translate(30%, -30%)',
+                            }
+                        }}
+                    >
+                        <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                <Box
+                                    sx={{
+                                        width: 70,
+                                        height: 70,
+                                        borderRadius: 3,
+                                        bgcolor: 'rgba(255, 255, 255, 0.2)',
+                                        backdropFilter: 'blur(10px)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                                    }}
+                                >
+                                    <Gamepad sx={{ fontSize: 40, color: 'white' }} />
+                                </Box>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography 
+                                        variant="h5" 
+                                        component="h1" 
+                                        sx={{ 
+                                            fontWeight: 700,
+                                            mb: 1,
+                                            letterSpacing: '-0.5px'
+                                        }}
+                                    >
+                                        Create New Game
+                                    </Typography>
+                                    <Typography 
+                                        variant="body2" 
+                                        sx={{ 
+                                            opacity: 0.95,
+                                            fontWeight: 400 
+                                        }}
+                                    >
+                                        Submit your game to the platform and reach millions of players
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Box>
+                
+                {/* Auto-save Indicator */}
+                {showAutoSaveHint && (
+                    <Box sx={{ mb: 2 }}>
+                        <Alert 
+                            severity="success" 
+                            variant="filled"
+                            sx={{ 
+                                borderRadius: 2,
+                                py: 0.5,
+                                animation: 'fadeIn 0.3s ease-in-out',
+                                '@keyframes fadeIn': {
+                                    from: { opacity: 0, transform: 'translateY(-10px)' },
+                                    to: { opacity: 1, transform: 'translateY(0)' }
+                                },
+                                '& .MuiAlert-message': {
+                                    fontSize: '0.875rem'
+                                }
+                            }}
+                        >
+                            💾 Draft auto-saved
+                        </Alert>
+                    </Box>
+                )}
+                
             {currentPage === 1 && (
                 <FirstPage
                     gameName={gameName}
@@ -104,57 +377,240 @@ export default function NewGame() {
                     onGameIntroChange={setGameIntro}
                     avatarSrc={avatarSrc}
                     onAvatarUpdate={setAvatarSrc}
+                    headerImage={headerImage}
+                    onHeaderImageUpdate={setHeaderImage}
                     gameType={gameType}
                     onGameTypeChange={setGameType}
                     platforms={platforms}
                     onPlatformChange={setPlatforms}
+                    platformConfigs={platformConfigs}
+                    onPlatformConfigsChange={setPlatformConfigs}
+                    screenshots={screenshots}
+                    onScreenshotsChange={setScreenshots}
                 />
             )}
             {currentPage === 2 && <SecondPage />}
-            {currentPage > 2 && <Typography>Step Completed</Typography>}
-            <Grid container spacing={2} mt={4}>
-                <Grid container>
-                    <Button variant="outlined">Go Back to My Games</Button>
-                    <Button variant="outlined">Save Draft</Button>
-                </Grid>
-                <Grid size="grow">
-                </Grid>
-                <Grid container>
+            {currentPage > 2 && (
+                <Alert severity="success" sx={{ mt: 3 }}>
+                    <Typography variant="h6">✅ Step Completed</Typography>
+                </Alert>
+            )}
+            
+            {/* Bottom Action Buttons */}
+            <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 2, 
+                pt: 4,
+                borderTop: '2px solid',
+                borderColor: 'divider',
+                mt: 5
+            }}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
                     <Button
                         variant="outlined"
+                        startIcon={<ArrowBack />}
+                        href="/games"
+                        sx={{
+                            borderRadius: 2,
+                            px: 2.5,
+                            py: 1.2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.9rem'
+                        }}
+                    >
+                        Go Back to My Games
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="error"
                         onClick={handleClickOpen}
+                        sx={{
+                            borderRadius: 2,
+                            px: 2.5,
+                            py: 1.2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.9rem'
+                        }}
                     >
                         Reset Form
                     </Button>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button 
+                        variant="outlined"
+                        onClick={handleSaveDraft}
+                        startIcon={<Save />}
+                        sx={{
+                            borderRadius: 2,
+                            px: 2.5,
+                            py: 1.2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.9rem'
+                        }}
+                    >
+                        Save Draft
+                    </Button>
                     <Dialog
                         open={open}
-                        onClose={handleClose}
-                        aria-labelledby="alert-dialog-title"
-                        aria-describedby="alert-dialog-description"
+                        onClose={() => handleClose(false)}
+                        maxWidth="sm"
+                        fullWidth
+                        PaperProps={{
+                            sx: {
+                                borderRadius: 3,
+                                p: 2
+                            }
+                        }}
                     >
-                        <DialogTitle id="alert-dialog-title">
-                            {"Discard changes?"}
+                        <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+                            <Typography variant="h6" fontWeight={700} color="error.main">
+                                Discard Changes?
+                            </Typography>
                         </DialogTitle>
                         <DialogContent>
-                            <DialogContentText id="alert-dialog-description">
-                                Changes on this page will not be saved.
+                            <DialogContentText sx={{ textAlign: 'center', py: 2 }}>
+                                All changes on this page will not be saved. This action cannot be undone.
                             </DialogContentText>
                         </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => handleClose(false)}>Cancel</Button>
-                            <Button onClick={() => handleClose(true)} autoFocus>
-                                Confirm
+                        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+                            <Button 
+                                onClick={() => handleClose(false)}
+                                variant="outlined"
+                                sx={{
+                                    borderRadius: 2,
+                                    px: 4,
+                                    py: 1,
+                                    textTransform: 'none',
+                                    fontWeight: 600
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                                onClick={() => handleClose(true)} 
+                                variant="contained"
+                                color="error"
+                                sx={{
+                                    borderRadius: 2,
+                                    px: 4,
+                                    py: 1,
+                                    textTransform: 'none',
+                                    fontWeight: 600
+                                }}
+                            >
+                                Confirm Reset
                             </Button>
                         </DialogActions>
                     </Dialog>
                     <Button
                         variant="contained"
+                        startIcon={<CheckCircle />}
                         onClick={() => setCurrentPage((page) => page + 1)}
+                        sx={{
+                            borderRadius: 2,
+                            px: 3,
+                            py: 1.2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.95rem',
+                            minWidth: 160,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            boxShadow: 3,
+                            '&:hover': {
+                                boxShadow: 6,
+                            }
+                        }}
                     >
-                        Submit
+                        Submit Game
                     </Button>
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
+            
+            {/* 保存草稿成功弹窗 */}
+            <Dialog
+                open={showSaveDraftDialog}
+                onClose={() => setShowSaveDraftDialog(false)}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        p: 2
+                    }
+                }}
+            >
+                <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <Box
+                            sx={{
+                                width: 70,
+                                height: 70,
+                                borderRadius: '50%',
+                                bgcolor: 'info.light',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                animation: 'bounce 1s ease-in-out',
+                                '@keyframes bounce': {
+                                    '0%, 100%': { transform: 'translateY(0)' },
+                                    '50%': { transform: 'translateY(-10px)' }
+                                }
+                            }}
+                        >
+                            <Save sx={{ fontSize: 40, color: 'info.main' }} />
+                        </Box>
+                        <Typography variant="h6" fontWeight={700} color="info.main">
+                            Draft Saved!
+                        </Typography>
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="body1" paragraph>
+                            Your game draft has been saved successfully.
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" paragraph>
+                            You can continue editing and submit when you&apos;re ready.
+                        </Typography>
+                        <Alert severity="info" sx={{ mt: 2, textAlign: 'left' }}>
+                            <Typography variant="body2">
+                                💡 Your draft is automatically saved. You can access it anytime by returning to this page.
+                            </Typography>
+                        </Alert>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+                    <Button
+                        variant="outlined"
+                        onClick={() => setShowSaveDraftDialog(false)}
+                        sx={{
+                            borderRadius: 2,
+                            px: 4,
+                            py: 1
+                        }}
+                    >
+                        Continue Editing
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={() => setShowSaveDraftDialog(false)}
+                        sx={{
+                            borderRadius: 2,
+                            px: 4,
+                            py: 1,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        }}
+                    >
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            </Box>
         </Box>
     );
 }
@@ -170,21 +626,57 @@ interface BasicInfoProps {
 
 function BasicInfo({ gameName, onGameNameChange, gameIntro, onGameIntroChange, gameType, onGameTypeChange }: BasicInfoProps) {
     return (
-        <Paper variant="elevation" sx={{ flex: 3, p: 2 }}>
-            <Typography variant="h6">Basic Information</Typography>
-            <Grid container component="form" spacing={3} mt={2}>
+        <Paper 
+            elevation={2} 
+            sx={{ 
+                flex: 3, 
+                p: 3,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.200'
+            }}
+        >
+            {/* Section Title */}
+            <Box sx={{ mb: 3 }}>
+                <Typography 
+                    variant="h6" 
+                    sx={{ 
+                        fontWeight: 700, 
+                        mb: 0.5,
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}
+                >
+                    📋 Basic Information
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Enter your game&apos;s name, type, and introduction
+                </Typography>
+                <Divider />
+            </Box>
+            <Grid container component="form" spacing={3}>
+                <Grid size={{ xs: 12, md: 7 }}>
                 <TextField
-                    label="Name"
-                    sx={{ width: '50ch' }}
+                        label="Game Name"
+                        fullWidth
                     value={gameName}
                     onChange={(e) => onGameNameChange(e.target.value)}
+                        placeholder="Enter your game name"
+                        required
+                        helperText="* Required field"
                 />
+                </Grid>
+                <Grid size={{ xs: 12, md: 5 }}>
                 <TextField
                     select
-                    label="Type"
-                    sx={{ width: '30ch' }}
+                        label="Game Type"
+                        fullWidth
                     value={gameType}
                     onChange={(e) => onGameTypeChange(e.target.value)}
+                        required
+                        helperText="* Required field"
                     SelectProps={{
                         MenuProps: {
                             PaperProps: {
@@ -220,14 +712,18 @@ function BasicInfo({ gameName, onGameNameChange, gameIntro, onGameIntroChange, g
                     <MenuItem value="Stealth">Stealth</MenuItem>
                     <MenuItem value="Survival">Survival</MenuItem>
                 </TextField>
+                </Grid>
+                <Grid size={12}>
                 <TextField
                     fullWidth
                     multiline
-                    label="Introduction"
+                        label="Game Introduction"
                     minRows={5}
                     value={gameIntro}
                     onChange={(e) => onGameIntroChange(e.target.value)}
+                        placeholder="Describe your game, gameplay features, and what makes it unique..."
                 />
+                </Grid>
             </Grid>
         </Paper>
     );
@@ -237,24 +733,244 @@ interface LivePreviewProps {
     name: string;
     introduction: string;
     avatarSrc?: string;
+    headerImage?: string;
     platforms: PlatformSupport;
     gameType: string;
+    platformConfigs: {
+        androidPackageName: string;
+        androidDownloadUrl: string;
+        iosPackageName: string;
+        iosDownloadUrl: string;
+        webUrl: string;
+    };
 }
 
-function LivePreview({ name, introduction, avatarSrc, platforms, gameType }: LivePreviewProps) {
+function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, gameType, platformConfigs }: LivePreviewProps) {
     return (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2, alignContent: 'center', justifyItems: 'center' }}>
-            <Typography variant="h6">Live Preview</Typography>
-            <Avatar src={avatarSrc} sx={{ width: 80, height: 80, m: 2 }} />
-            <Typography variant="h6">{name || 'Name'}</Typography>
-            <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
-                {gameType || 'Type'}
-            </Typography>
-            <Typography variant="body1">{introduction || 'Introduction'}</Typography>
-            <Box mt={2}>
-                {platforms.android && <Chip label="Android" size="small" sx={{ mr: 0.5 }} />}
-                {platforms.ios && <Chip label="iOS" size="small" sx={{ mr: 0.5 }} />}
-                {platforms.web && <Chip label="Web" size="small" />}
+        <Paper 
+            elevation={3} 
+            sx={{ 
+                flex: 1,
+                borderRadius: 3,
+                border: '2px solid',
+                borderColor: 'primary.main',
+                bgcolor: 'background.paper',
+                overflow: 'hidden'
+            }}
+        >
+            {/* Header */}
+            <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 2, textAlign: 'center' }}>
+                <Typography 
+                    variant="subtitle1" 
+                    sx={{ 
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 1
+                    }}
+                >
+                    👁️ Live Preview
+                </Typography>
+            </Box>
+
+            {/* Header Image */}
+            {headerImage ? (
+                <Box 
+                    sx={{ 
+                        width: '100%', 
+                        height: 140,
+                        position: 'relative' as const,
+                        bgcolor: 'grey.200'
+                    }}
+                >
+                    <Box
+                        component="img"
+                        src={headerImage}
+                        alt="Game Header"
+                        sx={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            display: 'block'
+                        }}
+                    />
+                </Box>
+            ) : (
+                <Box 
+                    sx={{ 
+                        width: '100%', 
+                        height: 140,
+                        bgcolor: 'grey.200',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <Typography variant="caption" color="text.secondary">
+                        Header Image Preview
+                    </Typography>
+                </Box>
+            )}
+
+            {/* Content */}
+            <Box sx={{ p: 2.5 }}>
+                {/* Game Icon & Title */}
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Avatar 
+                        src={avatarSrc} 
+                        variant="rounded"
+                        sx={{ 
+                            width: 60, 
+                            height: 60,
+                            border: '2px solid',
+                            borderColor: avatarSrc ? 'primary.main' : 'grey.300',
+                            boxShadow: avatarSrc ? 2 : 0
+                        }} 
+                    />
+                    <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5, lineHeight: 1.2 }}>
+                            {name || 'Game Name'}
+                        </Typography>
+                        <Chip 
+                            label={gameType || 'Type'} 
+                            size="small"
+                            color="primary"
+                            sx={{ fontSize: '0.7rem', height: 20 }}
+                        />
+                    </Box>
+                </Box>
+
+                {/* Start Game Button */}
+                <Button 
+                    variant="contained" 
+                    fullWidth
+                    disabled
+                    sx={{ 
+                        mb: 2,
+                        py: 1.2,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    }}
+                >
+                    Start Game
+                </Button>
+
+                {/* Tabs */}
+                <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Chip label="All" size="small" color="primary" sx={{ borderRadius: 1 }} />
+                        <Chip label="Videos" size="small" variant="outlined" sx={{ borderRadius: 1 }} />
+                        <Chip label="Info" size="small" variant="outlined" sx={{ borderRadius: 1 }} />
+                    </Box>
+                </Box>
+
+                {/* Game Introduction */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" fontWeight={700} color="text.primary" sx={{ mb: 0.5, display: 'block' }}>
+                        Game Introduction
+                    </Typography>
+                    <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ 
+                            fontSize: '0.8rem',
+                            lineHeight: 1.5,
+                            minHeight: 60,
+                            maxHeight: 120,
+                            overflow: 'auto'
+                        }}
+                    >
+                        {introduction || 'Game introduction will appear here...'}
+                    </Typography>
+                </Box>
+
+                <Divider sx={{ mb: 2 }} />
+
+                {/* Platforms */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" fontWeight={700} color="text.primary" sx={{ mb: 1, display: 'block' }}>
+                        Available Platforms
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        {platforms.android && (
+                            <Chip 
+                                icon={<Android />}
+                                label="Android" 
+                                size="small" 
+                                color="success"
+                                variant="filled"
+                                sx={{ fontSize: '0.7rem' }}
+                            />
+                        )}
+                        {platforms.ios && (
+                            <Chip 
+                                icon={<Apple />}
+                                label="iOS" 
+                                size="small" 
+                                color="primary"
+                                variant="filled"
+                                sx={{ fontSize: '0.7rem' }}
+                            />
+                        )}
+                        {platforms.web && (
+                            <Chip 
+                                icon={<WebIcon />}
+                                label="Web" 
+                                size="small" 
+                                color="info"
+                                variant="filled"
+                                sx={{ fontSize: '0.7rem' }}
+                            />
+                        )}
+                        {!platforms.android && !platforms.ios && !platforms.web && (
+                            <Typography variant="caption" color="text.secondary">
+                                No platform selected
+                            </Typography>
+                        )}
+                    </Box>
+                </Box>
+
+                {/* Download Info */}
+                {(platformConfigs.androidDownloadUrl || platformConfigs.iosDownloadUrl || platformConfigs.webUrl) && (
+                    <>
+                        <Divider sx={{ mb: 2 }} />
+                        <Box>
+                            <Typography variant="caption" fontWeight={700} color="text.primary" sx={{ mb: 1, display: 'block' }}>
+                                Download Links
+                            </Typography>
+                            <Stack spacing={0.5}>
+                                {platformConfigs.androidDownloadUrl && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <Android sx={{ fontSize: 14, color: 'success.main' }} />
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                            Google Play
+                                        </Typography>
+                                    </Box>
+                                )}
+                                {platformConfigs.iosDownloadUrl && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <Apple sx={{ fontSize: 14, color: 'primary.main' }} />
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                            App Store
+                                        </Typography>
+                                    </Box>
+                                )}
+                                {platformConfigs.webUrl && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <WebIcon sx={{ fontSize: 14, color: 'info.main' }} />
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                            Web Version
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Stack>
+                        </Box>
+                    </>
+                )}
             </Box>
         </Paper>
     );
@@ -263,6 +979,226 @@ function LivePreview({ name, introduction, avatarSrc, platforms, gameType }: Liv
 interface UploadAvatarsProps {
     onAvatarUpdate: (src: string) => void;
     initialAvatarSrc?: string;
+}
+
+interface HeaderImageUploadProps {
+    headerImage?: string;
+    onHeaderImageUpdate: (src: string) => void;
+}
+
+function HeaderImageUpload({ headerImage, onHeaderImageUpdate }: HeaderImageUploadProps) {
+    const [previewSrc, setPreviewSrc] = useState<string | undefined>(headerImage);
+
+    useEffect(() => {
+        setPreviewSrc(headerImage);
+    }, [headerImage]);
+
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            // Validate file size (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Header image file size should not exceed 10MB')
+                return
+            }
+            
+            // Convert to base64 for local preview
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = reader.result as string;
+                setPreviewSrc(result);
+                onHeaderImageUpdate(result);
+                console.log('✅ Header image uploaded (base64 preview)')
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    return (
+        <Paper 
+            elevation={2} 
+            sx={{ 
+                p: 3,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.200'
+            }}
+        >
+            <Box sx={{ mb: 3 }}>
+                <Typography 
+                    variant="h6" 
+                    sx={{ 
+                        fontWeight: 700, 
+                        mb: 0.5,
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}
+                >
+                    🖼️ Header Image
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Upload a header image for your game&apos;s detail page
+                </Typography>
+                <Divider />
+            </Box>
+            
+            {/* Preview or Upload Area */}
+            {!previewSrc ? (
+                <Card 
+                    variant="outlined" 
+                    sx={{ 
+                        border: '3px dashed',
+                        borderColor: 'grey.300',
+                        textAlign: 'center',
+                        p: 4,
+                        bgcolor: 'grey.50',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            borderColor: 'primary.main',
+                            bgcolor: 'primary.50',
+                        }
+                    }}
+                >
+                    <CardContent>
+                        <ImageIcon 
+                            sx={{ 
+                                fontSize: 56, 
+                                color: 'primary.main', 
+                                mb: 2,
+                                opacity: 0.6 
+                            }} 
+                        />
+                        <input 
+                            type="file"
+                            id="header-upload"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            style={{ display: 'none' }}
+                        />
+                        <Button
+                            variant="contained"
+                            component="label"
+                            htmlFor="header-upload"
+                            startIcon={<CloudUpload />}
+                            size="large"
+                            sx={{
+                                mb: 2,
+                                py: 1.5,
+                                px: 4,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '1rem'
+                            }}
+                        >
+                            Upload Header Image
+                        </Button>
+                        <Typography variant="body1" color="text.primary" gutterBottom fontWeight={500}>
+                            Click to upload header image
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Supports JPG, PNG formats • Max 10MB
+                        </Typography>
+                    </CardContent>
+                </Card>
+            ) : (
+                <Box>
+                    {/* Preview Area */}
+                    <Box 
+                        sx={{ 
+                            width: '100%', 
+                            height: 280,
+                            borderRadius: 2,
+                            overflow: 'hidden',
+                            mb: 2,
+                            border: '3px solid',
+                            borderColor: 'primary.main',
+                            boxShadow: 4,
+                            position: 'relative' as const,
+                            bgcolor: 'grey.100'
+                        }}
+                    >
+                        <Box
+                            component="img"
+                            src={previewSrc}
+                            alt="Header Preview"
+                            sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                display: 'block'
+                            }}
+                        />
+                        {/* Success Badge */}
+                        <Chip
+                            icon={<CheckCircle />}
+                            label="Uploaded"
+                            color="success"
+                            sx={{
+                                position: 'absolute',
+                                top: 12,
+                                right: 12,
+                                fontWeight: 700
+                            }}
+                        />
+                    </Box>
+                    
+                    {/* Action Buttons */}
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                        <input 
+                            type="file"
+                            id="header-upload"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            style={{ display: 'none' }}
+                        />
+                        <Button
+                            variant="outlined"
+                            component="label"
+                            htmlFor="header-upload"
+                            startIcon={<CloudUpload />}
+                            sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.9rem',
+                                px: 3,
+                                py: 1
+                            }}
+                        >
+                            Change Image
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => {
+                                setPreviewSrc(undefined)
+                                onHeaderImageUpdate('')
+                            }}
+                            sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.9rem',
+                                px: 3,
+                                py: 1
+                            }}
+                        >
+                            Remove
+                        </Button>
+                    </Box>
+                </Box>
+            )}
+            
+            {previewSrc && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block', textAlign: 'center' }}>
+                    💡 Recommended: 16:9 aspect ratio (e.g., 1920x1080px), JPG or PNG format, max 10MB
+                </Typography>
+            )}
+        </Paper>
+    );
 }
 
 function UploadAvatars({ onAvatarUpdate, initialAvatarSrc }: UploadAvatarsProps) {
@@ -275,31 +1211,56 @@ function UploadAvatars({ onAvatarUpdate, initialAvatarSrc }: UploadAvatarsProps)
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Icon file size should not exceed 5MB')
+                return
+            }
+            
+            // Convert to base64 for local preview
             const reader = new FileReader();
             reader.onload = () => {
                 const result = reader.result as string;
                 setPreviewSrc(result);
                 onAvatarUpdate(result);
+                console.log('✅ Game icon uploaded (base64 preview)')
             };
             reader.readAsDataURL(file);
         }
     };
 
     return (
+        <Box sx={{ position: 'relative', display: 'inline-block' }}>
         <ButtonBase
             component="label"
             role={undefined}
-            tabIndex={-1} // prevent label from tab focus
+                tabIndex={-1}
             aria-label="Avatar image"
             sx={{
-                borderRadius: '40px',
+                    borderRadius: 3,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                        transform: 'scale(1.05)',
+                    },
                 '&:has(:focus-visible)': {
-                    outline: '2px solid',
-                    outlineOffset: '2px',
+                        outline: '3px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '4px',
                 },
             }}
         >
-            <Avatar alt="Upload new avatar" src={previewSrc} sx={{ width: 80, height: 80 }} />
+                <Avatar 
+                    alt="Upload new avatar" 
+                    src={previewSrc} 
+                    sx={{ 
+                        width: 100, 
+                        height: 100,
+                        border: '3px solid',
+                        borderColor: previewSrc ? 'primary.main' : 'grey.300',
+                        boxShadow: previewSrc ? 3 : 0,
+                        transition: 'all 0.3s ease'
+                    }} 
+                />
             <input
                 type="file"
                 accept="image/*"
@@ -317,78 +1278,340 @@ function UploadAvatars({ onAvatarUpdate, initialAvatarSrc }: UploadAvatarsProps)
                 onChange={handleAvatarChange}
             />
         </ButtonBase>
+            <Chip
+                label="Click to upload"
+                size="small"
+                color="primary"
+                sx={{
+                    position: 'absolute',
+                    bottom: -10,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    fontWeight: 600,
+                    fontSize: '0.7rem'
+                }}
+            />
+        </Box>
     );
 }
 
-function GameScreenshots() {
+interface GameScreenshotsProps {
+    screenshots: string[];
+    onScreenshotsChange: (screenshots: string[]) => void;
+}
+
+function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsProps) {
+    const [uploading, setUploading] = useState(false);
+
+    const handleScreenshotsChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        setUploading(true);
+
+        try {
+            const newScreenshots: string[] = [];
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Validate file size (5MB per screenshot)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`Screenshot ${file.name} exceeds 5MB`);
+                    continue;
+                }
+                
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    alert(`File ${file.name} is not an image`);
+                    continue;
+                }
+                
+                // Convert to base64
+                const reader = new FileReader();
+                const base64Promise = new Promise<string>((resolve) => {
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.readAsDataURL(file);
+                });
+                
+                const base64 = await base64Promise;
+                newScreenshots.push(base64);
+            }
+            
+            onScreenshotsChange([...screenshots, ...newScreenshots]);
+            console.log(`✅ Uploaded ${newScreenshots.length} screenshot(s)`);
+        } catch (error) {
+            console.error('Screenshot upload failed:', error);
+            alert('Screenshot upload failed, please retry');
+        } finally {
+            setUploading(false);
+            // Reset input
+            event.target.value = '';
+        }
+    };
+
+    const handleRemoveScreenshot = (index: number) => {
+        onScreenshotsChange(screenshots.filter((_, i) => i !== index));
+    };
+
     return (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-            <Typography variant="h6" gutterBottom>Game Screenshots</Typography>
-            <Button
+        <Paper 
+            elevation={2} 
+            sx={{ 
+                flex: 1, 
+                p: 3,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.200'
+            }}
+        >
+            <Box sx={{ mb: 3 }}>
+                <Typography 
+                    variant="h6" 
+                    sx={{ 
+                        fontWeight: 700, 
+                        mb: 0.5,
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}
+                >
+                    📸 Game Screenshots
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Upload screenshots to showcase your game ({screenshots.length} uploaded)
+                </Typography>
+                <Divider />
+            </Box>
+            
+            {/* Upload Button */}
+            <Card 
                 variant="outlined"
+                sx={{ 
+                    border: '3px dashed',
+                    borderColor: screenshots.length > 0 ? 'primary.main' : 'grey.300',
+                    textAlign: 'center',
+                    p: 4,
+                    bgcolor: screenshots.length > 0 ? 'primary.50' : 'grey.50',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                        borderColor: 'primary.main',
+                        bgcolor: 'primary.50',
+                    }
+                }}
+            >
+                <CardContent>
+                    <ImageIcon 
+                        sx={{ 
+                            fontSize: 56, 
+                            color: 'primary.main', 
+                            mb: 2,
+                            opacity: 0.6 
+                        }} 
+                    />
+                    <input 
+                        type="file"
+                        id="screenshots-upload"
+                        accept="image/*"
+                        multiple
+                        onChange={handleScreenshotsChange}
+                        style={{ display: 'none' }}
+                    />
+                    <Button
+                        variant="contained"
                 color="primary"
                 component="label"
-                startIcon={<CloudUpload />}
-                sx={{ width: '100%' }}
-            >
-                Upload Game Screenshots
-                <Input type="file" hidden />
+                        htmlFor="screenshots-upload"
+                        startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
+                        disabled={uploading}
+                        size="large"
+                        sx={{ 
+                            mb: 2,
+                            py: 1.5,
+                            px: 4,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '1rem'
+                        }}
+                    >
+                        {uploading ? 'Uploading...' : 'Choose Screenshots to Upload'}
             </Button>
-            <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                {['game_screenshot_1.png', 'game_screenshot_2.png', 'game_screenshot_3.png'].map((file, idx) => (
-                    <Grid key={idx}>
-                        <Card>
-                            <CardContent>
-                                <Image width={100} height={100} src={`/${file}`} alt={`Screenshot ${idx + 1}`} style={{ width: '100%' }} />
-                                <Typography variant="body2" align="center" color="textSecondary">
-                                    {file}
+                    <Typography variant="body1" color="text.primary" gutterBottom fontWeight={500}>
+                        Click to upload or drag files to this area
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Supports JPG, PNG formats • Max 5MB per file
                                 </Typography>
+                </CardContent>
+            </Card>
+            
+            {/* Screenshots Grid */}
+            {screenshots.length > 0 && (
+                <Box sx={{ mt: 3 }}>
+                    <Typography 
+                        variant="subtitle2" 
+                        fontWeight={600}
+                        color="text.primary"
+                        sx={{ mb: 2 }}
+                    >
+                        📎 Uploaded Screenshots ({screenshots.length})
+                    </Typography>
+                    <Grid container spacing={2}>
+                        {screenshots.map((screenshot, idx) => (
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={idx}>
+                                <Card 
+                                    variant="outlined"
+                                    sx={{
+                                        position: 'relative' as const,
+                                        transition: 'all 0.3s ease',
+                                        border: '2px solid',
+                                        borderColor: 'grey.200',
+                                        '&:hover': {
+                                            boxShadow: 4,
+                                            borderColor: 'primary.main',
+                                            transform: 'translateY(-4px)'
+                                        }
+                                    }}
+                                >
+                                    <Box 
+                                        sx={{ 
+                                            width: '100%', 
+                                            height: 180,
+                                            overflow: 'hidden',
+                                            bgcolor: 'grey.100',
+                                            position: 'relative' as const
+                                        }}
+                                    >
+                                        <Box
+                                            component="img"
+                                            src={screenshot}
+                                            alt={`Screenshot ${idx + 1}`}
+                                            sx={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                display: 'block'
+                                            }}
+                                        />
+                                        {/* Screenshot Number Badge */}
+                                        <Chip
+                                            label={`#${idx + 1}`}
+                                            size="small"
+                                            color="primary"
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 8,
+                                                left: 8,
+                                                fontWeight: 700
+                                            }}
+                                        />
+                                    </Box>
+                                    <CardContent sx={{ p: 1.5, bgcolor: 'background.paper' }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                                                Screenshot {idx + 1}
+                                            </Typography>
+                                            <Button
+                                                size="small"
+                                                color="error"
+                                                variant="outlined"
+                                                onClick={() => handleRemoveScreenshot(idx)}
+                                                sx={{
+                                                    minWidth: 'auto',
+                                                    px: 1.5,
+                                                    py: 0.5,
+                                                    fontSize: '0.75rem',
+                                                    borderRadius: 1.5,
+                                                    textTransform: 'none',
+                                                    fontWeight: 600
+                                                }}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </Box>
                             </CardContent>
                         </Card>
                     </Grid>
                 ))}
-            </Grid>
+                    </Grid>
+                </Box>
+            )}
+            
+            {screenshots.length === 0 && (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                    <Typography variant="body2">
+                        💡 Tip: Upload 3-6 high-quality screenshots to showcase your game&apos;s features and gameplay.
+                    </Typography>
+                </Alert>
+            )}
         </Paper>
     );
 }
 
 function Artifacts({ platforms }: { platforms: PlatformSupport }) {
     const AndroidInstaller = () => (
-        <Grid size={5}>
+        <Grid size={12}>
+            <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Android sx={{ color: 'success.main', fontSize: 28 }} />
+                    <Typography variant="subtitle1" fontWeight={600}>Android Installer</Typography>
+                </Box>
             <TextField
-                label="Android Installer"
+                    label="Package File"
                 fullWidth
+                    placeholder="Select APK file"
             />
-            <Typography mt={1} variant="body2" color="textSecondary">
+                <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
                 File Size: N/A MB
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+                    <Typography variant="body2" color="text.secondary">
                 Upload Time: 2024-09-25 14:30
             </Typography>
+                </Box>
+            </Card>
         </Grid>
     );
 
     const IosInstaller = () => (
-        <Grid size={5}>
+        <Grid size={12}>
+            <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Apple sx={{ color: 'primary.main', fontSize: 28 }} />
+                    <Typography variant="subtitle1" fontWeight={600}>iOS Installer</Typography>
+                </Box>
             <TextField
-                label="iOS Installer"
+                    label="Package File"
                 fullWidth
+                    placeholder="Select IPA file"
                 disabled
             />
+            </Card>
         </Grid>
     );
 
     const WebApp = () => (
-        <Grid>
-            <Typography mb={1}>
-                Web Application
-            </Typography>
+        <Grid size={12}>
+            <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <WebIcon sx={{ color: 'info.main', fontSize: 28 }} />
+                    <Typography variant="subtitle1" fontWeight={600}>Web Application</Typography>
+                </Box>
             <Button
-                variant="outlined"
+                    variant="contained"
                 color="primary"
                 component="label"
                 startIcon={<CloudUpload />}
-                sx={{ width: '100%' }}
+                    sx={{ 
+                        width: '100%',
+                        py: 1.2,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        fontSize: '0.9rem'
+                    }}
             >
                 Upload Artifacts
                 <Input
@@ -396,15 +1619,43 @@ function Artifacts({ platforms }: { platforms: PlatformSupport }) {
                     hidden
                 />
             </Button>
-            <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
-                The homepage should be index.html
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                    💡 The homepage should be index.html
             </Typography>
+            </Card>
         </Grid>
     );
 
     return (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-            <Typography variant="h6" gutterBottom>Artifacts</Typography>
+        <Paper 
+            elevation={2} 
+            sx={{ 
+                flex: 1, 
+                p: 3,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.200'
+            }}
+        >
+            <Box sx={{ mb: 3 }}>
+                <Typography 
+                    variant="h6" 
+                    sx={{ 
+                        fontWeight: 700, 
+                        mb: 0.5,
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}
+                >
+                    📦 Artifacts
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Upload installation packages for different platforms
+                </Typography>
+                <Divider />
+            </Box>
             <Grid container spacing={2}>
                 {platforms.android && <AndroidInstaller />}
                 {platforms.ios && <IosInstaller />}
@@ -414,71 +1665,69 @@ function Artifacts({ platforms }: { platforms: PlatformSupport }) {
     );
 }
 
-function ChangeLogs() {
-    return (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-            <Typography variant="h6" gutterBottom>Changelog</Typography>
-            <TextField
-                label="Version Name"
-                fullWidth
-                margin="normal"
-            />
-            <TextField
-                label="Version Code"
-                fullWidth
-                margin="normal"
-            />
-            <TextField
-                label="Changelogs"
-                multiline
-                rows={4}
-                fullWidth
-                margin="normal"
-            />
-            <TextField
-                label="Mininum System Requiement"
-                fullWidth
-                margin="normal"
-            />
-            <TextField
-                label="Recommended System Requirement"
-                fullWidth
-                margin="normal"
-            />
-        </Paper>
-    );
-}
-
 function Tips() {
     return (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-            <List>
-                <ListItem>
-                    <ListItemText primary="Tips" />
-                </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <LooksOne />
+        <Paper 
+            elevation={2} 
+            sx={{ 
+                flex: 1, 
+                p: 3,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.200',
+                bgcolor: 'info.50'
+            }}
+        >
+            <Box sx={{ mb: 2 }}>
+                <Typography 
+                    variant="h6" 
+                    sx={{ 
+                        fontWeight: 700,
+                        color: 'info.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}
+                >
+                    💡 Tips
+                </Typography>
+            </Box>
+            <List sx={{ p: 0 }}>
+                <ListItem sx={{ px: 0, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                        <LooksOne color="info" />
                     </ListItemIcon>
-                    <ListItemText primary="Tip 1" />
+                    <ListItemText 
+                        primary="Fill all required fields"
+                        primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                    />
                 </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <LooksTwo />
+                <ListItem sx={{ px: 0, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                        <LooksTwo color="info" />
                     </ListItemIcon>
-                    <ListItemText primary="Tip 2" />
+                    <ListItemText 
+                        primary="Upload clear game screenshots"
+                        primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                    />
                 </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <LooksTwo />
+                <ListItem sx={{ px: 0, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                        <Info color="info" />
                     </ListItemIcon>
-                    <ListItemText primary="Tip 3" />
+                    <ListItemText 
+                        primary="Your draft is auto-saved"
+                        primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                    />
                 </ListItem>
-                <ListItem>
-                    <ListItemIcon>
-                        <LooksTwo />
+                <ListItem sx={{ px: 0, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                        <CheckCircle color="info" />
                     </ListItemIcon>
-                    <ListItemText primary="Tip 4" />
+                    <ListItemText 
+                        primary="Review takes 3-5 business days"
+                        primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                    />
                 </ListItem>
             </List>
         </Paper>
@@ -488,9 +1737,17 @@ function Tips() {
 interface SupportedPlatformsProps {
     platforms: PlatformSupport;
     onPlatformChange: (platforms: PlatformSupport) => void;
+    platformConfigs: {
+        androidPackageName: string;
+        androidDownloadUrl: string;
+        iosPackageName: string;
+        iosDownloadUrl: string;
+        webUrl: string;
+    };
+    onPlatformConfigsChange: (configs: any) => void;
 }
 
-function SupportedPlatforms({ platforms, onPlatformChange }: SupportedPlatformsProps) {
+function SupportedPlatforms({ platforms, onPlatformChange, platformConfigs, onPlatformConfigsChange }: SupportedPlatformsProps) {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         onPlatformChange({
             ...platforms,
@@ -498,57 +1755,282 @@ function SupportedPlatforms({ platforms, onPlatformChange }: SupportedPlatformsP
         });
     };
 
+    const handleConfigChange = (field: string, value: string) => {
+        onPlatformConfigsChange({
+            ...platformConfigs,
+            [field]: value
+        });
+    };
+
     return (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-            <Typography variant="h6">Supported Platforms</Typography>
-            <FormControlLabel control={<Checkbox checked={platforms.android} onChange={handleChange} name="android" />} label="Android" />
-            <FormControlLabel control={<Checkbox checked={platforms.ios} onChange={handleChange} name="ios" />} label="iOS" />
-            <FormControlLabel control={<Checkbox checked={platforms.web} onChange={handleChange} name="web" />} label="Web" />
+        <Paper 
+            elevation={2} 
+            sx={{ 
+                flex: 1, 
+                p: 3,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.200'
+            }}
+        >
+            <Box sx={{ mb: 3 }}>
+                <Typography 
+                    variant="h6" 
+                    sx={{ 
+                        fontWeight: 700, 
+                        mb: 0.5,
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}
+                >
+                    📱 Supported Platforms & Download Links
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Select platforms and configure download information
+                </Typography>
+                <Divider />
+            </Box>
+            <Stack spacing={3}>
+                {/* Android */}
+                <Card variant="outlined" sx={{ p: 2.5, bgcolor: 'grey.50' }}>
+                    <FormControlLabel 
+                        control={<Checkbox checked={platforms.android} onChange={handleChange} name="android" />} 
+                        label={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Android color="success" />
+                                <Typography fontWeight={600}>Android</Typography>
+                            </Box>
+                        } 
+                    />
+                    {platforms.android && (
+                        <Box sx={{ mt: 2, ml: 4 }}>
+                            <Grid container spacing={2}>
+                                <Grid size={12}>
+                                    <TextField
+                                        fullWidth
+                                        label="Package Name"
+                                        placeholder="com.example.game"
+                                        value={platformConfigs.androidPackageName}
+                                        onChange={(e) => handleConfigChange('androidPackageName', e.target.value)}
+                                        required
+                                        helperText="* Required field"
+                                        size="small"
+                                    />
+                                </Grid>
+                                <Grid size={12}>
+                                    <TextField
+                                        fullWidth
+                                        label="Download URL"
+                                        placeholder="https://play.google.com/store/apps/details?id=..."
+                                        value={platformConfigs.androidDownloadUrl}
+                                        onChange={(e) => handleConfigChange('androidDownloadUrl', e.target.value)}
+                                        size="small"
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    )}
+                </Card>
+
+                {/* iOS */}
+                <Card variant="outlined" sx={{ p: 2.5, bgcolor: 'grey.50' }}>
+                    <FormControlLabel 
+                        control={<Checkbox checked={platforms.ios} onChange={handleChange} name="ios" />} 
+                        label={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Apple color="primary" />
+                                <Typography fontWeight={600}>iOS</Typography>
+                            </Box>
+                        } 
+                    />
+                    {platforms.ios && (
+                        <Box sx={{ mt: 2, ml: 4 }}>
+                            <Grid container spacing={2}>
+                                <Grid size={12}>
+                                    <TextField
+                                        fullWidth
+                                        label="Bundle ID"
+                                        placeholder="com.example.game"
+                                        value={platformConfigs.iosPackageName}
+                                        onChange={(e) => handleConfigChange('iosPackageName', e.target.value)}
+                                        required
+                                        helperText="* Required field"
+                                        size="small"
+                                    />
+                                </Grid>
+                                <Grid size={12}>
+                                    <TextField
+                                        fullWidth
+                                        label="Download URL"
+                                        placeholder="https://apps.apple.com/app/..."
+                                        value={platformConfigs.iosDownloadUrl}
+                                        onChange={(e) => handleConfigChange('iosDownloadUrl', e.target.value)}
+                                        size="small"
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    )}
+                </Card>
+
+                {/* Web */}
+                <Card variant="outlined" sx={{ p: 2.5, bgcolor: 'grey.50' }}>
+                    <FormControlLabel 
+                        control={<Checkbox checked={platforms.web} onChange={handleChange} name="web" />} 
+                        label={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <WebIcon color="info" />
+                                <Typography fontWeight={600}>Web</Typography>
+                            </Box>
+                        } 
+                    />
+                    {platforms.web && (
+                        <Box sx={{ mt: 2, ml: 4 }}>
+                            <TextField
+                                fullWidth
+                                label="Game URL"
+                                placeholder="https://game.example.com"
+                                value={platformConfigs.webUrl}
+                                onChange={(e) => handleConfigChange('webUrl', e.target.value)}
+                                required
+                                helperText="* Required field"
+                                size="small"
+                            />
+                        </Box>
+                    )}
+                </Card>
+            </Stack>
         </Paper>
     );
 }
 
 function DownloadConfig({ platforms }: { platforms: PlatformSupport }) {
     const AndroidConfig = () => (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-            <Typography variant="h6">Android Configuration</Typography>
-            <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
-            <TextField select label="Minimum SDK Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }}>
-                <MenuItem>
-                    SDK Version
-                </MenuItem>
+        <Card variant="outlined" sx={{ p: 2.5, bgcolor: 'grey.50' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Android sx={{ color: 'success.main', fontSize: 26 }} />
+                <Typography variant="subtitle1" fontWeight={600}>Android Configuration</Typography>
+            </Box>
+            <Grid container spacing={2}>
+                <Grid size={12}>
+                    <TextField 
+                        label="Package Name" 
+                        placeholder="com.example.game" 
+                        fullWidth
+                    />
+                </Grid>
+                <Grid size={12}>
+                    <TextField 
+                        select 
+                        label="Minimum SDK Version" 
+                        fullWidth
+                        defaultValue=""
+                    >
+                        <MenuItem value="">Select SDK Version</MenuItem>
+                        <MenuItem value="21">Android 5.0 (API 21)</MenuItem>
+                        <MenuItem value="23">Android 6.0 (API 23)</MenuItem>
+                        <MenuItem value="26">Android 8.0 (API 26)</MenuItem>
             </TextField>
-        </Paper>
+                </Grid>
+            </Grid>
+        </Card>
     );
 
     const IosConfig = () => (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-            <Typography variant="h6">iOS Configuration</Typography>
-            <TextField label="Package Name" placeholder="com.example.game" margin="normal" />
-            <TextField select label="Minimum iOS Version" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} >
-                <MenuItem>
-                    iOS Version
-                </MenuItem>
+        <Card variant="outlined" sx={{ p: 2.5, bgcolor: 'grey.50' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Apple sx={{ color: 'primary.main', fontSize: 26 }} />
+                <Typography variant="subtitle1" fontWeight={600}>iOS Configuration</Typography>
+            </Box>
+            <Grid container spacing={2}>
+                <Grid size={12}>
+                    <TextField 
+                        label="Bundle ID" 
+                        placeholder="com.example.game" 
+                        fullWidth
+                    />
+                </Grid>
+                <Grid size={12}>
+                    <TextField 
+                        select 
+                        label="Minimum iOS Version"
+                        fullWidth
+                        defaultValue=""
+                    >
+                        <MenuItem value="">Select iOS Version</MenuItem>
+                        <MenuItem value="13">iOS 13.0</MenuItem>
+                        <MenuItem value="14">iOS 14.0</MenuItem>
+                        <MenuItem value="15">iOS 15.0</MenuItem>
             </TextField>
-        </Paper>
+                </Grid>
+            </Grid>
+        </Card>
     );
 
     const WebConfig = () => (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-            <Typography variant="h6">Web Configuration</Typography>
-            <TextField label="URL" placeholder="https://game.example.com" margin="normal" />
-            <TextField select label="Supported Browsers" margin="normal" sx={{ marginLeft: 2, minWidth: '24ch' }} >
-                <MenuItem>
-                    Browser
-                </MenuItem>
+        <Card variant="outlined" sx={{ p: 2.5, bgcolor: 'grey.50' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <WebIcon sx={{ color: 'info.main', fontSize: 26 }} />
+                <Typography variant="subtitle1" fontWeight={600}>Web Configuration</Typography>
+            </Box>
+            <Grid container spacing={2}>
+                <Grid size={12}>
+                    <TextField 
+                        label="URL" 
+                        placeholder="https://game.example.com" 
+                        fullWidth
+                    />
+                </Grid>
+                <Grid size={12}>
+                    <TextField 
+                        select 
+                        label="Supported Browsers"
+                        fullWidth
+                        defaultValue=""
+                    >
+                        <MenuItem value="">Select Browser</MenuItem>
+                        <MenuItem value="chrome">Chrome</MenuItem>
+                        <MenuItem value="firefox">Firefox</MenuItem>
+                        <MenuItem value="safari">Safari</MenuItem>
             </TextField>
-        </Paper>
+                </Grid>
+            </Grid>
+        </Card>
     );
 
     return (
-        <Paper variant="elevation" sx={{ flex: 1, p: 2 }}>
-            <Typography variant="h6">Download Configurations</Typography>
-            <Stack spacing={2}>
+        <Paper 
+            elevation={2} 
+            sx={{ 
+                flex: 1, 
+                p: 3,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.200'
+            }}
+        >
+            <Box sx={{ mb: 3 }}>
+                <Typography 
+                    variant="h6" 
+                    sx={{ 
+                        fontWeight: 700, 
+                        mb: 0.5,
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}
+                >
+                    ⚙️ Download Configurations
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Configure platform-specific settings
+                </Typography>
+                <Divider />
+            </Box>
+            <Stack spacing={3}>
                 {platforms.android && <AndroidConfig />}
                 {platforms.ios && <IosConfig />}
                 {platforms.web && <WebConfig />}
