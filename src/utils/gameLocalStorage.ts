@@ -114,6 +114,7 @@ export function getPublishedGames(): PublishedGame[] {
 
 /**
  * 发布游戏（从表单数据创建为已发布游戏）
+ * 新提交的游戏状态为 'reviewing'（审核中）
  */
 export function publishGame(formData: GameFormData): PublishedGame {
   console.log('🚀 publishGame 被调用，参数:', formData);
@@ -126,13 +127,13 @@ export function publishGame(formData: GameFormData): PublishedGame {
       ...formData,
       id: `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       publishedAt: Date.now(),
-      status: 'published',
+      status: 'reviewing',  // 提交后进入审核状态
       downloads: 0,
       rating: 0,
       version: '1.0.0'
     }
     
-    console.log('🎮 新游戏对象:', newGame);
+    console.log('🎮 新游戏对象（审核中）:', newGame);
     
     games.push(newGame)
     console.log('📦 准备保存的游戏列表:', games);
@@ -141,7 +142,7 @@ export function publishGame(formData: GameFormData): PublishedGame {
     console.log('💾 JSON 字符串长度:', jsonString.length);
     
     localStorage.setItem(PUBLISHED_GAMES_KEY, jsonString)
-    console.log('✅ 游戏已发布到 localStorage:', newGame.gameName);
+    console.log('✅ 游戏已提交审核到 localStorage:', newGame.gameName);
     
     // 验证保存
     const verification = localStorage.getItem(PUBLISHED_GAMES_KEY);
@@ -149,7 +150,7 @@ export function publishGame(formData: GameFormData): PublishedGame {
     
     return newGame
   } catch (error) {
-    console.error('❌ 发布游戏失败:', error)
+    console.error('❌ 提交游戏失败:', error)
     throw error
   }
 }
@@ -183,6 +184,44 @@ export function deleteGame(gameId: string): void {
     console.log('✅ 游戏已删除:', gameId)
   } catch (error) {
     console.error('❌ 删除游戏失败:', error)
+  }
+}
+
+/**
+ * 审核通过游戏（将状态从 reviewing 改为 published）
+ */
+export function approveGame(gameId: string): void {
+  try {
+    const games = getPublishedGames()
+    const game = games.find(g => g.id === gameId)
+    
+    if (game && game.status === 'reviewing') {
+      game.status = 'published'
+      localStorage.setItem(PUBLISHED_GAMES_KEY, JSON.stringify(games))
+      console.log('✅ 游戏审核通过:', gameId)
+    } else {
+      console.warn('⚠️ 游戏不存在或状态不是审核中:', gameId)
+    }
+  } catch (error) {
+    console.error('❌ 审核游戏失败:', error)
+  }
+}
+
+/**
+ * 拒绝游戏审核（将状态从 reviewing 改回 draft）
+ */
+export function rejectGame(gameId: string, reason?: string): void {
+  try {
+    const games = getPublishedGames()
+    const game = games.find(g => g.id === gameId)
+    
+    if (game && game.status === 'reviewing') {
+      game.status = 'draft'
+      localStorage.setItem(PUBLISHED_GAMES_KEY, JSON.stringify(games))
+      console.log('✅ 游戏审核被拒:', gameId, reason || '')
+    }
+  } catch (error) {
+    console.error('❌ 拒绝审核失败:', error)
   }
 }
 

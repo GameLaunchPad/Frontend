@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏审核管理 - Game Review Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .stat-card.total .number { color: #667eea; }
+        .stat-card.published .number { color: #28a745; }
+        .stat-card.reviewing .number { color: #ffc107; }
+        .stat-card.draft .number { color: #17a2b8; }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .games-list {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: #f8f9fa;
+        }
+        
+        .tab.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        
+        .game-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .game-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .game-card.reviewing {
+            border-left: 4px solid #ffc107;
+            background: #fffbf0;
+        }
+        
+        .game-card.published {
+            border-left: 4px solid #28a745;
+        }
+        
+        .game-card.draft {
+            border-left: 4px solid #17a2b8;
+            background: #f0f9ff;
+        }
+        
+        .game-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+        
+        .game-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        
+        .game-info {
+            flex: 1;
+        }
+        
+        .game-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .game-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-published {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-reviewing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-draft {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge-type {
+            background: #e7e7ff;
+            color: #667eea;
+        }
+        
+        .badge-platform {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .game-actions {
+            display: flex;
+            gap: 8px;
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            min-width: 100px;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎮 游戏审核管理面板</h1>
+            <p style="color: #666; margin-top: 8px;">Game Review Management Panel</p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats">
+            <div class="stat-card total">
+                <div class="number" id="stat-total">0</div>
+                <div class="label">Total Games</div>
+            </div>
+            <div class="stat-card published">
+                <div class="number" id="stat-published">0</div>
+                <div class="label">Published</div>
+            </div>
+            <div class="stat-card reviewing">
+                <div class="number" id="stat-reviewing">0</div>
+                <div class="label">Reviewing</div>
+            </div>
+            <div class="stat-card draft">
+                <div class="number" id="stat-draft">0</div>
+                <div class="label">Drafts</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-primary" onclick="refreshGames()">🔄 Refresh</button>
+            <button class="btn btn-success" onclick="approveAllReviewing()">✅ Approve All Reviewing</button>
+            <button class="btn btn-warning" onclick="window.open('/games', '_blank')">📋 Open Game List</button>
+            <button class="btn btn-info" onclick="window.open('/games/create', '_blank')">➕ Create New Game</button>
+            <button class="btn btn-danger" onclick="clearAllGames()">🗑️ Clear All Games</button>
+        </div>
+
+        <!-- Games List -->
+        <div class="games-list">
+            <div class="filter-tabs">
+                <div class="tab active" onclick="filterGames('all')">
+                    All Games (<span id="count-all">0</span>)
+                </div>
+                <div class="tab" onclick="filterGames('reviewing')">
+                    🟡 Reviewing (<span id="count-reviewing">0</span>)
+                </div>
+                <div class="tab" onclick="filterGames('published')">
+                    🟢 Published (<span id="count-published">0</span>)
+                </div>
+                <div class="tab" onclick="filterGames('draft')">
+                    🔵 Drafts (<span id="count-draft">0</span>)
+                </div>
+            </div>
+
+            <div id="games-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let allGames = [];
+        let currentFilter = 'all';
+
+        // 加载所有游戏
+        function loadGames() {
+            try {
+                // 1. 获取已发布/审核中的游戏
+                const publishedData = localStorage.getItem('published_games');
+                const publishedGames = publishedData ? JSON.parse(publishedData) : [];
+                
+                // 2. 获取草稿
+                const draftData = localStorage.getItem('game_form_data');
+                let draftGame = null;
+                if (draftData) {
+                    const draft = JSON.parse(draftData);
+                    if (draft.gameName) {
+                        draftGame = {
+                            ...draft,
+                            id: 'draft_current',
+                            status: 'draft',
+                            downloads: 0,
+                            rating: 0,
+                            version: '0.1.0',
+                            publishedAt: draft.savedAt || Date.now()
+                        };
+                    }
+                }
+                
+                // 3. 合并
+                allGames = [...publishedGames];
+                if (draftGame) {
+                    allGames.push(draftGame);
+                }
+                
+                console.log('✅ Loaded games:', allGames.length);
+                updateStats();
+                displayGames();
+            } catch (error) {
+                console.error('❌ Error loading games:', error);
+                alert('Error loading games: ' + error.message);
+            }
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            const stats = {
+                total: allGames.length,
+                published: allGames.filter(g => g.status === 'published').length,
+                reviewing: allGames.filter(g => g.status === 'reviewing').length,
+                draft: allGames.filter(g => g.status === 'draft').length
+            };
+            
+            document.getElementById('stat-total').textContent = stats.total;
+            document.getElementById('stat-published').textContent = stats.published;
+            document.getElementById('stat-reviewing').textContent = stats.reviewing;
+            document.getElementById('stat-draft').textContent = stats.draft;
+            
+            document.getElementById('count-all').textContent = stats.total;
+            document.getElementById('count-published').textContent = stats.published;
+            document.getElementById('count-reviewing').textContent = stats.reviewing;
+            document.getElementById('count-draft').textContent = stats.draft;
+        }
+
+        // 筛选游戏
+        function filterGames(status) {
+            currentFilter = status;
+            
+            // 更新tab样式
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayGames();
+        }
+
+        // 显示游戏
+        function displayGames() {
+            const container = document.getElementById('games-container');
+            
+            let gamesToShow = allGames;
+            if (currentFilter !== 'all') {
+                gamesToShow = allGames.filter(g => g.status === currentFilter);
+            }
+            
+            if (gamesToShow.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎮</div>
+                        <h3>No games found</h3>
+                        <p>No games in this category</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            gamesToShow.forEach(game => {
+                const statusBadge = game.status === 'published' ? 'badge-published' :
+                                   game.status === 'reviewing' ? 'badge-reviewing' : 'badge-draft';
+                const statusText = game.status === 'published' ? 'Published' :
+                                  game.status === 'reviewing' ? 'Reviewing' : 'Draft';
+                
+                const platforms = [];
+                if (game.platforms?.android) platforms.push('Android');
+                if (game.platforms?.ios) platforms.push('iOS');
+                if (game.platforms?.web) platforms.push('Web');
+                
+                html += `
+                    <div class="game-card ${game.status}">
+                        <div class="game-icon">
+                            ${game.avatarSrc ? `<img src="${game.avatarSrc}" alt="${game.gameName}">` : '🎮'}
+                        </div>
+                        <div class="game-info">
+                            <div class="game-name">${game.gameName || 'Unnamed Game'}</div>
+                            <div class="game-meta">
+                                <span class="badge ${statusBadge}">${statusText}</span>
+                                <span class="badge badge-type">${game.gameType || 'N/A'}</span>
+                                ${platforms.map(p => `<span class="badge badge-platform">${p}</span>`).join('')}
+                            </div>
+                            <div style="color: #666; font-size: 13px; margin-top: 5px;">
+                                📊 Downloads: ${game.downloads || 0} | ⭐ Rating: ${game.rating || 0} | 📦 Version: ${game.version || '1.0.0'}
+                            </div>
+                            ${game.gameIntro ? `<div style="color: #888; font-size: 13px; margin-top: 8px; line-height: 1.5;">${game.gameIntro.substring(0, 100)}${game.gameIntro.length > 100 ? '...' : ''}</div>` : ''}
+                        </div>
+                        <div class="game-actions">
+                            ${game.status === 'reviewing' ? `
+                                <button class="action-btn btn-success" onclick="approveGame('${game.id}')">
+                                    ✅ Approve
+                                </button>
+                                <button class="action-btn btn-warning" onclick="rejectGame('${game.id}')">
+                                    ❌ Reject
+                                </button>
+                            ` : game.status === 'draft' ? `
+                                <button class="action-btn btn-info" onclick="window.open('/games/create', '_blank')">
+                                    ✏️ Continue Edit
+                                </button>
+                            ` : `
+                                <button class="action-btn btn-primary" onclick="window.open('/games/create?id=${game.id}', '_blank')">
+                                    ✏️ Edit
+                                </button>
+                            `}
+                            <button class="action-btn btn-danger" onclick="deleteGame('${game.id}')">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // 审核通过
+        function approveGame(gameId) {
+            if (!confirm('确定要审核通过这个游戏吗？')) return;
+            
+            try {
+                const publishedData = localStorage.getItem('published_games');
+                const games = publishedData ? JSON.parse(publishedData) : [];
+                
+                const game = games.find(g => g.id === gameId);
+                if (game && game.status === 'reviewing') {
+                    game.status = 'published';
+                    localStorage.setItem('published_games', JSON.stringify(games));
+                    console.log('✅ 审核通过:', game.gameName);
+                    
+                    showAlert('success', `✅ 游戏 "${game.gameName}" 审核通过！`);
+                    refreshGames();
+                    
+                    // 触发游戏列表刷新
+                    window.dispatchEvent(new Event('gamesListRefresh'));
+                } else {
+                    alert('游戏不存在或状态不正确');
+                }
+            } catch (error) {
+                console.error('❌ 审核失败:', error);
+                alert('审核失败: ' + error.message);
+            }
+        }
+
+        // 审核拒绝
+        function rejectGame(gameId) {
+            const reason = prompt('请输入拒绝原因（可选）：');
+            
+            try {
+                const publishedData = localStorage.getItem('published_games');
+                const games = publishedData ? JSON.parse(publishedData) : [];
+                
+                const game = games.find(g => g.id === gameId);
+                if (game && game.status === 'reviewing') {
+                    game.status = 'draft';
+                    localStorage.setItem('published_games', JSON.stringify(games));
+                    console.log('❌ 审核拒绝:', game.gameName, reason || '');
+                    
+                    showAlert('info', `❌ 游戏 "${game.gameName}" 已拒绝${reason ? '，原因: ' + reason : ''}`);
+                    refreshGames();
+                    
+                    window.dispatchEvent(new Event('gamesListRefresh'));
+                }
+            } catch (error) {
+                console.error('❌ 拒绝失败:', error);
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        // 删除游戏
+        function deleteGame(gameId) {
+            const game = allGames.find(g => g.id === gameId);
+            if (!confirm(`确定要删除游戏 "${game?.gameName}" 吗？此操作无法撤销！`)) return;
+            
+            try {
+                if (gameId === 'draft_current') {
+                    // 删除草稿
+                    localStorage.removeItem('game_form_data');
+                    console.log('✅ 草稿已删除');
+                } else {
+                    // 删除已发布/审核中的游戏
+                    const publishedData = localStorage.getItem('published_games');
+                    const games = publishedData ? JSON.parse(publishedData) : [];
+                    const filtered = games.filter(g => g.id !== gameId);
+                    localStorage.setItem('published_games', JSON.stringify(filtered));
+                    console.log('✅ 游戏已删除:', gameId);
+                }
+                
+                showAlert('success', `🗑️ 游戏 "${game.gameName}" 已删除`);
+                refreshGames();
+                
+                window.dispatchEvent(new Event('gamesListRefresh'));
+            } catch (error) {
+                console.error('❌ 删除失败:', error);
+                alert('删除失败: ' + error.message);
+            }
+        }
+
+        // 批量审核通过所有审核中的游戏
+        function approveAllReviewing() {
+            const reviewingGames = allGames.filter(g => g.status === 'reviewing');
+            
+            if (reviewingGames.length === 0) {
+                alert('没有待审核的游戏');
+                return;
+            }
+            
+            if (!confirm(`确定要批量审核通过 ${reviewingGames.length} 个游戏吗？`)) return;
+            
+            try {
+                const publishedData = localStorage.getItem('published_games');
+                const games = publishedData ? JSON.parse(publishedData) : [];
+                
+                let count = 0;
+                games.forEach(game => {
+                    if (game.status === 'reviewing') {
+                        game.status = 'published';
+                        count++;
+                        console.log('✅ 批量审核通过:', game.gameName);
+                    }
+                });
+                
+                localStorage.setItem('published_games', JSON.stringify(games));
+                showAlert('success', `✅ 批量审核通过 ${count} 个游戏！`);
+                refreshGames();
+                
+                window.dispatchEvent(new Event('gamesListRefresh'));
+            } catch (error) {
+                console.error('❌ 批量审核失败:', error);
+                alert('批量审核失败: ' + error.message);
+            }
+        }
+
+        // 清空所有游戏
+        function clearAllGames() {
+            if (!confirm('⚠️ 确定要删除所有游戏数据吗？此操作无法撤销！')) return;
+            
+            localStorage.removeItem('published_games');
+            localStorage.removeItem('game_form_data');
+            console.log('✅ 所有游戏数据已清除');
+            
+            showAlert('success', '🗑️ 所有游戏数据已清除');
+            refreshGames();
+        }
+
+        // 刷新游戏列表
+        function refreshGames() {
+            loadGames();
+        }
+
+        // 显示提示
+        function showAlert(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-info';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${alertClass}`;
+            alertDiv.textContent = message;
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            alertDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        // 初始化
+        loadGames();
+        
+        // 每5秒自动刷新
+        setInterval(refreshGames, 5000);
+        
+        // 监听storage变化
+        window.addEventListener('storage', () => {
+            console.log('📡 Storage changed, refreshing...');
+            refreshGames();
+        });
+    </script>
+</body>
+</html>
+

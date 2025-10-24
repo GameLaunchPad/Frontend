@@ -799,7 +799,7 @@ function ListLayout({ games }: LayoutProps) {
 }
 
 function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): 'success' | 'warning' | 'info' | 'default' | 'primary' | 'secondary' | 'error' => {
     switch(status) {
       case 'published': return 'success';
       case 'reviewing': return 'warning';
@@ -856,7 +856,7 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
         )}
         <Chip 
           label={getStatusLabel(gameInfo.status)} 
-          color={getStatusColor(gameInfo.status) as any}
+          color={getStatusColor(gameInfo.status)}
           size="small"
           sx={{ 
             position: 'absolute', 

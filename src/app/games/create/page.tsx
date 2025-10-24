@@ -329,7 +329,7 @@ export default function NewGame() {
             return
         }
 
-        console.log('✅ 验证通过，开始' + (isEditMode ? '更新' : '发布') + '游戏...');
+                console.log('✅ 验证通过，开始' + (isEditMode ? '更新' : '提交审核') + '游戏...');
 
         try {
             if (isEditMode && editGameId) {
@@ -359,8 +359,8 @@ export default function NewGame() {
                 
                 console.log('✅ Game updated successfully');
             } else {
-                // 新建模式：发布游戏
-                console.log('🆕 创建新游戏');
+                // 新建模式：提交审核
+                console.log('🆕 创建新游戏并提交审核');
                 const publishedGame = publishGame({
                     gameName,
                     gameIntro,
@@ -383,7 +383,7 @@ export default function NewGame() {
                     savedAt: Date.now()
                 })
 
-                console.log('✅ Game published successfully:', publishedGame)
+                console.log('✅ Game submitted for review:', publishedGame)
             }
 
             // 清除草稿（仅在新建模式下）
@@ -665,7 +665,7 @@ export default function NewGame() {
                             }
                         }}
                     >
-                        {isEditMode ? 'Update Game' : 'Submit Game'}
+                        {isEditMode ? 'Update Game' : 'Submit for Review'}
                     </Button>
                 </Box>
             </Box>
@@ -787,7 +787,7 @@ export default function NewGame() {
                             <CheckCircle sx={{ fontSize: 50, color: 'success.main' }} />
                         </Box>
                         <Typography variant="h5" fontWeight={700} color="success.main">
-                            {isEditMode ? 'Game Updated Successfully!' : 'Game Published Successfully!'}
+                            {isEditMode ? 'Game Updated Successfully!' : 'Game Submitted for Review!'}
                         </Typography>
                     </Box>
                 </DialogTitle>
@@ -796,16 +796,18 @@ export default function NewGame() {
                         <Typography variant="body1" paragraph>
                             {isEditMode 
                                 ? '✅ Your game has been updated successfully.'
-                                : '🎉 Congratulations! Your game has been published successfully.'}
+                                : '🎉 Congratulations! Your game has been submitted for review.'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" paragraph>
-                            You can now view it in your game list.
+                            {isEditMode
+                                ? 'You can now view the updated game in your game list.'
+                                : 'Your game will be reviewed by our team. You can track the status in your game list.'}
                         </Typography>
-                        <Alert severity="success" sx={{ mt: 2, textAlign: 'left' }}>
+                        <Alert severity={isEditMode ? "success" : "info"} sx={{ mt: 2, textAlign: 'left' }}>
                             <Typography variant="body2">
                                 {isEditMode
                                     ? '💫 All changes have been saved and applied.'
-                                    : '✨ Your game is now live and ready to be discovered by players!'}
+                                    : '⏳ Review typically takes 3-5 business days. You will be notified once approved.'}
                             </Typography>
                         </Alert>
                     </Box>
