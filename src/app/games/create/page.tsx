@@ -421,7 +421,7 @@ export default function NewGame() {
                     <Card 
                         elevation={0}
                         sx={{ 
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
                             color: 'white',
                             borderRadius: 3,
                             overflow: 'hidden',
@@ -658,7 +658,7 @@ export default function NewGame() {
                             fontWeight: 600,
                             fontSize: '0.95rem',
                             minWidth: 160,
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
                             boxShadow: 3,
                             '&:hover': {
                                 boxShadow: 6,
@@ -742,7 +742,7 @@ export default function NewGame() {
                             borderRadius: 2,
                             px: 4,
                             py: 1,
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                            background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
                         }}
                     >
                         Close
@@ -823,7 +823,7 @@ export default function NewGame() {
                             borderRadius: 2,
                             px: 4,
                             py: 1.2,
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
                             fontWeight: 600
                         }}
                     >
@@ -1074,7 +1074,7 @@ function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, ga
                         textTransform: 'none',
                         fontWeight: 700,
                         fontSize: '0.9rem',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
                     }}
                 >
                     Start Game

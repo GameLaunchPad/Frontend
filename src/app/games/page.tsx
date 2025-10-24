@@ -227,7 +227,7 @@ function GameDashboard() {
           <Card 
             elevation={0}
             sx={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
               color: 'white',
               borderRadius: 3,
               overflow: 'hidden',
@@ -632,7 +632,7 @@ function GameDashboard() {
                       py: 1.2,
                       textTransform: 'none',
                       fontWeight: 600,
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
                     }}
                   >
                     Create Your First Game
@@ -696,7 +696,7 @@ function ListLayout({ games }: LayoutProps) {
               sx={{ 
                 width: 80, 
                 height: 80,
-                background: game.avatarSrc ? 'transparent' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                background: game.avatarSrc ? 'transparent' : 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
               }}
             >
               {!game.avatarSrc && <Gamepad sx={{ fontSize: 40 }} />}
@@ -849,8 +849,8 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
           <CardMedia 
             sx={{ 
               height: 160,
-              bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              bgcolor: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+              background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
             }} 
           />
         )}

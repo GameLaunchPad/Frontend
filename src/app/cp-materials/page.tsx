@@ -311,7 +311,7 @@ export default function CPMaterialsPage() {
           <Card 
             elevation={0}
             sx={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
               color: 'white',
               borderRadius: 3,
               overflow: 'hidden',
@@ -834,7 +834,7 @@ export default function CPMaterialsPage() {
                     fontWeight: 600,
                     fontSize: '1rem',
                     minWidth: 200,
-                    background: submitted ? undefined : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: submitted ? undefined : 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
                     boxShadow: submitted ? undefined : 3,
                     '&:hover': {
                       boxShadow: submitted ? undefined : 6,
@@ -925,7 +925,7 @@ export default function CPMaterialsPage() {
               borderRadius: 2,
               px: 4,
               py: 1,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
             }}
           >
             View Status
@@ -1008,7 +1008,7 @@ export default function CPMaterialsPage() {
               borderRadius: 2,
               px: 4,
               py: 1,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
             }}
           >
             Close

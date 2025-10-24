@@ -21,11 +21,6 @@ function SidebarContent() {
               <ListItemText primary="My Games" />
             </ListItemButton>
           </ListItem>
-          <ListItem key="New Game" disablePadding>
-            <ListItemButton component={Link} href="/games/create">
-              <ListItemText primary="New Game" />
-            </ListItemButton>
-          </ListItem>
         </List>
         <Divider />
         <List
