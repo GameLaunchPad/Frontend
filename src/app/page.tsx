@@ -411,7 +411,7 @@ export default function HomePage() {
               </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary">
-              © 2024 GameLaunchPad. All rights reserved.
+              © 2025 GameLaunchPad. All rights reserved.
             </Typography>
           </Box>
         </Container>
