@@ -24,7 +24,7 @@ export default function NavBar(): React.JSX.Element {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('info');
-  
+
   const router = useRouter();
 
   // Check login status on component mount
@@ -33,7 +33,7 @@ export default function NavBar(): React.JSX.Element {
       try {
         const token = localStorage.getItem('authToken');
         const userData = localStorage.getItem('userData');
-        
+
         if (token && userData) {
           setIsLoggedIn(true);
           setUserInfo(JSON.parse(userData));
@@ -57,7 +57,7 @@ export default function NavBar(): React.JSX.Element {
       try {
         const token = localStorage.getItem('authToken');
         const userData = localStorage.getItem('userData');
-        
+
         if (token && userData) {
           setIsLoggedIn(true);
           setUserInfo(JSON.parse(userData));
@@ -82,7 +82,7 @@ export default function NavBar(): React.JSX.Element {
       try {
         const token = localStorage.getItem('authToken');
         const userData = localStorage.getItem('userData');
-        
+
         if (token && userData) {
           setIsLoggedIn(true);
           setUserInfo(JSON.parse(userData));
@@ -103,7 +103,7 @@ export default function NavBar(): React.JSX.Element {
 
     window.addEventListener('authChange', handleAuthChange);
     window.addEventListener('openLoginDialog', handleOpenLoginDialog);
-    
+
     return () => {
       window.removeEventListener('authChange', handleAuthChange);
       window.removeEventListener('openLoginDialog', handleOpenLoginDialog);
@@ -129,13 +129,13 @@ export default function NavBar(): React.JSX.Element {
     setUserInfo(userData);
     setLoginOpen(false);
     setAnchorElUser(null);
-    
+
     // Show success message
     showSnackbar('Login successful! Redirecting...', 'success');
-    
+
     // Dispatch custom event to notify other components
     window.dispatchEvent(new CustomEvent('customAuthChange'));
-    
+
     // Add loading delay for better UX
     setLoading(true);
     setTimeout(() => {
@@ -147,7 +147,7 @@ export default function NavBar(): React.JSX.Element {
   const handleRegisterSuccess = async () => {
     setRegisterOpen(false);
     showSnackbar('Registration successful! Please login', 'success');
-    
+
     // Add loading delay for better UX
     setLoading(true);
     setTimeout(() => {
@@ -163,10 +163,10 @@ export default function NavBar(): React.JSX.Element {
     setUserInfo(null);
     setAnchorElUser(null);
     showSnackbar('Logged out successfully', 'info');
-    
+
     // Dispatch custom event to notify other components
     window.dispatchEvent(new CustomEvent('authChange'));
-    
+
     router.push('/');
   };
 
@@ -188,10 +188,10 @@ export default function NavBar(): React.JSX.Element {
 
   return (
     <>
-      <AppBar 
-        position='sticky' 
+      <AppBar
+        position='sticky'
         elevation={0}
-        sx={{ 
+        sx={{
           zIndex: (theme) => theme.zIndex.drawer - 1,
           background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
           boxShadow: '0 4px 20px rgba(25, 118, 210, 0.25)',
@@ -208,9 +208,9 @@ export default function NavBar(): React.JSX.Element {
         }}
       >
         <Container maxWidth="xl">
-          <Toolbar 
-            disableGutters 
-            sx={{ 
+          <Toolbar
+            disableGutters
+            sx={{
               justifyContent: 'space-between',
               position: 'relative',
               zIndex: 1,
@@ -220,9 +220,9 @@ export default function NavBar(): React.JSX.Element {
             {/* Left side - Logo and Home button */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {/* Logo Section */}
-              <Box 
-                sx={{ 
-                  display: 'flex', 
+              <Box
+                sx={{
+                  display: 'flex',
                   alignItems: 'center',
                   gap: 1.5,
                 }}
@@ -266,12 +266,12 @@ export default function NavBar(): React.JSX.Element {
                   GameLaunchPad
                 </Typography>
               </Box>
-              
+
               {/* Home Button */}
               <Button
                 onClick={handleHomeClick}
                 startIcon={<HomeIcon />}
-                sx={{ 
+                sx={{
                   color: 'white',
                   bgcolor: 'rgba(255, 255, 255, 0.15)',
                   backdropFilter: 'blur(10px)',
@@ -293,15 +293,15 @@ export default function NavBar(): React.JSX.Element {
                 HOME
               </Button>
             </Box>
-            
+
             {/* Right side - User Section */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {isLoggedIn ? (
                 <>
                   {/* User Info Display */}
-                  <Box 
-                    sx={{ 
-                      display: { xs: 'none', sm: 'flex' }, 
+                  <Box
+                    sx={{
+                      display: { xs: 'none', sm: 'flex' },
                       alignItems: 'center',
                       gap: 1.5,
                       bgcolor: 'rgba(255, 255, 255, 0.15)',
@@ -312,9 +312,9 @@ export default function NavBar(): React.JSX.Element {
                       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     }}
                   >
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
+                    <Typography
+                      variant="body2"
+                      sx={{
                         color: 'white',
                         fontWeight: 600,
                         fontSize: '0.9rem',
@@ -324,9 +324,9 @@ export default function NavBar(): React.JSX.Element {
                     </Typography>
                   </Box>
                   <Tooltip title="User Menu" arrow>
-                    <IconButton 
-                      onClick={handleOpenUserMenu} 
-                      sx={{ 
+                    <IconButton
+                      onClick={handleOpenUserMenu}
+                      sx={{
                         p: 0.5,
                         transition: 'transform 0.2s ease',
                         '&:hover': {
@@ -334,10 +334,10 @@ export default function NavBar(): React.JSX.Element {
                         }
                       }}
                     >
-                      <Avatar 
-                        alt={userInfo?.username || 'User'} 
+                      <Avatar
+                        alt={userInfo?.username || 'User'}
                         src={userInfo?.avatar}
-                        sx={{ 
+                        sx={{
                           width: 42,
                           height: 42,
                           bgcolor: 'rgba(255, 255, 255, 0.3)',
@@ -416,7 +416,7 @@ export default function NavBar(): React.JSX.Element {
       {/* User Menu */}
       {isLoggedIn && (
         <Menu
-          sx={{ 
+          sx={{
             mt: '10px',
             '& .MuiPaper-root': {
               borderRadius: 3,
@@ -441,9 +441,9 @@ export default function NavBar(): React.JSX.Element {
           onClose={handleCloseUserMenu}
           TransitionComponent={Fade}
         >
-          <Box sx={{ 
-            px: 2, 
-            py: 1.5, 
+          <Box sx={{
+            px: 2,
+            py: 1.5,
             background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
             color: 'white',
           }}>
@@ -451,10 +451,10 @@ export default function NavBar(): React.JSX.Element {
               {userInfo?.username || 'User'}
             </Typography>
             <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.75rem' }}>
-              User Account
+              {userInfo?.username === 'admin' ? 'Administrator Account' : 'User Account'}
             </Typography>
           </Box>
-          <MenuItem 
+          <MenuItem
             onClick={() => { router.push('/profile'); handleCloseUserMenu(); }}
             sx={{
               py: 1.5,
@@ -471,7 +471,7 @@ export default function NavBar(): React.JSX.Element {
               Profile
             </Typography>
           </MenuItem>
-          <MenuItem 
+          <MenuItem
             onClick={() => { router.push('/games'); handleCloseUserMenu(); }}
             sx={{
               py: 1.5,
@@ -489,7 +489,7 @@ export default function NavBar(): React.JSX.Element {
             </Typography>
           </MenuItem>
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 0.5, pt: 0.5 }}>
-            <MenuItem 
+            <MenuItem
               onClick={handleLogout}
               sx={{
                 py: 1.5,
