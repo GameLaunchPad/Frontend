@@ -808,7 +808,7 @@ export default function NewGame() {
                             }}
                         >
                             <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-                                <Typography variant="h6" fontWeight={700} color="error.main">
+                                <Typography fontSize={20} fontWeight={700} color="error.main">
                                     Discard Changes?
                                 </Typography>
                             </DialogTitle>
