@@ -189,79 +189,195 @@ export default function NavBar(): React.JSX.Element {
 
   return (
     <>
-      <AppBar position='relative' sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+      <AppBar 
+        position='sticky' 
+        elevation={0}
+        sx={{ 
+          zIndex: (theme) => theme.zIndex.drawer - 1,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          boxShadow: '0 4px 20px rgba(102, 126, 234, 0.25)',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '400px',
+            height: '100%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }
+        }}
+      >
         <Container maxWidth="xl">
-          <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+          <Toolbar 
+            disableGutters 
+            sx={{ 
+              justifyContent: 'space-between',
+              position: 'relative',
+              zIndex: 1,
+              minHeight: '70px !important',
+            }}
+          >
             {/* Left side - Logo and Home button */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <GamepadIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-              <Typography
-                variant="h6"
-                noWrap
-                component="a"
-                href="/"
-                sx={{
-                  mr: 3,
-                  display: { xs: 'none', md: 'flex' },
-                  fontFamily: 'monospace',
-                  fontWeight: 700,
-                  color: 'inherit',
-                  textDecoration: 'none',
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Logo Section */}
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  gap: 1.5,
                 }}
               >
-                GameLaunchPad
-              </Typography>
+                <Box
+                  sx={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.2s ease',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    }
+                  }}
+                >
+                  <GamepadIcon sx={{ fontSize: 28, color: 'white' }} />
+                </Box>
+                <Typography
+                  variant="h5"
+                  component="a"
+                  href="/"
+                  sx={{
+                    display: { xs: 'none', md: 'flex' },
+                    fontWeight: 700,
+                    fontSize: '1.35rem',
+                    color: 'white',
+                    textDecoration: 'none',
+                    letterSpacing: '-0.5px',
+                    transition: 'opacity 0.2s ease',
+                    '&:hover': {
+                      opacity: 0.9,
+                    }
+                  }}
+                >
+                  GameLaunchPad
+                </Typography>
+              </Box>
               
               {/* Home Button */}
               <Button
                 onClick={handleHomeClick}
+                startIcon={<HomeIcon />}
                 sx={{ 
-                  color: 'white', 
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  px: 2,
+                  color: 'white',
+                  bgcolor: 'rgba(255, 255, 255, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  px: 2.5,
                   py: 1,
                   borderRadius: 2,
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  textTransform: 'none',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s ease',
                   '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.1)'
+                    bgcolor: 'rgba(255, 255, 255, 0.25)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                   }
                 }}
               >
-                <HomeIcon sx={{ fontSize: 20 }} />
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  HOME
-                </Typography>
+                HOME
               </Button>
             </Box>
             
             {/* Right side - User Section */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {isLoggedIn ? (
-                <Tooltip title="User Menu">
-                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar 
-                      alt={userInfo?.username || 'User'} 
-                      src={userInfo?.avatar}
-                      sx={{ bgcolor: 'secondary.main' }}
+                <>
+                  {/* User Info Display */}
+                  <Box 
+                    sx={{ 
+                      display: { xs: 'none', sm: 'flex' }, 
+                      alignItems: 'center',
+                      gap: 1.5,
+                      bgcolor: 'rgba(255, 255, 255, 0.15)',
+                      backdropFilter: 'blur(10px)',
+                      px: 2,
+                      py: 0.75,
+                      borderRadius: 2,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                      }}
                     >
-                      {userInfo?.username?.charAt(0).toUpperCase() || 'U'}
-                    </Avatar>
-                  </IconButton>
-                </Tooltip>
+                      {userInfo?.username || 'User'}
+                    </Typography>
+                  </Box>
+                  <Tooltip title="User Menu" arrow>
+                    <IconButton 
+                      onClick={handleOpenUserMenu} 
+                      sx={{ 
+                        p: 0.5,
+                        transition: 'transform 0.2s ease',
+                        '&:hover': {
+                          transform: 'scale(1.1)',
+                        }
+                      }}
+                    >
+                      <Avatar 
+                        alt={userInfo?.username || 'User'} 
+                        src={userInfo?.avatar}
+                        sx={{ 
+                          width: 42,
+                          height: 42,
+                          bgcolor: 'rgba(255, 255, 255, 0.3)',
+                          color: '#667eea',
+                          fontWeight: 700,
+                          fontSize: '1.1rem',
+                          border: '2px solid rgba(255, 255, 255, 0.5)',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        }}
+                      >
+                        {userInfo?.username?.charAt(0).toUpperCase() || 'U'}
+                      </Avatar>
+                    </IconButton>
+                  </Tooltip>
+                </>
               ) : (
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
                   <Button
                     variant="outlined"
-                    size="small"
                     startIcon={<LoginIcon />}
                     onClick={() => setLoginOpen(true)}
                     sx={{
                       color: 'white',
-                      borderColor: 'white',
+                      borderColor: 'rgba(255, 255, 255, 0.5)',
+                      borderWidth: '2px',
+                      px: 2.5,
+                      py: 0.75,
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      fontSize: '0.9rem',
+                      textTransform: 'none',
+                      backdropFilter: 'blur(10px)',
+                      transition: 'all 0.2s ease',
                       '&:hover': {
                         borderColor: 'white',
-                        bgcolor: 'rgba(255,255,255,0.1)'
+                        borderWidth: '2px',
+                        bgcolor: 'rgba(255, 255, 255, 0.1)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                       }
                     }}
                   >
@@ -269,14 +385,23 @@ export default function NavBar(): React.JSX.Element {
                   </Button>
                   <Button
                     variant="contained"
-                    size="small"
                     startIcon={<PersonAddIcon />}
                     onClick={() => setRegisterOpen(true)}
                     sx={{
                       bgcolor: 'white',
-                      color: 'primary.main',
+                      color: '#667eea',
+                      px: 2.5,
+                      py: 0.75,
+                      borderRadius: 2,
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                      textTransform: 'none',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                      transition: 'all 0.2s ease',
                       '&:hover': {
-                        bgcolor: 'grey.100'
+                        bgcolor: 'rgba(255, 255, 255, 0.95)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
                       }
                     }}
                   >
@@ -292,33 +417,98 @@ export default function NavBar(): React.JSX.Element {
       {/* User Menu */}
       {isLoggedIn && (
         <Menu
-          sx={{ mt: '45px' }}
+          sx={{ 
+            mt: '10px',
+            '& .MuiPaper-root': {
+              borderRadius: 3,
+              minWidth: 200,
+              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.25)',
+              border: '1px solid rgba(102, 126, 234, 0.1)',
+              overflow: 'hidden',
+            }
+          }}
           id="menu-appbar"
           anchorEl={anchorElUser}
           anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
+            vertical: 'bottom',
+            horizontal: 'right',
           }}
           keepMounted
           transformOrigin={{
             vertical: 'top',
-            horizontal: 'center',
+            horizontal: 'right',
           }}
           open={Boolean(anchorElUser)}
           onClose={handleCloseUserMenu}
           TransitionComponent={Fade}
         >
-          <MenuItem onClick={() => { router.push('/profile'); handleCloseUserMenu(); }}>
-            <PersonIcon sx={{ mr: 1 }} />
-            Profile
+          <Box sx={{ 
+            px: 2, 
+            py: 1.5, 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+          }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+              {userInfo?.username || 'User'}
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.75rem' }}>
+              User Account
+            </Typography>
+          </Box>
+          <MenuItem 
+            onClick={() => { router.push('/profile'); handleCloseUserMenu(); }}
+            sx={{
+              py: 1.5,
+              px: 2,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                bgcolor: 'rgba(102, 126, 234, 0.08)',
+                transform: 'translateX(4px)',
+              }
+            }}
+          >
+            <PersonIcon sx={{ mr: 1.5, color: '#667eea', fontSize: 20 }} />
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              Profile
+            </Typography>
           </MenuItem>
-          <MenuItem onClick={() => { router.push('/dashboard'); handleCloseUserMenu(); }}>
-            Dashboard
+          <MenuItem 
+            onClick={() => { router.push('/games'); handleCloseUserMenu(); }}
+            sx={{
+              py: 1.5,
+              px: 2,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                bgcolor: 'rgba(102, 126, 234, 0.08)',
+                transform: 'translateX(4px)',
+              }
+            }}
+          >
+            <GamepadIcon sx={{ mr: 1.5, color: '#667eea', fontSize: 20 }} />
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              My Games
+            </Typography>
           </MenuItem>
-          <MenuItem onClick={handleLogout}>
-            <LogoutIcon sx={{ mr: 1 }} />
-            Logout
-          </MenuItem>
+          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 0.5, pt: 0.5 }}>
+            <MenuItem 
+              onClick={handleLogout}
+              sx={{
+                py: 1.5,
+                px: 2,
+                transition: 'all 0.2s ease',
+                color: 'error.main',
+                '&:hover': {
+                  bgcolor: 'rgba(211, 47, 47, 0.08)',
+                  transform: 'translateX(4px)',
+                }
+              }}
+            >
+              <LogoutIcon sx={{ mr: 1.5, fontSize: 20 }} />
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                Logout
+              </Typography>
+            </MenuItem>
+          </Box>
         </Menu>
       )}
 
