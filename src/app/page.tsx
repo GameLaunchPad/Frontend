@@ -62,7 +62,7 @@ export default function HomePage() {
                         </Box>
                         <CardContent>
                             <Typography variant="h5" component="div">YuanShen</Typography>
-                            <Typography variant="body2" color="text.secondary">On the continent of "Teyvat", where seven elements converge, everyone can become a god...</Typography>
+                            <Typography variant="body2" color="text.secondary">On the continent of &quot;Teyvat&quot;, where seven elements converge, everyone can become a god...</Typography>
                         </CardContent>
                     </Card>
                 </Box>
