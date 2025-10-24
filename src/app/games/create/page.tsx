@@ -5,8 +5,8 @@ import React, { useState, useEffect } from "react";
 import { CloudUpload, LooksOne, LooksTwo, Gamepad, ArrowBack, Android, Apple, Language as WebIcon, Info, Image as ImageIcon, Code, NoteAdd, CheckCircle, Save } from "@mui/icons-material";
 import Image from "next/image";
 import { PlatformSupport } from "../page";
-import { saveGameFormData, loadGameFormData, clearGameFormData, publishGame } from '@/utils/gameLocalStorage';
-import { useRouter } from 'next/navigation';
+import { saveGameFormData, loadGameFormData, clearGameFormData, publishGame, getPublishedGames, updateGame } from '@/utils/gameLocalStorage';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface FirstPageProps {
     gameName: string;
@@ -131,6 +131,9 @@ function SecondPage() {
 
 export default function NewGame() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const editGameId = searchParams.get('id'); // 获取编辑的游戏 ID
+    const [isEditMode, setIsEditMode] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
 
     const [gameName, setGameName] = useState('');
@@ -153,8 +156,43 @@ export default function NewGame() {
     const [showSaveDraftDialog, setShowSaveDraftDialog] = useState(false);
     const [showSubmitDialog, setShowSubmitDialog] = useState(false);
     
-    // 从 Local Storage 加载数据
+    // 从 Local Storage 加载数据（草稿或编辑模式）
     useEffect(() => {
+        // 如果是编辑模式，加载已发布游戏数据
+        if (editGameId) {
+            console.log('📝 编辑模式，游戏 ID:', editGameId);
+            setIsEditMode(true);
+            
+            const publishedGames = getPublishedGames();
+            const gameToEdit = publishedGames.find(g => g.id === editGameId);
+            
+            if (gameToEdit) {
+                console.log('✅ 找到要编辑的游戏:', gameToEdit.gameName);
+                setGameName(gameToEdit.gameName)
+                setGameIntro(gameToEdit.gameIntro)
+                setGameType(gameToEdit.gameType)
+                setAvatarSrc(gameToEdit.avatarSrc || undefined)
+                setHeaderImage(gameToEdit.headerImage || undefined)
+                setPlatforms({
+                    android: gameToEdit.platforms.android,
+                    ios: gameToEdit.platforms.ios,
+                    web: gameToEdit.platforms.web
+                })
+                setPlatformConfigs({
+                    androidPackageName: gameToEdit.platformConfigs?.androidPackageName || '',
+                    androidDownloadUrl: gameToEdit.platformConfigs?.androidDownloadUrl || '',
+                    iosPackageName: gameToEdit.platformConfigs?.iosPackageName || '',
+                    iosDownloadUrl: gameToEdit.platformConfigs?.iosDownloadUrl || '',
+                    webUrl: gameToEdit.platformConfigs?.webUrl || ''
+                })
+                setScreenshots(gameToEdit.screenshots || [])
+                return; // 编辑模式不加载草稿
+            } else {
+                console.warn('⚠️ 未找到要编辑的游戏:', editGameId);
+            }
+        }
+        
+        // 非编辑模式，加载草稿数据
         const savedData = loadGameFormData()
         if (savedData) {
             setGameName(savedData.gameName)
@@ -177,10 +215,15 @@ export default function NewGame() {
             setScreenshots(savedData.screenshots || [])
             console.log('📦 已从缓存恢复游戏表单数据')
         }
-    }, [])
+    }, [editGameId])
     
     // 保存表单数据到 Local Storage（防抖）
     useEffect(() => {
+        // 编辑模式下不自动保存草稿（避免覆盖其他草稿）
+        if (isEditMode) {
+            return;
+        }
+        
         // 显示自动保存提示
         setShowAutoSaveHint(true)
         
@@ -211,7 +254,7 @@ export default function NewGame() {
         }, 500)  // 500ms 防抖
         
         return () => clearTimeout(timer)
-    }, [gameName, gameIntro, gameType, avatarSrc, headerImage, platforms, platformConfigs, screenshots])
+    }, [gameName, gameIntro, gameType, avatarSrc, headerImage, platforms, platformConfigs, screenshots, isEditMode])
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -271,6 +314,7 @@ export default function NewGame() {
     const handleSubmitGame = () => {
         console.log('🎯 handleSubmitGame 被调用');
         console.log('📝 当前表单数据:', { gameName, gameType, avatarSrc, platforms });
+        console.log('🔧 编辑模式:', isEditMode, '游戏 ID:', editGameId);
         
         // 验证必填字段
         if (!gameName || !gameType || !avatarSrc) {
@@ -285,36 +329,67 @@ export default function NewGame() {
             return
         }
 
-        console.log('✅ 验证通过，开始发布游戏...');
+        console.log('✅ 验证通过，开始' + (isEditMode ? '更新' : '发布') + '游戏...');
 
         try {
-            // 发布游戏
-            const publishedGame = publishGame({
-                gameName,
-                gameIntro,
-                gameType,
-                avatarSrc: avatarSrc || '',
-                headerImage: headerImage || '',
-                platforms: {
-                    android: platforms.android,
-                    ios: platforms.ios,
-                    web: platforms.web
-                },
-                platformConfigs: {
-                    androidPackageName: platformConfigs.androidPackageName,
-                    androidDownloadUrl: platformConfigs.androidDownloadUrl,
-                    iosPackageName: platformConfigs.iosPackageName,
-                    iosDownloadUrl: platformConfigs.iosDownloadUrl,
-                    webUrl: platformConfigs.webUrl
-                },
-                screenshots: screenshots,
-                savedAt: Date.now()
-            })
+            if (isEditMode && editGameId) {
+                // 编辑模式：更新现有游戏
+                console.log('🔄 更新游戏:', editGameId);
+                updateGame(editGameId, {
+                    gameName,
+                    gameIntro,
+                    gameType,
+                    avatarSrc: avatarSrc || '',
+                    headerImage: headerImage || '',
+                    platforms: {
+                        android: platforms.android,
+                        ios: platforms.ios,
+                        web: platforms.web
+                    },
+                    platformConfigs: {
+                        androidPackageName: platformConfigs.androidPackageName,
+                        androidDownloadUrl: platformConfigs.androidDownloadUrl,
+                        iosPackageName: platformConfigs.iosPackageName,
+                        iosDownloadUrl: platformConfigs.iosDownloadUrl,
+                        webUrl: platformConfigs.webUrl
+                    },
+                    screenshots: screenshots,
+                    savedAt: Date.now()
+                });
+                
+                console.log('✅ Game updated successfully');
+            } else {
+                // 新建模式：发布游戏
+                console.log('🆕 创建新游戏');
+                const publishedGame = publishGame({
+                    gameName,
+                    gameIntro,
+                    gameType,
+                    avatarSrc: avatarSrc || '',
+                    headerImage: headerImage || '',
+                    platforms: {
+                        android: platforms.android,
+                        ios: platforms.ios,
+                        web: platforms.web
+                    },
+                    platformConfigs: {
+                        androidPackageName: platformConfigs.androidPackageName,
+                        androidDownloadUrl: platformConfigs.androidDownloadUrl,
+                        iosPackageName: platformConfigs.iosPackageName,
+                        iosDownloadUrl: platformConfigs.iosDownloadUrl,
+                        webUrl: platformConfigs.webUrl
+                    },
+                    screenshots: screenshots,
+                    savedAt: Date.now()
+                })
 
-            console.log('✅ Game published successfully:', publishedGame)
+                console.log('✅ Game published successfully:', publishedGame)
+            }
 
-            // 清除草稿
-            clearGameFormData()
+            // 清除草稿（仅在新建模式下）
+            if (!isEditMode) {
+                clearGameFormData()
+            }
 
             // 触发自定义事件通知游戏列表刷新
             window.dispatchEvent(new Event('gamesListRefresh'))
@@ -322,8 +397,8 @@ export default function NewGame() {
             // 显示成功对话框
             setShowSubmitDialog(true)
         } catch (error) {
-            console.error('Failed to publish game:', error)
-            alert('Failed to publish game. Please try again.')
+            console.error('Failed to ' + (isEditMode ? 'update' : 'publish') + ' game:', error)
+            alert('Failed to ' + (isEditMode ? 'update' : 'publish') + ' game. Please try again.')
         }
     };
 
@@ -390,7 +465,7 @@ export default function NewGame() {
                                             letterSpacing: '-0.5px'
                                         }}
                                     >
-                                        Create New Game
+                                        {isEditMode ? 'Edit Game' : 'Create New Game'}
                                     </Typography>
                                     <Typography 
                                         variant="body2" 
@@ -399,7 +474,9 @@ export default function NewGame() {
                                             fontWeight: 400 
                                         }}
                                     >
-                                        Submit your game to the platform and reach millions of players
+                                        {isEditMode 
+                                            ? 'Update your game information and settings'
+                                            : 'Submit your game to the platform and reach millions of players'}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -588,7 +665,7 @@ export default function NewGame() {
                             }
                         }}
                     >
-                        Submit Game
+                        {isEditMode ? 'Update Game' : 'Submit Game'}
                     </Button>
                 </Box>
             </Box>
@@ -710,21 +787,25 @@ export default function NewGame() {
                             <CheckCircle sx={{ fontSize: 50, color: 'success.main' }} />
                         </Box>
                         <Typography variant="h5" fontWeight={700} color="success.main">
-                            Game Published Successfully!
+                            {isEditMode ? 'Game Updated Successfully!' : 'Game Published Successfully!'}
                         </Typography>
                     </Box>
                 </DialogTitle>
                 <DialogContent>
                     <Box sx={{ textAlign: 'center', py: 2 }}>
                         <Typography variant="body1" paragraph>
-                            🎉 Congratulations! Your game has been published successfully.
+                            {isEditMode 
+                                ? '✅ Your game has been updated successfully.'
+                                : '🎉 Congratulations! Your game has been published successfully.'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" paragraph>
                             You can now view it in your game list.
                         </Typography>
                         <Alert severity="success" sx={{ mt: 2, textAlign: 'left' }}>
                             <Typography variant="body2">
-                                ✨ Your game is now live and ready to be discovered by players!
+                                {isEditMode
+                                    ? '💫 All changes have been saved and applied.'
+                                    : '✨ Your game is now live and ready to be discovered by players!'}
                             </Typography>
                         </Alert>
                     </Box>

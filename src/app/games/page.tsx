@@ -44,7 +44,7 @@ import { getAllGames, PublishedGame } from '@/utils/gameLocalStorage';
 
 export default function GamePad() {
   return (
-    <GameDashboard />
+      <GameDashboard />
   );
 }
 
@@ -273,7 +273,7 @@ function GameDashboard() {
                       }}
                     >
                       My Games
-                    </Typography>
+              </Typography>
                     <Typography 
                       variant="body2" 
                       sx={{ 
@@ -282,7 +282,7 @@ function GameDashboard() {
                       }}
                     >
                       Game Management &gt; My Games
-                    </Typography>
+              </Typography>
                   </Box>
                 </Box>
                 {/* Action Buttons */}
@@ -418,14 +418,14 @@ function GameDashboard() {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="h4" component="div" fontWeight={700}>
                     {stats.published}
-                  </Typography>
+              </Typography>
                   <Avatar sx={{ bgcolor: 'success.light', width: 48, height: 48 }}>
                     <CheckCircle />
                   </Avatar>
                 </Box>
                 <Typography variant="body1" color="text.secondary" fontWeight={500}>
-                  Published
-                </Typography>
+                Published
+              </Typography>
               </Paper>
             </Grid>
             <Grid size={3}>
@@ -446,14 +446,14 @@ function GameDashboard() {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="h4" component="div" fontWeight={700}>
                     {stats.reviewing}
-                  </Typography>
+              </Typography>
                   <Avatar sx={{ bgcolor: 'warning.light', width: 48, height: 48 }}>
                     <TrendingUp />
                   </Avatar>
                 </Box>
                 <Typography variant="body1" color="text.secondary" fontWeight={500}>
-                  Reviewing
-                </Typography>
+                Reviewing
+              </Typography>
               </Paper>
             </Grid>
             <Grid size={3}>
@@ -474,18 +474,18 @@ function GameDashboard() {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="h4" component="div" fontWeight={700}>
                     {stats.drafts}
-                  </Typography>
+              </Typography>
                   <Avatar sx={{ bgcolor: 'info.light', width: 48, height: 48 }}>
                     <Description />
                   </Avatar>
                 </Box>
                 <Typography variant="body1" color="text.secondary" fontWeight={500}>
-                  Drafts
-                </Typography>
+                Drafts
+              </Typography>
               </Paper>
             </Grid>
-          </Grid>
-        </Box>
+        </Grid>
+      </Box>
         {/* Filter and Search Section */}
         <Paper 
           elevation={2} 
@@ -530,7 +530,7 @@ function GameDashboard() {
                   <MenuItem value="published">Published</MenuItem>
                   <MenuItem value="reviewing">Reviewing</MenuItem>
                   <MenuItem value="draft">Drafts</MenuItem>
-                </TextField>
+            </TextField>
                 <TextField 
                   select 
                   label="Platform" 
@@ -547,9 +547,9 @@ function GameDashboard() {
                   <MenuItem value="android">Android</MenuItem>
                   <MenuItem value="ios">iOS</MenuItem>
                   <MenuItem value="web">Web</MenuItem>
-                </TextField>
+            </TextField>
               </Stack>
-            </Grid>
+          </Grid>
             <Grid size="auto">
               <ButtonGroup 
                 variant="outlined"
@@ -577,9 +577,9 @@ function GameDashboard() {
                 >
                   List
                 </Button>
-              </ButtonGroup>
-            </Grid>
+            </ButtonGroup>
           </Grid>
+        </Grid>
         </Paper>
 
         {/* Games Display */}
@@ -647,7 +647,7 @@ function GameDashboard() {
                 : <ListLayout games={filteredGames} />}
             </>
           )}
-        </Box>
+      </Box>
       </Box>
     </Box>
   );
@@ -756,19 +756,27 @@ function ListLayout({ games }: LayoutProps) {
               >
                 View
               </Button>
-              <Button 
-                variant="outlined" 
-                size="small"
-                startIcon={<Edit />}
-                sx={{ 
-                  textTransform: 'none', 
-                  fontWeight: 600,
-                  borderRadius: 1.5,
-                  px: 2
-                }}
+              <Link 
+                href={game.id === 'draft_current' 
+                  ? `/games/create` 
+                  : `/games/create?id=${game.id}`}
+                passHref 
+                style={{ textDecoration: 'none' }}
               >
-                Edit
-              </Button>
+                <Button 
+                  variant="outlined" 
+                  size="small"
+                  startIcon={<Edit />}
+                  sx={{ 
+                    textTransform: 'none', 
+                    fontWeight: 600,
+                    borderRadius: 1.5,
+                    px: 2
+                  }}
+                >
+                  Edit
+                </Button>
+              </Link>
               <Button 
                 variant="outlined"
                 size="small"
@@ -905,12 +913,12 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
                 <GetApp sx={{ fontSize: 16, mr: 0.5, color: 'primary.main' }} />
                 <Typography variant="h6" component="div" fontWeight={700}>
-                  {gameInfo.downloads}
-                </Typography>
+              {gameInfo.downloads}
+            </Typography>
               </Box>
               <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                Downloads
-              </Typography>
+              Downloads
+            </Typography>
             </Paper>
           </Grid>
           <Grid size={4}>
@@ -927,11 +935,11 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
                 <Star sx={{ fontSize: 16, mr: 0.5, color: 'warning.main' }} />
                 <Typography variant="h6" component="div" fontWeight={700}>
                   {gameInfo.rating || 'N/A'}
-                </Typography>
+            </Typography>
               </Box>
               <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                Rating
-              </Typography>
+              Rating
+            </Typography>
             </Paper>
           </Grid>
           <Grid size={4}>
@@ -945,15 +953,15 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
               }}
             >
               <Typography variant="body2" component="div" fontWeight={700} sx={{ mb: 0.5 }}>
-                {gameInfo.version}
-              </Typography>
+              {gameInfo.version}
+            </Typography>
               <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                Version
-              </Typography>
+              Version
+            </Typography>
             </Paper>
           </Grid>
         </Grid>
-      </CardContent>
+          </CardContent>
 
       {/* Actions */}
       <Divider />
@@ -969,18 +977,26 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
         >
           View
         </Button>
-        <Button 
-          size="small" 
-          startIcon={<Edit />}
-          sx={{ 
-            textTransform: 'none', 
-            fontWeight: 600,
-            borderRadius: 1.5,
-            px: 2
-          }}
+        <Link 
+          href={gameInfo.id === 'draft_current' 
+            ? `/games/create` 
+            : `/games/create?id=${gameInfo.id}`}
+          passHref 
+          style={{ textDecoration: 'none' }}
         >
-          Edit
-        </Button>
+          <Button 
+            size="small" 
+            startIcon={<Edit />}
+            sx={{ 
+              textTransform: 'none', 
+              fontWeight: 600,
+              borderRadius: 1.5,
+              px: 2
+            }}
+          >
+            Edit
+          </Button>
+        </Link>
         <Button 
           size="small"
           startIcon={<TrendingUp />}
