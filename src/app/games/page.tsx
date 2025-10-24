@@ -6,15 +6,12 @@ import {
   Card,
   CardContent,
   Divider,
-  Drawer,
   Grid,
   List,
   ListItem,
   ListItemText,
-  ListItemButton,
   MenuItem,
   TextField,
-  Toolbar,
   Typography,
   ButtonGroup,
   Button,
@@ -26,76 +23,76 @@ import GameHeading from './game-heading';
 
 export default function GamePad() {
   return (
-    <Box sx={{ display: 'flex' }}>
-      <EdgeDrawer />
+    // <Box sx={{ display: 'flex' }}>
+    //   <EdgeDrawer />
       <GameDashboard />
-    </Box>
+    //</Box>
   );
 }
 
-function EdgeDrawer() {
-  const drawerWidth = 240;
+// function EdgeDrawer() {
+//   const drawerWidth = 240;
 
-  return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
-      }}
-    >
-      <Toolbar />
-      <Box sx={{ overflow: 'auto' }}>
-        <List>
-          <ListItem key="My Games" disablePadding>
-            <ListItemButton>
-              <ListItemText primary="My Games" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="New Game" disablePadding>
-            <ListItemButton href="/games/create">
-              <ListItemText primary="New Game" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="Review Queue" disablePadding>
-            <ListItemButton>
-              <ListItemText primary="Review Queue" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-        <Divider />
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton>
-              <ListItemText primary="Provider Management" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton href='/cp-info'>
-              <ListItemText primary="Provider Information" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton>
-              <ListItemText primary="Certificate Management" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-        <Divider />
-        <List>
-          {['Data Analysis', 'Download Statistics', 'User Feedbacks'].map((text) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-    </Drawer>
-  );
-}
+//   return (
+//     <Drawer
+//       variant="permanent"
+//       sx={{
+//         width: drawerWidth,
+//         flexShrink: 0,
+//         [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+//       }}
+//     >
+//       <Toolbar />
+//       <Box sx={{ overflow: 'auto' }}>
+//         <List>
+//           <ListItem key="My Games" disablePadding>
+//             <ListItemButton>
+//               <ListItemText primary="My Games" />
+//             </ListItemButton>
+//           </ListItem>
+//           <ListItem key="New Game" disablePadding>
+//             <ListItemButton href="/games/create">
+//               <ListItemText primary="New Game" />
+//             </ListItemButton>
+//           </ListItem>
+//           <ListItem key="Review Queue" disablePadding>
+//             <ListItemButton>
+//               <ListItemText primary="Review Queue" />
+//             </ListItemButton>
+//           </ListItem>
+//         </List>
+//         <Divider />
+//         <List>
+//           <ListItem disablePadding>
+//             <ListItemButton>
+//               <ListItemText primary="Provider Management" />
+//             </ListItemButton>
+//           </ListItem>
+//           <ListItem disablePadding>
+//             <ListItemButton href='/cp-info'>
+//               <ListItemText primary="Provider Information" />
+//             </ListItemButton>
+//           </ListItem>
+//           <ListItem disablePadding>
+//             <ListItemButton>
+//               <ListItemText primary="Certificate Management" />
+//             </ListItemButton>
+//           </ListItem>
+//         </List>
+//         <Divider />
+//         <List>
+//           {['Data Analysis', 'Download Statistics', 'User Feedbacks'].map((text) => (
+//             <ListItem key={text} disablePadding>
+//               <ListItemButton>
+//                 <ListItemText primary={text} />
+//               </ListItemButton>
+//             </ListItem>
+//           ))}
+//         </List>
+//       </Box>
+//     </Drawer>
+//   );
+// }
 
 function GameDashboard() {
   enum Layout { Card, List };
