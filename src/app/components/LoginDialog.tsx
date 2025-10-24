@@ -14,10 +14,15 @@ import {
   Checkbox,
   Alert,
   CircularProgress,
-  Backdrop
+  Backdrop,
+  FormControl,
+  OutlinedInput,
+  InputAdornment,
+  InputLabel
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { setAuthToken } from '../../utils/auth';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 interface LoginDialogProps {
   open: boolean;
@@ -47,27 +52,27 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
           setError('Passwords do not match!');
           return;
         }
-        
+
         // Simulate registration
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // Call register success callback
         if (onRegisterSuccess) {
           onRegisterSuccess();
         }
-        
+
         // Reset form
         setEmail('');
         setPassword('');
         setConfirmPassword('');
-        
+
       } else {
         // Login logic
         const validAccounts = [
           { user: 'user@u.nus.edu', pass: 'admin123' },
           { user: 'admin', pass: 'admin123' }
         ];
-        
+
         const foundAccount = validAccounts.find(
           (acc) => acc.user === username && acc.pass === password
         );
@@ -78,11 +83,11 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
             avatar: undefined,
             role: foundAccount.user === 'admin' ? 'admin' as const : 'user' as const
           };
-          
+
           setAuthToken('demo-token', userData);
-          
+
           onLoginSuccess(userData);
-          
+
           // Reset form
           setUsername('');
           setPassword('');
@@ -109,6 +114,26 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
     }
   };
 
+  const [showPassword, setShowPassword] = useState(false);
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const handleClickShowConfirmPassword = () => setShowConfirmPassword((show) => !show);
+  const handleMouseDownConfirmPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpConfirmPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
   return (
     <>
       <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
@@ -127,15 +152,15 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        
+
         <DialogContent dividers>
           <Typography gutterBottom color="text.secondary" sx={{ mb: 3 }}>
-            {mode === 'login' 
-              ? 'Please enter your account information' 
+            {mode === 'login'
+              ? 'Please enter your account information'
               : 'Enter your details to register'
             }
           </Typography>
-          
+
           <Box component="form" onSubmit={handleSubmit} noValidate>
             {mode === 'register' && (
               <TextField
@@ -151,7 +176,7 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
                 onChange={(e) => setEmail(e.target.value)}
               />
             )}
-            
+
             {mode === 'login' && (
               <TextField
                 margin="normal"
@@ -166,34 +191,64 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
                 onChange={(e) => setUsername(e.target.value)}
               />
             )}
-            
-            <TextField
+
+            <FormControl
               margin="normal"
               required
               fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            
-            {mode === 'register' && (
-              <TextField
-                margin="normal"
-                required
-                fullWidth
+            >
+              <InputLabel htmlFor="password">Password</InputLabel>
+              <OutlinedInput
+                id="password"
+                name="password"
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      onMouseUp={handleMouseUpPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+
+            {mode === 'register' && (<FormControl
+              margin="normal"
+              required
+              fullWidth
+            >
+              <InputLabel htmlFor="password">Confirm Password</InputLabel>
+              <OutlinedInput
+                id="password"
                 name="confirmPassword"
                 label="Confirm Password"
-                type="password"
-                id="confirm-password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handleClickShowConfirmPassword}
+                      onMouseDown={handleMouseDownConfirmPassword}
+                      onMouseUp={handleMouseUpConfirmPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
               />
-            )}
-            
+            </FormControl>)}
+
             {mode === 'login' && (
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, mb: 2 }}>
                 <FormControlLabel
@@ -209,13 +264,13 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
                 />
               </Box>
             )}
-            
+
             {error && (
               <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
                 {error}
               </Alert>
             )}
-            
+
             <Button
               type="submit"
               fullWidth
