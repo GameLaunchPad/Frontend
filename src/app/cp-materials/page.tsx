@@ -3,6 +3,25 @@
 import { useState } from 'react'
 import { createCPMaterial, uploadFile } from '@/services/api'
 import { SubmitMode } from '@/types/cp-materials'
+import { 
+  Box, 
+  Button, 
+  Card, 
+  CardContent, 
+  Grid, 
+  Paper, 
+  TextField, 
+  Typography, 
+  Alert,
+  CircularProgress,
+  Chip,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider
+} from '@mui/material'
+import { CloudUpload, Delete, Description, AttachFile } from '@mui/icons-material'
 
 interface UploadedFile {
   name: string
@@ -111,170 +130,199 @@ export default function CPMaterialsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+    <Box component="main" sx={{ flexGrow: 1, p: 3, minHeight: '100vh', bgcolor: 'grey.50' }}>
+      <Box sx={{ maxWidth: 'xl', mx: 'auto' }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: 'text.primary' }}>
           上传审核材料/提交审核
-        </h1>
+        </Typography>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <Paper elevation={1} sx={{ borderRadius: 2 }}>
           {/* 顶部按钮栏 */}
-          <div className="flex justify-between items-center p-6 border-b border-gray-200">
-            <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            p: 3, 
+            borderBottom: 1, 
+            borderColor: 'divider' 
+          }}>
+            <Button variant="outlined" color="primary">
               资质材料管理
-            </button>
+            </Button>
             
-            <div className="flex gap-3">
-              <button 
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button 
+                variant="outlined"
                 onClick={() => handleSubmit(SubmitMode.SubmitDraft)}
                 disabled={submitting}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                startIcon={submitting ? <CircularProgress size={16} /> : null}
               >
                 {submitting ? '处理中...' : '保存草稿'}
-              </button>
-              <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+              </Button>
+              <Button variant="outlined" color="primary">
                 查看历史
-              </button>
-              <button 
+              </Button>
+              <Button 
+                variant="contained"
                 onClick={() => handleSubmit(SubmitMode.SubmitReview)}
                 disabled={submitting}
-                className="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
               >
                 {submitting ? '提交中...' : '提交审核'}
-              </button>
-            </div>
-          </div>
+              </Button>
+            </Box>
+          </Box>
 
           {/* 表单内容 */}
-          <div className="p-6">
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-              {/* 厂商名称 + 营业执照号 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    厂商名称 <span className="text-red-500">*</span>
-                  </label>
-                  <input 
-                    type="text"
+          <Box sx={{ p: 3 }}>
+            <Box component="form" onSubmit={(e) => e.preventDefault()}>
+              <Grid container spacing={3}>
+                {/* 厂商名称 + 营业执照号 */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="厂商名称"
                     value={formData.cpName}
                     onChange={(e) => setFormData({...formData, cpName: e.target.value})}
                     placeholder="请输入厂商名称"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                    helperText="* 必填字段"
                   />
-                </div>
+                </Grid>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    营业执照号 <span className="text-red-500">*</span>
-                  </label>
-                  <input 
-                    type="text"
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="营业执照号"
                     value={formData.businessLicense}
                     onChange={(e) => setFormData({...formData, businessLicense: e.target.value})}
                     placeholder="请输入营业执照号"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                    helperText="* 必填字段"
                   />
-                </div>
-              </div>
+                </Grid>
 
-              {/* 官网地址 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  官网地址
-                </label>
-                <input 
-                  type="url"
-                  value={formData.website}
-                  onChange={(e) => setFormData({...formData, website: e.target.value})}
-                  placeholder="请输入官网地址"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                {/* 官网地址 */}
+                <Grid size={12}>
+                  <TextField
+                    fullWidth
+                    label="官网地址"
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData({...formData, website: e.target.value})}
+                    placeholder="请输入官网地址"
+                  />
+                </Grid>
 
-              {/* 企业简介 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  企业简介
-                </label>
-                <textarea 
-                  value={formData.introduction}
-                  onChange={(e) => setFormData({...formData, introduction: e.target.value})}
-                  placeholder="请输入企业简介"
-                  rows={5}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                />
-              </div>
+                {/* 企业简介 */}
+                <Grid size={12}>
+                  <TextField
+                    fullWidth
+                    label="企业简介"
+                    multiline
+                    rows={5}
+                    value={formData.introduction}
+                    onChange={(e) => setFormData({...formData, introduction: e.target.value})}
+                    placeholder="请输入企业简介"
+                  />
+                </Grid>
+              </Grid>
 
               {/* 文件上传区域 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Grid size={12} sx={{ mt: 2 }}>
+                <Typography variant="h6" gutterBottom>
                   资质证明文件
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-gray-400 transition-colors">
-                  <input 
-                    type="file"
-                    id="file-upload"
-                    multiple
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <label 
-                    htmlFor="file-upload"
-                    className="inline-block px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer mb-3"
-                  >
-                    {uploading ? '上传中...' : '上传'}
-                  </label>
-                  <p className="text-sm text-gray-600 mb-1">
-                    点击上传或拖拽文件到此区域
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    支持 JPG、PNG、PDF 格式，单个文件不超过 10MB
-                  </p>
-                </div>
+                </Typography>
+                <Card 
+                  variant="outlined" 
+                  sx={{ 
+                    border: '2px dashed',
+                    borderColor: 'grey.300',
+                    textAlign: 'center',
+                    p: 6,
+                    '&:hover': {
+                      borderColor: 'grey.400',
+                    }
+                  }}
+                >
+                  <CardContent>
+                    <input 
+                      type="file"
+                      id="file-upload"
+                      multiple
+                      accept=".jpg,.jpeg,.png,.pdf"
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      htmlFor="file-upload"
+                      startIcon={uploading ? <CircularProgress size={16} /> : <CloudUpload />}
+                      disabled={uploading}
+                      sx={{ mb: 2 }}
+                    >
+                      {uploading ? '上传中...' : '上传文件'}
+                    </Button>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      点击上传或拖拽文件到此区域
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      支持 JPG、PNG、PDF 格式，单个文件不超过 10MB
+                    </Typography>
+                  </CardContent>
+                </Card>
                 
                 {/* 已上传文件列表 */}
                 {files.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle1" gutterBottom>
                       已上传文件 ({files.length})
-                    </p>
-                    <div className="space-y-2">
+                    </Typography>
+                    <Grid container spacing={2}>
                       {files.map((file, index) => (
-                        <div 
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded flex items-center justify-center">
-                              <span className="text-blue-600 text-xs font-medium">
-                                {file.name.split('.').pop()?.toUpperCase()}
-                              </span>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                              <p className="text-xs text-gray-500">
-                                {(file.size / 1024).toFixed(2)} KB
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveFile(index)}
-                            className="text-red-600 hover:text-red-700 text-sm font-medium"
-                          >
-                            删除
-                          </button>
-                        </div>
+                        <Grid size={12} key={index}>
+                          <Card variant="outlined" sx={{ bgcolor: 'grey.50' }}>
+                            <CardContent>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  <Chip 
+                                    icon={<AttachFile />}
+                                    label={file.name.split('.').pop()?.toUpperCase()}
+                                    color="primary"
+                                    variant="outlined"
+                                    size="small"
+                                  />
+                                  <Box>
+                                    <Typography variant="body2" fontWeight="medium">
+                                      {file.name}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      {(file.size / 1024).toFixed(2)} KB
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                                <Button
+                                  size="small"
+                                  color="error"
+                                  startIcon={<Delete />}
+                                  onClick={() => handleRemoveFile(index)}
+                                >
+                                  删除
+                                </Button>
+                              </Box>
+                            </CardContent>
+                          </Card>
+                        </Grid>
                       ))}
-                    </div>
-                  </div>
+                    </Grid>
+                  </Box>
                 )}
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+              </Grid>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
+    </Box>
   )
 }
