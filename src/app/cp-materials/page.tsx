@@ -21,10 +21,6 @@ import {
   Alert,
   CircularProgress,
   Chip,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Divider,
   Avatar,
   Dialog,
@@ -32,7 +28,7 @@ import {
   DialogContent,
   DialogActions
 } from '@mui/material'
-import { CloudUpload, Delete, Description, AttachFile, VerifiedUser, ArrowBack, Save } from '@mui/icons-material'
+import { CloudUpload, Delete, AttachFile, VerifiedUser, ArrowBack, Save } from '@mui/icons-material'
 
 interface UploadedFile {
   name: string
@@ -436,7 +432,7 @@ export default function CPMaterialsPage() {
                 ✅ Verification Submitted Successfully!
               </Typography>
               <Typography variant="body2" sx={{ mt: 0.5 }}>
-                Your materials have been submitted for review. The form is now locked. Click "Reset Form" to create a new submission.
+                Your materials have been submitted for review. The form is now locked. Click &quot;Reset Form&quot; to create a new submission.
               </Typography>
             </Alert>
           )}
@@ -459,7 +455,7 @@ export default function CPMaterialsPage() {
                 📋 Basic Information
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Please provide your company's basic information
+                Please provide your company&apos;s basic information
               </Typography>
               <Divider sx={{ mb: 3 }} />
             </Box>
@@ -984,7 +980,7 @@ export default function CPMaterialsPage() {
               <strong>Status:</strong> Draft
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              You can continue editing and submit for review when you're ready.
+              You can continue editing and submit for review when you&apos;re ready.
             </Typography>
             <Alert severity="info" sx={{ mt: 2, textAlign: 'left' }}>
               <Typography variant="body2">
