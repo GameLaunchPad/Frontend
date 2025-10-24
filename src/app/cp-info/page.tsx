@@ -1,11 +1,30 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image';
+import Image from 'next/image'
 // import { useRouter } from 'next/navigation'
 import { getCPInfo } from '@/services/api'
 import type { CPInfo } from '@/types/cp-info'
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemText, Toolbar } from '@mui/material';
+import { 
+  Box, 
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemButton, 
+  ListItemText, 
+  Toolbar,
+  Paper,
+  Typography,
+  Grid,
+  TextField,
+  Chip,
+  CircularProgress,
+  Button,
+  Card,
+  CardContent,
+  Avatar,
+  Divider
+} from '@mui/material'
 
 export default function CPInfoPage() {
   // ========== 状态管理 ==========
@@ -54,12 +73,12 @@ export default function CPInfoPage() {
     if (status === 1) {
       return {
         text: '已认证',
-        className: 'bg-green-100 text-green-800'
+        color: 'success' as const
       }
     }
     return {
       text: '未认证',
-      className: 'bg-gray-100 text-gray-800'
+      color: 'default' as const
     }
   }
 
@@ -71,29 +90,49 @@ export default function CPInfoPage() {
   // ========== 加载状态 ==========
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">加载中...</p>
-        </div>
-      </div>
+      <Box 
+        sx={{ 
+          minHeight: '100vh', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          bgcolor: 'grey.50'
+        }}
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <CircularProgress size={64} sx={{ mb: 2 }} />
+          <Typography variant="body1" color="text.secondary">
+            加载中...
+          </Typography>
+        </Box>
+      </Box>
     )
   }
 
   // ========== 错误状态 ==========
   if (error || !cpInfo) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-red-600 text-lg mb-4">{error || '数据加载失败'}</p>
-          <button 
+      <Box 
+        sx={{ 
+          minHeight: '100vh', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          bgcolor: 'grey.50'
+        }}
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h6" color="error" sx={{ mb: 2 }}>
+            {error || '数据加载失败'}
+          </Typography>
+          <Button 
+            variant="contained"
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             重新加载
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Box>
+      </Box>
     )
   }
 
@@ -103,9 +142,7 @@ export default function CPInfoPage() {
 
   // ========== 主页面渲染 ==========
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 主内容区 */}
-      <div className="flex">
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'grey.50' }}>
         {/* 左侧导航栏 */}
 
         <Drawer
@@ -134,140 +171,181 @@ export default function CPInfoPage() {
         </Drawer>
 
         {/* 右侧主内容 */}
-        <main className="flex-1 p-8">
-          <div className="max-w-5xl mx-auto">
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <Box sx={{ maxWidth: 'lg', mx: 'auto' }}>
             {/* 厂商基本信息卡片 */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
               {/* 卡片头部 */}
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">厂商基本信息</h2>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h6" component="h2" fontWeight="semibold">
+                  厂商基本信息
+                </Typography>
                 
                 {/* 认证状态标签 */}
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${verifyStatus.className}`}>
-                  {verifyStatus.text}
-                </span>
-              </div>
+                <Chip 
+                  label={verifyStatus.text}
+                  color={verifyStatus.color}
+                  size="small"
+                />
+              </Box>
 
               {/* 信息表单 */}
-              <div className="space-y-6">
+              <Grid container spacing={3}>
                 {/* 第一行：厂商名称 + 联系邮箱 */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      厂商名称
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900">
-                      {cpInfo.cp_name}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      联系邮箱
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900">
-                      {cpInfo.contact_email || '--'}
-                    </div>
-                  </div>
-                </div>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="厂商名称"
+                    value={cpInfo.cp_name}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="联系邮箱"
+                    value={cpInfo.contact_email || '--'}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
 
                 {/* 第二行：厂商名称值 + 邮箱地址 */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      厂商名称值
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900">
-                      {cpInfo.cp_name}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      邮箱地址
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900">
-                      {cpInfo.mailing_address || '--'}
-                    </div>
-                  </div>
-                </div>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="厂商名称值"
+                    value={cpInfo.cp_name}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="邮箱地址"
+                    value={cpInfo.mailing_address || '--'}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
 
                 {/* 第三行：联系电话 + 电话号码 */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      联系电话
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900">
-                      {cpInfo.contact_phone || '--'}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      电话号码
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900">
-                      {cpInfo.phone_number || '--'}
-                    </div>
-                  </div>
-                </div>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="联系电话"
+                    value={cpInfo.contact_phone || '--'}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="电话号码"
+                    value={cpInfo.phone_number || '--'}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
 
                 {/* 第四行：注册时间 + 注册日期 */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      注册时间
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900">
-                      {formatDate(cpInfo.register_time)}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      注册日期
-                    </label>
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900">
-                      {formatDate(cpInfo.registration_date)}
-                    </div>
-                  </div>
-                </div>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="注册时间"
+                    value={formatDate(cpInfo.register_time)}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="注册日期"
+                    value={formatDate(cpInfo.registration_date)}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
 
                 {/* LOGO 上传区域 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Grid size={12}>
+                  <Typography variant="subtitle2" gutterBottom>
                     厂商LOGO
-                  </label>
-                  <div className="flex items-start gap-4">
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
                     {/* LOGO 预览 */}
-                    <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center bg-gray-50">
+                    <Card 
+                      variant="outlined"
+                      sx={{ 
+                        width: 128, 
+                        height: 128,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '2px dashed',
+                        borderColor: 'grey.300',
+                        bgcolor: 'grey.50'
+                      }}
+                    >
                       {cpInfo.cp_icon ? (
-                        <Image
+                        <Avatar
                           src={cpInfo.cp_icon} 
-                          alt="厂商LOGO" 
-                          className="w-full h-full object-cover rounded-md"
+                          alt="厂商LOGO"
+                          variant="square"
+                          sx={{ width: '100%', height: '100%' }}
                         />
                       ) : (
-                        <span className="text-sm text-gray-400">LOGO</span>
+                        <Typography variant="body2" color="text.secondary">
+                          LOGO
+                        </Typography>
                       )}
-                    </div>
+                    </Card>
                     
                     {/* 品牌标识说明 */}
-                    <div className="flex-1">
-                      <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-600 text-sm min-h-[128px]">
-                        当前使用的品牌标识
-                      </div>
-                    </div>
-                  </div>
-                  
-                  
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
+                    <Card 
+                      variant="outlined"
+                      sx={{ 
+                        flex: 1,
+                        minHeight: 128,
+                        bgcolor: 'grey.50'
+                      }}
+                    >
+                      <CardContent>
+                        <Typography variant="body2" color="text.secondary">
+                          当前使用的品牌标识
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Box>
+        </Box>
+      </Box>
   )
 }
