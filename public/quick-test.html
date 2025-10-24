@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Quick LocalStorage Test</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button { 
+            background: #667eea; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 6px; 
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 600;
+        }
+        button:hover { background: #764ba2; }
+        button.danger { background: #dc3545; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .alert.success { background: #d4edda; color: #155724; }
+        .alert.error { background: #f8d7da; color: #721c24; }
+        .alert.info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Quick Test - Same Origin</h1>
+    
+    <div class="container">
+        <h3>⚡ Quick Actions</h3>
+        <button onclick="addAndShow()">1️⃣ Add Games & Show</button>
+        <button onclick="checkBoth()">2️⃣ Check Both Keys</button>
+        <button onclick="clearAndReload()" class="danger">3️⃣ Clear & Reload</button>
+        <button onclick="window.open('/games', '_blank')">🎮 Open Games Page</button>
+    </div>
+
+    <div id="status"></div>
+    <div id="output"></div>
+
+    <script>
+        function addAndShow() {
+            // Clear first
+            localStorage.removeItem('published_games');
+            
+            // Add test games
+            const games = [
+                {
+                    id: "game_" + Date.now(),
+                    gameName: "测试游戏 1",
+                    gameIntro: "测试游戏介绍",
+                    gameType: "Action",
+                    avatarSrc: "",
+                    headerImage: "",
+                    platforms: { android: true, ios: true, web: false },
+                    platformConfigs: {},
+                    screenshots: [],
+                    publishedAt: Date.now(),
+                    status: "published",
+                    downloads: 100,
+                    rating: 4.5,
+                    version: "1.0.0",
+                    savedAt: Date.now()
+                }
+            ];
+            
+            localStorage.setItem('published_games', JSON.stringify(games));
+            
+            // Verify
+            const stored = localStorage.getItem('published_games');
+            const parsed = JSON.parse(stored);
+            
+            document.getElementById('status').innerHTML = `
+                <div class="alert success">
+                    ✅ 成功添加 ${parsed.length} 个游戏到 localStorage!
+                </div>
+            `;
+            
+            document.getElementById('output').innerHTML = `
+                <div class="container">
+                    <h3>📊 Saved Data</h3>
+                    <pre>${JSON.stringify(parsed, null, 2)}</pre>
+                </div>
+            `;
+            
+            // Trigger refresh
+            window.dispatchEvent(new Event('gamesListRefresh'));
+            
+            alert('✅ 游戏已添加!\n\n请访问或刷新游戏列表页面: http://localhost:3000/games');
+        }
+        
+        function checkBoth() {
+            const draft = localStorage.getItem('game_form_data');
+            const published = localStorage.getItem('published_games');
+            
+            let html = '<div class="container"><h3>📦 Storage Status</h3>';
+            
+            html += '<div class="alert info">';
+            html += '<strong>game_form_data (草稿):</strong><br>';
+            html += draft ? `✅ 存在 (${(draft.length / 1024).toFixed(2)} KB)` : '❌ 不存在';
+            html += '</div>';
+            
+            html += '<div class="alert info">';
+            html += '<strong>published_games (已发布):</strong><br>';
+            if (published) {
+                const games = JSON.parse(published);
+                html += `✅ 存在 ${games.length} 个游戏 (${(published.length / 1024).toFixed(2)} KB)`;
+            } else {
+                html += '❌ 不存在';
+            }
+            html += '</div></div>';
+            
+            if (draft) {
+                html += '<div class="container"><h3>📝 Draft Data</h3>';
+                html += '<pre>' + JSON.stringify(JSON.parse(draft), null, 2).substring(0, 1000) + '...</pre></div>';
+            }
+            
+            if (published) {
+                html += '<div class="container"><h3>🎮 Published Games</h3>';
+                html += '<pre>' + JSON.stringify(JSON.parse(published), null, 2) + '</pre></div>';
+            }
+            
+            document.getElementById('output').innerHTML = html;
+        }
+        
+        function clearAndReload() {
+            if (confirm('确定要清除所有数据吗？')) {
+                localStorage.clear();
+                alert('✅ 所有数据已清除！页面将刷新...');
+                location.reload();
+            }
+        }
+        
+        // Auto-check on load
+        checkBoth();
+    </script>
+</body>
+</html>
+

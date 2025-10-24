@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 // import { useRouter } from 'next/navigation'
 import { getCPInfo } from '@/services/api'
 import type { CPInfo } from '@/types/cp-info'
-import { loadCPMaterialData, ReviewStatus } from '@/utils/localStorage'
+import { loadCPMaterialData, ReviewStatus } from '@/utils/cpLocalStorage'
 import { 
   Box, 
   Paper,

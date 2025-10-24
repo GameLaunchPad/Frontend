@@ -5,7 +5,8 @@ import React, { useState, useEffect } from "react";
 import { CloudUpload, LooksOne, LooksTwo, Gamepad, ArrowBack, Android, Apple, Language as WebIcon, Info, Image as ImageIcon, Code, NoteAdd, CheckCircle, Save } from "@mui/icons-material";
 import Image from "next/image";
 import { PlatformSupport } from "../page";
-import { saveGameFormData, loadGameFormData, clearGameFormData } from '@/utils/gameLocalStorage';
+import { saveGameFormData, loadGameFormData, clearGameFormData, publishGame } from '@/utils/gameLocalStorage';
+import { useRouter } from 'next/navigation';
 
 interface FirstPageProps {
     gameName: string;
@@ -129,6 +130,7 @@ function SecondPage() {
 }
 
 export default function NewGame() {
+    const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);
 
     const [gameName, setGameName] = useState('');
@@ -149,6 +151,7 @@ export default function NewGame() {
     const [open, setOpen] = React.useState(false);
     const [showAutoSaveHint, setShowAutoSaveHint] = useState(false);
     const [showSaveDraftDialog, setShowSaveDraftDialog] = useState(false);
+    const [showSubmitDialog, setShowSubmitDialog] = useState(false);
     
     // 从 Local Storage 加载数据
     useEffect(() => {
@@ -263,6 +266,65 @@ export default function NewGame() {
             savedAt: Date.now()
         })
         setShowSaveDraftDialog(true)
+    };
+
+    const handleSubmitGame = () => {
+        console.log('🎯 handleSubmitGame 被调用');
+        console.log('📝 当前表单数据:', { gameName, gameType, avatarSrc, platforms });
+        
+        // 验证必填字段
+        if (!gameName || !gameType || !avatarSrc) {
+            console.warn('⚠️ 验证失败：缺少必填字段');
+            alert('Please fill in all required fields: Game Name, Game Type, and Game Icon')
+            return
+        }
+
+        if (!platforms.android && !platforms.ios && !platforms.web) {
+            console.warn('⚠️ 验证失败：未选择平台');
+            alert('Please select at least one platform')
+            return
+        }
+
+        console.log('✅ 验证通过，开始发布游戏...');
+
+        try {
+            // 发布游戏
+            const publishedGame = publishGame({
+                gameName,
+                gameIntro,
+                gameType,
+                avatarSrc: avatarSrc || '',
+                headerImage: headerImage || '',
+                platforms: {
+                    android: platforms.android,
+                    ios: platforms.ios,
+                    web: platforms.web
+                },
+                platformConfigs: {
+                    androidPackageName: platformConfigs.androidPackageName,
+                    androidDownloadUrl: platformConfigs.androidDownloadUrl,
+                    iosPackageName: platformConfigs.iosPackageName,
+                    iosDownloadUrl: platformConfigs.iosDownloadUrl,
+                    webUrl: platformConfigs.webUrl
+                },
+                screenshots: screenshots,
+                savedAt: Date.now()
+            })
+
+            console.log('✅ Game published successfully:', publishedGame)
+
+            // 清除草稿
+            clearGameFormData()
+
+            // 触发自定义事件通知游戏列表刷新
+            window.dispatchEvent(new Event('gamesListRefresh'))
+
+            // 显示成功对话框
+            setShowSubmitDialog(true)
+        } catch (error) {
+            console.error('Failed to publish game:', error)
+            alert('Failed to publish game. Please try again.')
+        }
     };
 
     return (
@@ -510,7 +572,7 @@ export default function NewGame() {
                     <Button
                         variant="contained"
                         startIcon={<CheckCircle />}
-                        onClick={() => setCurrentPage((page) => page + 1)}
+                        onClick={handleSubmitGame}
                         sx={{
                             borderRadius: 2,
                             px: 3,
@@ -607,6 +669,82 @@ export default function NewGame() {
                         }}
                     >
                         Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* 提交成功弹窗 */}
+            <Dialog
+                open={showSubmitDialog}
+                onClose={() => {
+                    setShowSubmitDialog(false)
+                    router.push('/games')
+                }}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        p: 2
+                    }
+                }}
+            >
+                <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <Box
+                            sx={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: '50%',
+                                bgcolor: 'success.light',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                animation: 'bounce 1s ease-in-out',
+                                '@keyframes bounce': {
+                                    '0%, 100%': { transform: 'translateY(0)' },
+                                    '50%': { transform: 'translateY(-10px)' }
+                                }
+                            }}
+                        >
+                            <CheckCircle sx={{ fontSize: 50, color: 'success.main' }} />
+                        </Box>
+                        <Typography variant="h5" fontWeight={700} color="success.main">
+                            Game Published Successfully!
+                        </Typography>
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="body1" paragraph>
+                            🎉 Congratulations! Your game has been published successfully.
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" paragraph>
+                            You can now view it in your game list.
+                        </Typography>
+                        <Alert severity="success" sx={{ mt: 2, textAlign: 'left' }}>
+                            <Typography variant="body2">
+                                ✨ Your game is now live and ready to be discovered by players!
+                            </Typography>
+                        </Alert>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            setShowSubmitDialog(false)
+                            router.push('/games')
+                        }}
+                        sx={{
+                            borderRadius: 2,
+                            px: 4,
+                            py: 1.2,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            fontWeight: 600
+                        }}
+                    >
+                        Go to My Games
                     </Button>
                 </DialogActions>
             </Dialog>
