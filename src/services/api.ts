@@ -102,13 +102,13 @@ export async function getCPInfo(cpId: string): Promise<ApiResponse<CPInfo>> {
     
     const mockData: CPInfo = {
       cp_id: cpId,
-      cp_name: '示例游戏公司',
+      cp_name: 'example name',
       contact_email: 'contact@example.com',
-      mailing_address: '北京市朝阳区示例路123号',
+      mailing_address: 'example address',
       contact_phone: '010-12345678',
       phone_number: '13800138000',
       cp_icon: '',
-      verify_status: 1,
+      verify_status: 0,
       register_time: Date.now() - 86400000 * 30,
       registration_date: Date.now() - 86400000 * 30
     }

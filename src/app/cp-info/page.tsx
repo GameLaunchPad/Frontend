@@ -70,8 +70,8 @@ export default function CPInfoPage() {
               contact_email: localData.contactEmail || response.data.contact_email,
               contact_phone: localData.contactPhone || response.data.contact_phone,
               mailing_address: localData.mailingAddress || response.data.mailing_address,
-              // Add verify_status based on submission status
-              verify_status: localData.submitted ? 1 : response.data.verify_status
+              // Add verify_status based on material review status
+              verify_status: (localData.reviewStatus === ReviewStatus.Approved) ? 1 : 0
             })
           }
           setCpInfo(mergedData)
@@ -113,7 +113,7 @@ export default function CPInfoPage() {
             contact_email: localData.contactEmail || prev.contact_email,
             contact_phone: localData.contactPhone || prev.contact_phone,
             mailing_address: localData.mailingAddress || prev.mailing_address,
-            verify_status: localData.submitted ? 1 : prev.verify_status
+            verify_status: (localData.reviewStatus === ReviewStatus.Approved) ? 1 : 0
           } : null)
           // 同步审核状态
           setMaterialReviewStatus(localData.reviewStatus || ReviewStatus.Draft)
@@ -140,7 +140,7 @@ export default function CPInfoPage() {
             contact_email: localData.contactEmail || prev.contact_email,
             contact_phone: localData.contactPhone || prev.contact_phone,
             mailing_address: localData.mailingAddress || prev.mailing_address,
-            verify_status: localData.submitted ? 1 : prev.verify_status
+            verify_status: (localData.reviewStatus === ReviewStatus.Approved) ? 1 : 0
           }
           // Only update if data actually changed
           if (JSON.stringify(updated) !== JSON.stringify(prev)) {
