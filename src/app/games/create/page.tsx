@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
 import GameHeading from "../game-heading";
 import React, { useState, useEffect } from "react";
 import { CloudUpload, LooksOne, LooksTwo } from "@mui/icons-material";
@@ -81,6 +81,19 @@ export default function NewGame() {
     const [gameType, setGameType] = useState('');
     const [platforms, setPlatforms] = useState(new PlatformSupport());
 
+    const [open, setOpen] = React.useState(false);
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = (confirmed: boolean) => {
+        setOpen(false);
+
+        if (confirmed)
+            window.location.reload();
+    };
+
     return (
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
             <GameHeading
@@ -114,15 +127,36 @@ export default function NewGame() {
                 <Grid container>
                     <Button
                         variant="outlined"
-                        onClick={() => setCurrentPage(1)}
+                        onClick={handleClickOpen}
                     >
                         Reset Form
                     </Button>
+                    <Dialog
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <DialogTitle id="alert-dialog-title">
+                            {"Discard changes?"}
+                        </DialogTitle>
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                Changes on this page will not be saved.
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={() => handleClose(false)}>Cancel</Button>
+                            <Button onClick={() => handleClose(true)} autoFocus>
+                                Confirm
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
                     <Button
                         variant="contained"
                         onClick={() => setCurrentPage((page) => page + 1)}
                     >
-                        Next Step
+                        Submit
                     </Button>
                 </Grid>
             </Grid>
