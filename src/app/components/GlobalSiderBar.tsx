@@ -57,7 +57,7 @@ function SidebarContent() {
       <Box 
         sx={{ 
           p: 3, 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
           color: 'white',
           position: 'relative',
           overflow: 'hidden',
@@ -124,19 +124,19 @@ function SidebarContent() {
                   mx: 1,
                   transition: 'all 0.2s ease',
                   '&:hover': {
-                    bgcolor: 'rgba(102, 126, 234, 0.08)',
+                    bgcolor: 'rgba(25, 118, 210, 0.08)',
                     transform: 'translateX(4px)',
                   },
                   '&.Mui-selected': {
-                    bgcolor: 'rgba(102, 126, 234, 0.12)',
-                    borderLeft: '3px solid #667eea',
+                    bgcolor: 'rgba(25, 118, 210, 0.12)',
+                    borderLeft: '3px solid #1976d2',
                     '&:hover': {
-                      bgcolor: 'rgba(102, 126, 234, 0.16)',
+                      bgcolor: 'rgba(25, 118, 210, 0.16)',
                     }
                   }
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 40, color: isActive(item.href) ? '#667eea' : 'text.secondary' }}>
+                <ListItemIcon sx={{ minWidth: 40, color: isActive(item.href) ? '#1976d2' : 'text.secondary' }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText 
@@ -144,7 +144,7 @@ function SidebarContent() {
                   primaryTypographyProps={{
                     fontSize: '0.9rem',
                     fontWeight: isActive(item.href) ? 600 : 400,
-                    color: isActive(item.href) ? '#667eea' : 'text.primary'
+                    color: isActive(item.href) ? '#1976d2' : 'text.primary'
                   }}
                 />
               </ListItemButton>
@@ -182,19 +182,19 @@ function SidebarContent() {
                   mx: 1,
                   transition: 'all 0.2s ease',
                   '&:hover': {
-                    bgcolor: 'rgba(102, 126, 234, 0.08)',
+                    bgcolor: 'rgba(25, 118, 210, 0.08)',
                     transform: 'translateX(4px)',
                   },
                   '&.Mui-selected': {
-                    bgcolor: 'rgba(102, 126, 234, 0.12)',
-                    borderLeft: '3px solid #667eea',
+                    bgcolor: 'rgba(25, 118, 210, 0.12)',
+                    borderLeft: '3px solid #1976d2',
                     '&:hover': {
-                      bgcolor: 'rgba(102, 126, 234, 0.16)',
+                      bgcolor: 'rgba(25, 118, 210, 0.16)',
                     }
                   }
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 40, color: isActive(item.href) ? '#667eea' : 'text.secondary' }}>
+                <ListItemIcon sx={{ minWidth: 40, color: isActive(item.href) ? '#1976d2' : 'text.secondary' }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText 
@@ -202,7 +202,7 @@ function SidebarContent() {
                   primaryTypographyProps={{
                     fontSize: '0.9rem',
                     fontWeight: isActive(item.href) ? 600 : 400,
-                    color: isActive(item.href) ? '#667eea' : 'text.primary'
+                    color: isActive(item.href) ? '#1976d2' : 'text.primary'
                   }}
                 />
               </ListItemButton>

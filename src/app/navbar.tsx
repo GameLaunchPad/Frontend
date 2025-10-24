@@ -193,8 +193,8 @@ export default function NavBar(): React.JSX.Element {
         elevation={0}
         sx={{ 
           zIndex: (theme) => theme.zIndex.drawer - 1,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          boxShadow: '0 4px 20px rgba(102, 126, 234, 0.25)',
+          background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+          boxShadow: '0 4px 20px rgba(25, 118, 210, 0.25)',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -341,7 +341,7 @@ export default function NavBar(): React.JSX.Element {
                           width: 42,
                           height: 42,
                           bgcolor: 'rgba(255, 255, 255, 0.3)',
-                          color: '#667eea',
+                          color: '#1976d2',
                           fontWeight: 700,
                           fontSize: '1.1rem',
                           border: '2px solid rgba(255, 255, 255, 0.5)',
@@ -388,7 +388,7 @@ export default function NavBar(): React.JSX.Element {
                     onClick={() => setRegisterOpen(true)}
                     sx={{
                       bgcolor: 'white',
-                      color: '#667eea',
+                      color: '#1976d2',
                       px: 2.5,
                       py: 0.75,
                       borderRadius: 2,
@@ -421,8 +421,8 @@ export default function NavBar(): React.JSX.Element {
             '& .MuiPaper-root': {
               borderRadius: 3,
               minWidth: 200,
-              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.25)',
-              border: '1px solid rgba(102, 126, 234, 0.1)',
+              boxShadow: '0 8px 32px rgba(25, 118, 210, 0.25)',
+              border: '1px solid rgba(25, 118, 210, 0.1)',
               overflow: 'hidden',
             }
           }}
@@ -444,7 +444,7 @@ export default function NavBar(): React.JSX.Element {
           <Box sx={{ 
             px: 2, 
             py: 1.5, 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
             color: 'white',
           }}>
             <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
@@ -461,12 +461,12 @@ export default function NavBar(): React.JSX.Element {
               px: 2,
               transition: 'all 0.2s ease',
               '&:hover': {
-                bgcolor: 'rgba(102, 126, 234, 0.08)',
+                bgcolor: 'rgba(25, 118, 210, 0.08)',
                 transform: 'translateX(4px)',
               }
             }}
           >
-            <PersonIcon sx={{ mr: 1.5, color: '#667eea', fontSize: 20 }} />
+            <PersonIcon sx={{ mr: 1.5, color: '#1976d2', fontSize: 20 }} />
             <Typography variant="body2" sx={{ fontWeight: 500 }}>
               Profile
             </Typography>
@@ -478,12 +478,12 @@ export default function NavBar(): React.JSX.Element {
               px: 2,
               transition: 'all 0.2s ease',
               '&:hover': {
-                bgcolor: 'rgba(102, 126, 234, 0.08)',
+                bgcolor: 'rgba(25, 118, 210, 0.08)',
                 transform: 'translateX(4px)',
               }
             }}
           >
-            <GamepadIcon sx={{ mr: 1.5, color: '#667eea', fontSize: 20 }} />
+            <GamepadIcon sx={{ mr: 1.5, color: '#1976d2', fontSize: 20 }} />
             <Typography variant="body2" sx={{ fontWeight: 500 }}>
               My Games
             </Typography>
