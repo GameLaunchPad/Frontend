@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 // import { useRouter } from 'next/navigation'
 import { getCPInfo } from '@/services/api'
 import type { CPInfo } from '@/types/cp-info'
+import { loadCPMaterialData, ReviewStatus } from '@/utils/localStorage'
 import { 
   Box, 
   Drawer, 
@@ -23,28 +23,71 @@ import {
   Card,
   CardContent,
   Avatar,
-  Divider
+  Divider,
+  ListItemIcon,
+  InputAdornment
 } from '@mui/material'
+import { 
+  Business, 
+  Description, 
+  Gamepad,
+  VerifiedUser,
+  ContactMail,
+  Phone,
+  Language,
+  LocationOn,
+  CalendarToday,
+  Sync,
+  Edit
+} from '@mui/icons-material'
 
 export default function CPInfoPage() {
   // State Management
   const [cpInfo, setCpInfo] = useState<CPInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [materialReviewStatus, setMaterialReviewStatus] = useState<ReviewStatus>(ReviewStatus.Draft)
   
   // useRouter for navigation
   // const router = useRouter()
 
-  // Data Fetching
+  // Data Fetching - Initial load
   useEffect(() => {
     const loadCPInfo = async () => {
       try {
         setLoading(true)
-        // Hardcoded provider ID, should get from login state in production
+        
+        // 1. Load from localStorage first (from cp-materials page)
+        const localData = loadCPMaterialData()
+        
+        // 2. Fetch from API
         const response = await getCPInfo('cp_123')
         
         if (response.code === 0 && response.data) {
-          setCpInfo(response.data)
+          // 3. Merge localStorage data with API data (localStorage takes priority for edited fields)
+          const mergedData: CPInfo = {
+            ...response.data,
+            // Override with localStorage data if available
+            ...(localData && {
+              cp_name: localData.cpName || response.data.cp_name,
+              business_license: localData.businessLicense || response.data.business_license,
+              website: localData.website || response.data.website,
+              introduction: localData.introduction || response.data.introduction,
+              cp_icon: localData.cpIcon || response.data.cp_icon,
+              contact_email: localData.contactEmail || response.data.contact_email,
+              contact_phone: localData.contactPhone || response.data.contact_phone,
+              mailing_address: localData.mailingAddress || response.data.mailing_address,
+              // Add verify_status based on submission status
+              verify_status: localData.submitted ? 1 : response.data.verify_status
+            })
+          }
+          setCpInfo(mergedData)
+          // 同步审核状态
+          if (localData) {
+            setMaterialReviewStatus(localData.reviewStatus || ReviewStatus.Draft)
+          }
+          console.log('📦 Loaded data from localStorage and API')
         } else {
           setError('Failed to load provider information')
         }
@@ -58,6 +101,74 @@ export default function CPInfoPage() {
 
     loadCPInfo()
   }, [])
+  
+  // Auto-sync with localStorage changes
+  useEffect(() => {
+    // Listen to localStorage changes (from other tabs or pages)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'cp_material_form_data') {
+        console.log('📦 LocalStorage changed from another tab')
+        setIsSyncing(true)
+        const localData = loadCPMaterialData()
+        if (localData && cpInfo) {
+          setCpInfo(prev => prev ? {
+            ...prev,
+            cp_name: localData.cpName || prev.cp_name,
+            business_license: localData.businessLicense || prev.business_license,
+            website: localData.website || prev.website,
+            introduction: localData.introduction || prev.introduction,
+            cp_icon: localData.cpIcon || prev.cp_icon,
+            contact_email: localData.contactEmail || prev.contact_email,
+            contact_phone: localData.contactPhone || prev.contact_phone,
+            mailing_address: localData.mailingAddress || prev.mailing_address,
+            verify_status: localData.submitted ? 1 : prev.verify_status
+          } : null)
+          // 同步审核状态
+          setMaterialReviewStatus(localData.reviewStatus || ReviewStatus.Draft)
+        }
+        setTimeout(() => setIsSyncing(false), 1000)
+      }
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    
+    // Poll localStorage every 2 seconds for same-tab updates
+    const pollInterval = setInterval(() => {
+      const localData = loadCPMaterialData()
+      if (localData && cpInfo) {
+        setCpInfo(prev => {
+          if (!prev) return null
+          const updated = {
+            ...prev,
+            cp_name: localData.cpName || prev.cp_name,
+            business_license: localData.businessLicense || prev.business_license,
+            website: localData.website || prev.website,
+            introduction: localData.introduction || prev.introduction,
+            cp_icon: localData.cpIcon || prev.cp_icon,
+            contact_email: localData.contactEmail || prev.contact_email,
+            contact_phone: localData.contactPhone || prev.contact_phone,
+            mailing_address: localData.mailingAddress || prev.mailing_address,
+            verify_status: localData.submitted ? 1 : prev.verify_status
+          }
+          // Only update if data actually changed
+          if (JSON.stringify(updated) !== JSON.stringify(prev)) {
+            console.log('📦 Auto-synced from localStorage')
+            setIsSyncing(true)
+            setTimeout(() => setIsSyncing(false), 1000)
+            // 同步审核状态
+            setMaterialReviewStatus(localData.reviewStatus || ReviewStatus.Draft)
+            return updated
+          }
+          return prev
+        })
+      }
+    }, 2000)
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(pollInterval)
+    }
+  }, [cpInfo])
 
   // Utility Functions
   const formatDate = (timestamp?: number) => {
@@ -76,6 +187,22 @@ export default function CPInfoPage() {
     return {
       text: 'Unverified',
       color: 'default' as const
+    }
+  }
+  
+  // Get material review status display text and style
+  const getMaterialReviewStatus = () => {
+    switch (materialReviewStatus) {
+      case ReviewStatus.Draft:
+        return { text: 'Draft', color: 'default' as const, bgcolor: 'grey.200' }
+      case ReviewStatus.Reviewing:
+        return { text: 'Under Review', color: 'warning' as const, bgcolor: 'warning.light' }
+      case ReviewStatus.Approved:
+        return { text: 'Approved', color: 'success' as const, bgcolor: 'success.light' }
+      case ReviewStatus.Rejected:
+        return { text: 'Rejected', color: 'error' as const, bgcolor: 'error.light' }
+      default:
+        return { text: 'Draft', color: 'default' as const, bgcolor: 'grey.200' }
     }
   }
 
@@ -141,26 +268,76 @@ export default function CPInfoPage() {
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'grey.50' }}>
         {/* Left Navigation Bar */}
-
         <Drawer
           variant="permanent"
           sx={{
             width: drawerWidth,
             flexShrink: 0,
-            [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+            [`& .MuiDrawer-paper`]: { 
+              width: drawerWidth, 
+              boxSizing: 'border-box',
+              borderRight: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper'
+            },
           }}
         >
           <Toolbar />
-          <Box sx={{ overflow: 'auto' }}>
-            <List>
-              <ListItem disablePadding>
-                <ListItemButton href='/games'>
-                  <ListItemText primary="Game Management" />
+          <Box sx={{ overflow: 'auto', p: 2 }}>
+            {/* Navigation Title */}
+            <Typography 
+              variant="overline" 
+              sx={{ 
+                px: 2, 
+                py: 1, 
+                color: 'text.secondary',
+                fontWeight: 700,
+                letterSpacing: 1
+              }}
+            >
+              Management
+            </Typography>
+            <List sx={{ mt: 1 }}>
+              <ListItem disablePadding sx={{ mb: 1 }}>
+                <ListItemButton 
+                  href='/games'
+                  sx={{
+                    borderRadius: 2,
+                    '&:hover': {
+                      bgcolor: 'primary.50'
+                    }
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <Gamepad color="primary" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Game Management" 
+                    primaryTypographyProps={{
+                      fontWeight: 500
+                    }}
+                  />
                 </ListItemButton>
               </ListItem>
               <ListItem disablePadding>
-                <ListItemButton href='/cp-materials'>
-                  <ListItemText primary="Materials" />
+                <ListItemButton 
+                  href='/cp-materials'
+                  sx={{
+                    borderRadius: 2,
+                    '&:hover': {
+                      bgcolor: 'primary.50'
+                    }
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <Description color="primary" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Materials" 
+                    primaryTypographyProps={{
+                      fontWeight: 500
+                    }}
+                  />
                 </ListItemButton>
               </ListItem>
             </List>
@@ -169,21 +346,175 @@ export default function CPInfoPage() {
 
         {/* Right Main Content */}
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <Box sx={{ maxWidth: 'lg', mx: 'auto' }}>
+          <Box sx={{ maxWidth: 'xl', mx: 'auto' }}>
+            {/* Beautiful Title Card */}
+            <Box sx={{ mb: 4 }}>
+              <Card 
+                elevation={0}
+                sx={{ 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  position: 'relative',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '300px',
+                    height: '300px',
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                    transform: 'translate(30%, -30%)',
+                  }
+                }}
+              >
+                <CardContent sx={{ p: 4, position: 'relative', zIndex: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <Box
+                      sx={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: 3,
+                        bgcolor: 'rgba(255, 255, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      <Business sx={{ fontSize: 48, color: 'white' }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                        <Typography 
+                          variant="h4" 
+                          component="h1" 
+                          sx={{ 
+                            fontWeight: 700,
+                            letterSpacing: '-0.5px'
+                          }}
+                        >
+                          Provider Information
+                        </Typography>
+                        <Chip 
+                          icon={<VerifiedUser />}
+                          label={verifyStatus.text}
+                          sx={{
+                            bgcolor: verifyStatus.color === 'success' 
+                              ? 'rgba(76, 175, 80, 0.3)' 
+                              : 'rgba(255, 152, 0, 0.3)',
+                            color: 'white',
+                            fontWeight: 700,
+                            fontSize: '0.9rem',
+                            px: 2,
+                            py: 0.5,
+                            border: '2px solid',
+                            borderColor: verifyStatus.color === 'success' 
+                              ? 'rgba(129, 199, 132, 0.8)' 
+                              : 'rgba(255, 183, 77, 0.8)',
+                            boxShadow: verifyStatus.color === 'success'
+                              ? '0 4px 12px rgba(76, 175, 80, 0.4)'
+                              : '0 4px 12px rgba(255, 152, 0, 0.4)',
+                            '& .MuiChip-icon': {
+                              color: 'white',
+                              fontSize: '1.2rem'
+                            }
+                          }}
+                        />
+                        {/* 材料审核状态 */}
+                        <Chip
+                          label={`Material: ${getMaterialReviewStatus().text}`}
+                          sx={{
+                            bgcolor: 'rgba(255, 255, 255, 0.3)',
+                            color: 'white',
+                            fontWeight: 700,
+                            fontSize: '0.85rem',
+                            px: 2,
+                            py: 0.5,
+                            border: '2px solid rgba(255, 255, 255, 0.5)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                          }}
+                        />
+                      </Box>
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          opacity: 0.95,
+                          fontWeight: 400 
+                        }}
+                      >
+                        View and manage your company profile and verification status
+                      </Typography>
+                    </Box>
+                    {/* Sync Indicator and Edit Button */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-end' }}>
+                      {isSyncing && (
+                        <Chip
+                          icon={<Sync sx={{ animation: 'spin 1s linear infinite', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />}
+                          label="Syncing..."
+                          size="small"
+                          sx={{
+                            bgcolor: 'rgba(255, 255, 255, 0.2)',
+                            color: 'white',
+                            fontWeight: 600,
+                            border: '1px solid rgba(255, 255, 255, 0.3)'
+                          }}
+                        />
+                      )}
+                      <Button
+                        variant="contained"
+                        startIcon={<Edit />}
+                        href="/cp-materials"
+                        sx={{
+                          bgcolor: 'rgba(255, 255, 255, 0.9)',
+                          color: 'primary.main',
+                          fontWeight: 600,
+                          px: 3,
+                          '&:hover': {
+                            bgcolor: 'white'
+                          }
+                        }}
+                      >
+                        Edit in Materials
+                      </Button>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+
             {/* Provider Information Card */}
-            <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-              {/* Card Header */}
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h6" component="h2" fontWeight="semibold">
-                  Provider Information
+            <Paper 
+              elevation={2} 
+              sx={{ 
+                p: 4, 
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.200'
+              }}
+            >
+
+              {/* Basic Information Section */}
+              <Box sx={{ mb: 4 }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    mb: 0.5,
+                    color: 'primary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  🏢 Basic Information
                 </Typography>
-                
-                {/* Verification Status */}
-                <Chip 
-                  label={verifyStatus.text}
-                  color={verifyStatus.color}
-                  size="small"
-                />
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Company basic details and contact information
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
               </Box>
 
               {/* Information Form */}
@@ -196,8 +527,18 @@ export default function CPInfoPage() {
                     value={cpInfo.cp_name}
                     InputProps={{
                       readOnly: true,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Business sx={{ color: 'primary.main' }} />
+                        </InputAdornment>
+                      )
                     }}
                     variant="filled"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontWeight: 500
+                      }
+                    }}
                   />
                 </Grid>
                 
@@ -208,8 +549,18 @@ export default function CPInfoPage() {
                     value={cpInfo.contact_email || '--'}
                     InputProps={{
                       readOnly: true,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <ContactMail sx={{ color: 'primary.main' }} />
+                        </InputAdornment>
+                      )
                     }}
                     variant="filled"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontWeight: 500
+                      }
+                    }}
                   />
                 </Grid>
 
@@ -221,8 +572,18 @@ export default function CPInfoPage() {
                     value={cpInfo.business_license || '--'}
                     InputProps={{
                       readOnly: true,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Description sx={{ color: 'primary.main' }} />
+                        </InputAdornment>
+                      )
                     }}
                     variant="filled"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontWeight: 500
+                      }
+                    }}
                   />
                 </Grid>
                 
@@ -233,8 +594,18 @@ export default function CPInfoPage() {
                     value={cpInfo.contact_phone || '--'}
                     InputProps={{
                       readOnly: true,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Phone sx={{ color: 'primary.main' }} />
+                        </InputAdornment>
+                      )
                     }}
                     variant="filled"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontWeight: 500
+                      }
+                    }}
                   />
                 </Grid>
 
@@ -246,8 +617,18 @@ export default function CPInfoPage() {
                     value={cpInfo.website || '--'}
                     InputProps={{
                       readOnly: true,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Language sx={{ color: 'primary.main' }} />
+                        </InputAdornment>
+                      )
                     }}
                     variant="filled"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontWeight: 500
+                      }
+                    }}
                   />
                 </Grid>
                 
@@ -258,9 +639,42 @@ export default function CPInfoPage() {
                     value={cpInfo.mailing_address || '--'}
                     InputProps={{
                       readOnly: true,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <LocationOn sx={{ color: 'primary.main' }} />
+                        </InputAdornment>
+                      )
                     }}
                     variant="filled"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontWeight: 500
+                      }
+                    }}
                   />
+                </Grid>
+
+                {/* Registration Information Section */}
+                <Grid size={12}>
+                  <Box sx={{ mt: 4, mb: 2 }}>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 700, 
+                        mb: 0.5,
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                      }}
+                    >
+                      📅 Registration Information
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      Account registration and verification dates
+                    </Typography>
+                    <Divider sx={{ mb: 3 }} />
+                  </Box>
                 </Grid>
 
                 {/* Row 4: Register Time + Registration Date */}
@@ -271,8 +685,18 @@ export default function CPInfoPage() {
                     value={formatDate(cpInfo.register_time)}
                     InputProps={{
                       readOnly: true,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <CalendarToday sx={{ color: 'primary.main' }} />
+                        </InputAdornment>
+                      )
                     }}
                     variant="filled"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontWeight: 500
+                      }
+                    }}
                   />
                 </Grid>
                 
@@ -283,9 +707,42 @@ export default function CPInfoPage() {
                     value={formatDate(cpInfo.registration_date)}
                     InputProps={{
                       readOnly: true,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <CalendarToday sx={{ color: 'primary.main' }} />
+                        </InputAdornment>
+                      )
                     }}
                     variant="filled"
+                    sx={{
+                      '& .MuiInputBase-input': {
+                        fontWeight: 500
+                      }
+                    }}
                   />
+                </Grid>
+
+                {/* Company Introduction Section */}
+                <Grid size={12}>
+                  <Box sx={{ mt: 4, mb: 2 }}>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 700, 
+                        mb: 0.5,
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                      }}
+                    >
+                      📝 Company Introduction
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      Brief description about your company
+                    </Typography>
+                    <Divider sx={{ mb: 3 }} />
+                  </Box>
                 </Grid>
 
                 {/* Company Introduction */}
@@ -293,33 +750,60 @@ export default function CPInfoPage() {
                   <TextField
                     fullWidth
                     label="Company Introduction"
-                    value={cpInfo.introduction || '--'}
+                    value={cpInfo.introduction || 'No introduction provided'}
                     multiline
                     rows={4}
                     InputProps={{
                       readOnly: true,
                     }}
                     variant="filled"
+                    sx={{
+                      '& .MuiFilledInput-root': {
+                        bgcolor: 'grey.50'
+                      },
+                      '& .MuiInputBase-input': {
+                        fontWeight: 400,
+                        lineHeight: 1.6
+                      }
+                    }}
                   />
                 </Grid>
 
                 {/* Provider Icon */}
                 <Grid size={12}>
-                  <Typography variant="h6" gutterBottom>
-                    Provider Icon
+                  <Box sx={{ mt: 4, mb: 2 }}>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 700, 
+                        mb: 0.5,
+                        color: 'primary.main',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                      }}
+                    >
+                      🎨 Provider Icon
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      Your company brand icon
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                    <Divider sx={{ mb: 3 }} />
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
                     {/* Icon Preview */}
                     <Avatar
                       src={cpInfo.cp_icon}
                       alt="Provider Icon"
                       variant="rounded"
                       sx={{ 
-                        width: 128, 
-                        height: 128,
-                        bgcolor: 'grey.200',
-                        border: '2px solid',
-                        borderColor: 'grey.300'
+                        width: 140, 
+                        height: 140,
+                        bgcolor: 'grey.100',
+                        border: '3px solid',
+                        borderColor: cpInfo.cp_icon ? 'primary.main' : 'grey.300',
+                        boxShadow: cpInfo.cp_icon ? 3 : 0,
+                        transition: 'all 0.3s ease'
                       }}
                     >
                       {!cpInfo.cp_icon && (
@@ -334,14 +818,32 @@ export default function CPInfoPage() {
                       variant="outlined"
                       sx={{ 
                         flex: 1,
-                        minHeight: 128,
-                        bgcolor: 'grey.50'
+                        minHeight: 140,
+                        bgcolor: 'background.paper',
+                        border: '1px solid',
+                        borderColor: 'grey.200',
+                        display: 'flex',
+                        alignItems: 'center'
                       }}
                     >
-                      <CardContent>
-                        <Typography variant="body2" color="text.secondary">
-                          Current brand icon in use
+                      <CardContent sx={{ width: '100%' }}>
+                        <Typography variant="h6" fontWeight={600} gutterBottom>
+                          Brand Icon Status
                         </Typography>
+                        <Typography variant="body2" color="text.secondary" paragraph>
+                          {cpInfo.cp_icon 
+                            ? 'Current brand icon in use. This icon represents your company across the platform.'
+                            : 'No brand icon uploaded yet. Upload an icon in the Materials section to enhance your brand presence.'
+                          }
+                        </Typography>
+                        <Box sx={{ mt: 2 }}>
+                          <Chip 
+                            label={cpInfo.cp_icon ? 'Icon Set' : 'No Icon'}
+                            color={cpInfo.cp_icon ? 'success' : 'default'}
+                            size="small"
+                            variant="outlined"
+                          />
+                        </Box>
                       </CardContent>
                     </Card>
                   </Box>
