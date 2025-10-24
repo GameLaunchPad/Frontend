@@ -254,8 +254,6 @@ export default function CPInfoPage() {
 
   const verifyStatus = getVerifyStatus(cpInfo.verify_status)
 
-  const drawerWidth = 240;
-
   // Main Page Render
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'grey.50' }}>
