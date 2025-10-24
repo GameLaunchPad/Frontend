@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import React from 'react';
-import { Box, Card, CardContent, Grid, Stack, Typography, Container } from '@mui/material';
+import { Box, Card, CardContent, Stack, Typography, Container } from '@mui/material';
 
 export default function HomePage() {
   const featuredGameImageUrl = "/images/genshin_main.jpg";
@@ -136,8 +136,8 @@ interface GameCardProps {
 
 function GameCard({ variant, title, rating, category, imageUrl }: GameCardProps ) {
   const imageContainerSx = variant === "horizontal"
-      ? { position: 'relative', width: 100, height: 100, flexShrink: 0 }
-      : { position: 'relative', width: '100%', height: 140 };
+      ? { position: 'relative' as const, width: 100, height: 100, flexShrink: 0 }
+      : { position: 'relative' as const, width: '100%', height: 140 };
 
   return (
     <Card sx={
