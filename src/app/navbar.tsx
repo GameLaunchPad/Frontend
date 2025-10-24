@@ -312,7 +312,7 @@ export default function NavBar(): React.JSX.Element {
             <PersonIcon sx={{ mr: 1 }} />
             Profile
           </MenuItem>
-          <MenuItem onClick={() => { router.push('/dashboard'); handleCloseUserMenu(); }}>
+          <MenuItem onClick={() => { router.push('/games'); handleCloseUserMenu(); }}>
             Dashboard
           </MenuItem>
           <MenuItem onClick={handleLogout}>
