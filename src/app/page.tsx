@@ -11,12 +11,8 @@ import {
   CardContent,
   Chip,
   Paper,
-  Stack
 } from '@mui/material';
 import GamepadIcon from '@mui/icons-material/Gamepad';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import PeopleIcon from '@mui/icons-material/People';
-import AnalyticsIcon from '@mui/icons-material/Analytics';
 import StarIcon from '@mui/icons-material/Star';
 import { useRouter } from 'next/navigation';
 

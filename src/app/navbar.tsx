@@ -11,7 +11,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import HomeIcon from '@mui/icons-material/Home';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import LoginDialog from './components/LoginDialog';
 
 export default function NavBar(): React.JSX.Element {
@@ -26,7 +26,6 @@ export default function NavBar(): React.JSX.Element {
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('info');
   
   const router = useRouter();
-  const pathname = usePathname();
 
   // Check login status on component mount
   useEffect(() => {

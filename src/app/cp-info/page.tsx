@@ -268,7 +268,7 @@ export default function CPInfoPage() {
               <Card 
                 elevation={0}
                 sx={{ 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
                   color: 'white',
                   borderRadius: 3,
                   overflow: 'hidden',

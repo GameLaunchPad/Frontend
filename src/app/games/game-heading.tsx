@@ -1,4 +1,4 @@
-import { Button, Typography, Box, Stack, Card, CardContent, Avatar } from "@mui/material";
+import { Button, Typography, Box, Stack, Card, CardContent } from "@mui/material";
 import { Gamepad, Add, Refresh, Settings } from '@mui/icons-material';
 import Link from 'next/link';
 

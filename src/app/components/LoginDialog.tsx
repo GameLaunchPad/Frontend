@@ -89,7 +89,7 @@ export default function LoginDialog({ open, onClose, onLoginSuccess, onRegisterS
           setError('Incorrect username or password.');
         }
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);

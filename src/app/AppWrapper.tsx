@@ -45,7 +45,7 @@ export default function AppWrapper({ children }: AppWrapperProps) {
   }, []);
 
   // Define protected routes (routes that require authentication)
-  const protectedRoutes = ['/games', '/cp-info', '/cp-materials', '/profile', '/dashboard'];
+  const protectedRoutes = ['/games', '/cp-info', '/cp-materials', '/profile', '/games'];
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
   
   // Don't show sidebar on homepage
