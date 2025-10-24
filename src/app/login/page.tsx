@@ -75,7 +75,7 @@ const LoginPage = () => {
             setSnackbarOpen(true);
 
             setTimeout(() => {
-                router.push('/');
+                router.push('/games');
             }, 1500);
         } else {
             console.log('Login failed for:', username);
