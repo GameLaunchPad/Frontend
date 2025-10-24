@@ -343,14 +343,33 @@ export default function CPInfoPage() {
                         <Chip
                           label={`Material: ${getMaterialReviewStatus().text}`}
                           sx={{
-                            bgcolor: 'rgba(255, 255, 255, 0.3)',
+                            bgcolor: materialReviewStatus === ReviewStatus.Approved
+                              ? 'rgba(76, 175, 80, 0.3)'  // 绿色 - 通过
+                              : materialReviewStatus === ReviewStatus.Rejected
+                              ? 'rgba(244, 67, 54, 0.3)'  // 红色 - 拒绝
+                              : materialReviewStatus === ReviewStatus.Reviewing
+                              ? 'rgba(255, 152, 0, 0.3)'  // 橙色 - 审核中
+                              : 'rgba(255, 255, 255, 0.3)',  // 白色半透明 - 草稿
                             color: 'white',
                             fontWeight: 700,
                             fontSize: '0.85rem',
                             px: 2,
                             py: 0.5,
-                            border: '2px solid rgba(255, 255, 255, 0.5)',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                            border: '2px solid',
+                            borderColor: materialReviewStatus === ReviewStatus.Approved
+                              ? 'rgba(129, 199, 132, 0.8)'  // 绿色边框
+                              : materialReviewStatus === ReviewStatus.Rejected
+                              ? 'rgba(239, 83, 80, 0.8)'  // 红色边框
+                              : materialReviewStatus === ReviewStatus.Reviewing
+                              ? 'rgba(255, 183, 77, 0.8)'  // 橙色边框
+                              : 'rgba(255, 255, 255, 0.5)',  // 白色边框
+                            boxShadow: materialReviewStatus === ReviewStatus.Approved
+                              ? '0 4px 12px rgba(76, 175, 80, 0.4)'  // 绿色阴影
+                              : materialReviewStatus === ReviewStatus.Rejected
+                              ? '0 4px 12px rgba(244, 67, 54, 0.4)'  // 红色阴影
+                              : materialReviewStatus === ReviewStatus.Reviewing
+                              ? '0 4px 12px rgba(255, 152, 0, 0.4)'  // 橙色阴影
+                              : '0 4px 12px rgba(0, 0, 0, 0.2)'  // 默认阴影
                           }}
                         />
                       </Box>

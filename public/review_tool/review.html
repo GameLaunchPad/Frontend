@@ -179,6 +179,11 @@
             border-left: 4px solid #28a745;
         }
         
+        .game-card.rejected {
+            border-left: 4px solid #dc3545;
+            background: #fff5f5;
+        }
+        
         .game-card.draft {
             border-left: 4px solid #17a2b8;
             background: #f0f9ff;
@@ -238,6 +243,11 @@
         .badge-reviewing {
             background: #fff3cd;
             color: #856404;
+        }
+        
+        .badge-rejected {
+            background: #f8d7da;
+            color: #721c24;
         }
         
         .badge-draft {
@@ -337,6 +347,10 @@
                 <div class="number" id="stat-draft">0</div>
                 <div class="label">Drafts</div>
             </div>
+            <div class="stat-card" style="color: #dc3545;">
+                <div class="number" id="stat-rejected" style="color: #dc3545;">0</div>
+                <div class="label">Rejected</div>
+            </div>
         </div>
 
         <!-- Provider Statistics -->
@@ -383,6 +397,9 @@
                 </div>
                 <div class="tab" onclick="filterGames('published')">
                     🟢 Published (<span id="count-published">0</span>)
+                </div>
+                <div class="tab" onclick="filterGames('rejected')">
+                    🔴 Rejected (<span id="count-rejected">0</span>)
                 </div>
                 <div class="tab" onclick="filterGames('draft')">
                     🔵 Drafts (<span id="count-draft">0</span>)
@@ -453,18 +470,21 @@
                 total: allGames.length,
                 published: allGames.filter(g => g.status === 'published').length,
                 reviewing: allGames.filter(g => g.status === 'reviewing').length,
-                draft: allGames.filter(g => g.status === 'draft').length
+                draft: allGames.filter(g => g.status === 'draft').length,
+                rejected: allGames.filter(g => g.status === 'rejected').length
             };
             
             document.getElementById('stat-total').textContent = stats.total;
             document.getElementById('stat-published').textContent = stats.published;
             document.getElementById('stat-reviewing').textContent = stats.reviewing;
             document.getElementById('stat-draft').textContent = stats.draft;
+            document.getElementById('stat-rejected').textContent = stats.rejected;
             
             document.getElementById('count-all').textContent = stats.total;
             document.getElementById('count-published').textContent = stats.published;
             document.getElementById('count-reviewing').textContent = stats.reviewing;
             document.getElementById('count-draft').textContent = stats.draft;
+            document.getElementById('count-rejected').textContent = stats.rejected;
         }
 
         // 筛选游戏
@@ -503,9 +523,11 @@
             let html = '';
             gamesToShow.forEach(game => {
                 const statusBadge = game.status === 'published' ? 'badge-published' :
-                                   game.status === 'reviewing' ? 'badge-reviewing' : 'badge-draft';
+                                   game.status === 'reviewing' ? 'badge-reviewing' :
+                                   game.status === 'rejected' ? 'badge-rejected' : 'badge-draft';
                 const statusText = game.status === 'published' ? 'Published' :
-                                  game.status === 'reviewing' ? 'Reviewing' : 'Draft';
+                                  game.status === 'reviewing' ? 'Reviewing' :
+                                  game.status === 'rejected' ? 'Rejected' : 'Draft';
                 
                 const platforms = [];
                 if (game.platforms?.android) platforms.push('Android');
@@ -528,6 +550,11 @@
                                 📊 Downloads: ${game.downloads || 0} | ⭐ Rating: ${game.rating || 0} | 📦 Version: ${game.version || '1.0.0'}
                             </div>
                             ${game.gameIntro ? `<div style="color: #888; font-size: 13px; margin-top: 8px; line-height: 1.5;">${game.gameIntro.substring(0, 100)}${game.gameIntro.length > 100 ? '...' : ''}</div>` : ''}
+                            ${game.status === 'rejected' && game.rejectionReason ? `
+                                <div style="margin-top: 10px; padding: 8px; background: #f8d7da; border-radius: 6px; border-left: 3px solid #dc3545;">
+                                    <strong style="color: #dc3545;">拒绝原因:</strong> ${game.rejectionReason}
+                                </div>
+                            ` : ''}
                         </div>
                         <div class="game-actions">
                             ${game.status === 'reviewing' ? `
@@ -540,6 +567,10 @@
                             ` : game.status === 'draft' ? `
                                 <button class="action-btn btn-info" onclick="window.open('/games/create', '_blank')">
                                     ✏️ Continue Edit
+                                </button>
+                            ` : game.status === 'rejected' ? `
+                                <button class="action-btn btn-primary" onclick="window.open('/games/create?id=${game.id}', '_blank')">
+                                    ✏️ Edit & Resubmit
                                 </button>
                             ` : `
                                 <button class="action-btn btn-primary" onclick="window.open('/games/create?id=${game.id}', '_blank')">
@@ -595,7 +626,9 @@
                 
                 const game = games.find(g => g.id === gameId);
                 if (game && game.status === 'reviewing') {
-                    game.status = 'draft';
+                    game.status = 'rejected';
+                    game.rejectionReason = reason || '审核未通过';
+                    game.rejectedAt = Date.now();
                     localStorage.setItem('published_games', JSON.stringify(games));
                     console.log('❌ 审核拒绝:', game.gameName, reason || '');
                     
@@ -785,7 +818,7 @@
                                 ✅ 审核通过
                             </button>
                             <button class="btn btn-danger" onclick="rejectProvider()" style="min-width: 120px;">
-                                ❌ 拒绝审核
+                                ❌ 审核拒绝
                             </button>
                         ` : `
                             <span style="color: ${status.color}; font-weight: 600; font-size: 14px;">
@@ -834,7 +867,7 @@
             }
         }
         
-        // 拒绝厂商审核
+        // 审核拒绝厂商材料
         function rejectProvider() {
             const reason = prompt('请输入拒绝原因（必填）:');
             if (!reason || reason.trim() === '') {
@@ -849,9 +882,13 @@
                 const cpData = JSON.parse(data);
                 cpData.reviewStatus = 3; // Rejected
                 cpData.reviewComment = reason;
+                cpData.rejectionReason = reason; // 拒绝原因（详细）
+                cpData.rejectedAt = Date.now(); // 拒绝时间戳
                 
                 localStorage.setItem('cp_material_form_data', JSON.stringify(cpData));
-                console.log('✅ 厂商材料审核被拒:', reason);
+                console.log('✅ 厂商材料审核已拒绝:', reason);
+                console.log('📝 拒绝原因:', cpData.rejectionReason);
+                console.log('⏰ 拒绝时间:', new Date(cpData.rejectedAt).toLocaleString('zh-CN'));
                 
                 showAlert('info', '❌ 厂商材料审核已拒绝');
                 loadProviderMaterial();
@@ -885,6 +922,16 @@
                 
                 if (cpData.submittedAt) {
                     details += `\n提交时间: ${new Date(cpData.submittedAt).toLocaleString('zh-CN')}`;
+                }
+                
+                // 显示拒绝相关信息
+                if (cpData.reviewStatus === 3) {
+                    if (cpData.rejectionReason) {
+                        details += `\n拒绝原因: ${cpData.rejectionReason}`;
+                    }
+                    if (cpData.rejectedAt) {
+                        details += `\n拒绝时间: ${new Date(cpData.rejectedAt).toLocaleString('zh-CN')}`;
+                    }
                 }
                 
                 alert(details);

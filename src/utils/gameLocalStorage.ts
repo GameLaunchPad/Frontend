@@ -78,10 +78,12 @@ export function clearGameFormData(): void {
 export interface PublishedGame extends GameFormData {
   id: string
   publishedAt: number
-  status: 'published' | 'reviewing' | 'draft'
+  status: 'published' | 'reviewing' | 'draft' | 'rejected'
   downloads: number
   rating: number
   version: string
+  rejectionReason?: string  // 审核拒绝原因
+  rejectedAt?: number  // 拒绝时间戳
 }
 
 const PUBLISHED_GAMES_KEY = 'published_games'
@@ -208,7 +210,7 @@ export function approveGame(gameId: string): void {
 }
 
 /**
- * 拒绝游戏审核（将状态从 reviewing 改回 draft）
+ * 拒绝游戏审核（将状态从 reviewing 改为 rejected）
  */
 export function rejectGame(gameId: string, reason?: string): void {
   try {
@@ -216,7 +218,9 @@ export function rejectGame(gameId: string, reason?: string): void {
     const game = games.find(g => g.id === gameId)
     
     if (game && game.status === 'reviewing') {
-      game.status = 'draft'
+      game.status = 'rejected'
+      game.rejectionReason = reason || 'No reason provided'
+      game.rejectedAt = Date.now()
       localStorage.setItem(PUBLISHED_GAMES_KEY, JSON.stringify(games))
       console.log('✅ 游戏审核被拒:', gameId, reason || '')
     }

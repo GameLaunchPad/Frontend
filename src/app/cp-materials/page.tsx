@@ -26,9 +26,12 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  AlertTitle,
+  IconButton,
+  Collapse
 } from '@mui/material'
-import { CloudUpload, Delete, AttachFile, VerifiedUser, ArrowBack, Save } from '@mui/icons-material'
+import { CloudUpload, Delete, AttachFile, VerifiedUser, ArrowBack, Save, Warning, Close, ErrorOutline } from '@mui/icons-material'
 
 interface UploadedFile {
   name: string
@@ -56,6 +59,9 @@ export default function CPMaterialsPage() {
   const [reviewStatus, setReviewStatus] = useState<ReviewStatus>(ReviewStatus.Draft)  // 审核状态
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)  // 提交成功弹窗
   const [showDraftDialog, setShowDraftDialog] = useState(false)  // 草稿保存成功弹窗
+  const [rejectionReason, setRejectionReason] = useState<string | undefined>(undefined)  // 拒绝原因
+  const [rejectedAt, setRejectedAt] = useState<number | undefined>(undefined)  // 拒绝时间
+  const [showRejectionAlert, setShowRejectionAlert] = useState(true)  // 显示拒绝提示
   
   // 将文件转换为 base64 URL 用于预览
   const convertFileToBase64 = (file: File): Promise<string> => {
@@ -82,9 +88,13 @@ export default function CPMaterialsPage() {
         mailingAddress: savedData.mailingAddress || ''
       })
       setFiles(savedData.files)
-      setSubmitted(savedData.submitted)
+      // 如果状态是 Rejected，自动解锁表单以便修改
+      const isRejected = savedData.reviewStatus === ReviewStatus.Rejected
+      setSubmitted(isRejected ? false : savedData.submitted)
       setReviewStatus(savedData.reviewStatus || ReviewStatus.Draft)
-      console.log('📦 已从缓存恢复表单数据')
+      setRejectionReason(savedData.rejectionReason)
+      setRejectedAt(savedData.rejectedAt)
+      console.log('📦 已从缓存恢复表单数据', isRejected ? '（被拒绝，表单已解锁）' : '')
     }
   }, [])
   
@@ -95,12 +105,14 @@ export default function CPMaterialsPage() {
         ...formData,
         files,
         submitted,
-        reviewStatus
+        reviewStatus,
+        rejectionReason,
+        rejectedAt
       })
     }, 500)  // 500ms 防抖
     
     return () => clearTimeout(timer)
-  }, [formData, files, submitted, reviewStatus])
+  }, [formData, files, submitted, reviewStatus, rejectionReason, rejectedAt])
 
   // 处理文件选择
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,13 +241,18 @@ export default function CPMaterialsPage() {
         if (mode === SubmitMode.SubmitReview) {
           setSubmitted(true)
           setReviewStatus(ReviewStatus.Reviewing)  // 设置为审核中
+          // 清除拒绝相关字段（重新提交时）
+          setRejectionReason(undefined)
+          setRejectedAt(undefined)
           // 立即保存到 Local Storage
           saveCPMaterialData({
             ...formData,
             files,
             submitted: true,
             submittedAt: Date.now(),
-            reviewStatus: ReviewStatus.Reviewing
+            reviewStatus: ReviewStatus.Reviewing,
+            rejectionReason: undefined,
+            rejectedAt: undefined
           })
           // 显示提交成功弹窗
           setShowSuccessDialog(true)
@@ -270,24 +287,32 @@ export default function CPMaterialsPage() {
       setFiles([])
       setSubmitted(false)
       setReviewStatus(ReviewStatus.Draft)
+      setRejectionReason(undefined)
+      setRejectedAt(undefined)
       clearCPMaterialData()
       alert('Form has been reset')
     }
+  }
+  
+  // 重新提交（被拒绝后）
+  const handleResubmit = () => {
+    setSubmitted(false)  // 解锁表单
+    setShowRejectionAlert(true)  // 保持显示提示，提醒用户修改
   }
   
   // 获取审核状态显示文本和样式
   const getReviewStatusInfo = () => {
     switch (reviewStatus) {
       case ReviewStatus.Draft:
-        return { text: 'Draft', color: 'default' as const, bgcolor: 'grey.100' }
+        return { text: 'Draft', color: 'default' as const, bgcolor: 'grey.100', borderColor: 'grey.300' }
       case ReviewStatus.Reviewing:
-        return { text: 'Under Review', color: 'warning' as const, bgcolor: 'warning.light' }
+        return { text: 'Under Review', color: 'warning' as const, bgcolor: 'warning.light', borderColor: 'warning.main' }
       case ReviewStatus.Approved:
-        return { text: 'Approved', color: 'success' as const, bgcolor: 'success.light' }
+        return { text: 'Approved', color: 'success' as const, bgcolor: 'success.light', borderColor: 'success.main' }
       case ReviewStatus.Rejected:
-        return { text: 'Rejected', color: 'error' as const, bgcolor: 'error.light' }
+        return { text: 'Rejected', color: 'error' as const, bgcolor: 'error.light', borderColor: 'error.main' }
       default:
-        return { text: 'Draft', color: 'default' as const, bgcolor: 'grey.100' }
+        return { text: 'Draft', color: 'default' as const, bgcolor: 'grey.100', borderColor: 'grey.300' }
     }
   }
 
@@ -361,7 +386,11 @@ export default function CPMaterialsPage() {
                     <Chip
                       label={getReviewStatusInfo().text}
                       sx={{
-                        bgcolor: 'rgba(255, 255, 255, 0.3)',
+                        bgcolor: reviewStatus === ReviewStatus.Rejected 
+                          ? 'error.main' 
+                          : reviewStatus === ReviewStatus.Approved
+                          ? 'success.main'
+                          : 'rgba(255, 255, 255, 0.3)',
                         color: 'white',
                         fontWeight: 700,
                         fontSize: '0.9rem',
@@ -397,10 +426,112 @@ export default function CPMaterialsPage() {
           }}
         >
           
+          {/* Rejection Reason Alert */}
+          {reviewStatus === ReviewStatus.Rejected && rejectionReason && showRejectionAlert && (
+            <Box sx={{ m: 3, mb: 0 }}>
+              <Collapse in={showRejectionAlert}>
+                <Alert
+                  severity="error"
+                  variant="filled"
+                  icon={<ErrorOutline sx={{ fontSize: 28 }} />}
+                  action={
+                    <IconButton
+                      aria-label="close"
+                      color="inherit"
+                      size="small"
+                      onClick={() => setShowRejectionAlert(false)}
+                    >
+                      <Close fontSize="inherit" />
+                    </IconButton>
+                  }
+                  sx={{
+                    borderRadius: 3,
+                    py: 2,
+                    px: 3,
+                    boxShadow: 6,
+                    animation: 'slideDown 0.5s ease-out',
+                    '@keyframes slideDown': {
+                      from: { opacity: 0, transform: 'translateY(-20px)' },
+                      to: { opacity: 1, transform: 'translateY(0)' }
+                    }
+                  }}
+                >
+                  <AlertTitle sx={{ 
+                    fontSize: '1.1rem', 
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 1
+                  }}>
+                    <Warning sx={{ fontSize: 24 }} />
+                    审核未通过 - Verification Rejected
+                  </AlertTitle>
+                  <Box sx={{ ml: 4 }}>
+                    <Typography variant="body1" sx={{ mb: 1.5, fontWeight: 500 }}>
+                      您的材料未通过审核，请根据以下原因进行修改后重新提交：
+                    </Typography>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        bgcolor: 'rgba(255, 255, 255, 0.15)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: 2,
+                        mb: 1.5
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ 
+                        color: 'white',
+                        fontWeight: 500,
+                        lineHeight: 1.6,
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        📋 拒绝原因：{rejectionReason}
+                      </Typography>
+                    </Paper>
+                    {rejectedAt && (
+                      <Typography variant="caption" sx={{ 
+                        opacity: 0.9,
+                        display: 'block',
+                        mb: 2
+                      }}>
+                        ⏰ 拒绝时间：{new Date(rejectedAt).toLocaleString('zh-CN')}
+                      </Typography>
+                    )}
+                    <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                      <Button
+                        variant="contained"
+                        onClick={handleResubmit}
+                        sx={{
+                          bgcolor: 'white',
+                          color: 'error.main',
+                          fontWeight: 600,
+                          '&:hover': {
+                            bgcolor: 'grey.100'
+                          }
+                        }}
+                      >
+                        修改并重新提交
+                      </Button>
+                      <Typography variant="body2" sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontWeight: 500 
+                      }}>
+                        💡 点击按钮解锁表单，修改后重新提交审核
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Alert>
+              </Collapse>
+            </Box>
+          )}
+
           {/* Submission Status Alert */}
-          {submitted && (
+          {(submitted || reviewStatus === ReviewStatus.Reviewing || reviewStatus === ReviewStatus.Approved) && reviewStatus !== ReviewStatus.Rejected && (
             <Alert 
-              severity="success" 
+              severity={reviewStatus === ReviewStatus.Approved ? 'success' : 'info'}
               icon={<VerifiedUser />}
               sx={{ 
                 m: 3, 
@@ -417,10 +548,10 @@ export default function CPMaterialsPage() {
                   onClick={handleReset}
                   variant="outlined"
                   sx={{ 
-                    borderColor: 'success.main',
+                    borderColor: reviewStatus === ReviewStatus.Approved ? 'success.main' : 'info.main',
                     '&:hover': {
-                      borderColor: 'success.dark',
-                      bgcolor: 'success.light'
+                      borderColor: reviewStatus === ReviewStatus.Approved ? 'success.dark' : 'info.dark',
+                      bgcolor: reviewStatus === ReviewStatus.Approved ? 'success.light' : 'info.light'
                     }
                   }}
                 >
@@ -429,10 +560,18 @@ export default function CPMaterialsPage() {
               }
             >
               <Typography variant="body1" fontWeight={600}>
-                ✅ Verification Submitted Successfully!
+                {reviewStatus === ReviewStatus.Approved 
+                  ? '✅ Verification Approved!' 
+                  : reviewStatus === ReviewStatus.Reviewing
+                  ? '⏳ Under Review'
+                  : '✅ Verification Submitted Successfully!'}
               </Typography>
               <Typography variant="body2" sx={{ mt: 0.5 }}>
-                Your materials have been submitted for review. The form is now locked. Click &quot;Reset Form&quot; to create a new submission.
+                {reviewStatus === ReviewStatus.Approved
+                  ? 'Your materials have been approved. You can now access all platform features.'
+                  : reviewStatus === ReviewStatus.Reviewing
+                  ? 'Your materials are being reviewed. This process typically takes 3-5 business days.'
+                  : 'Your materials have been submitted for review. The form is now locked. Click "Reset Form" to create a new submission.'}
               </Typography>
             </Alert>
           )}

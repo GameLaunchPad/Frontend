@@ -1,8 +1,8 @@
 "use client";
 
-import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography, Alert, CircularProgress } from "@mui/material";
+import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography, Alert, CircularProgress, AlertTitle, IconButton, Collapse } from "@mui/material";
 import React, { useState, useEffect } from "react";
-import { CloudUpload, LooksOne, LooksTwo, Gamepad, ArrowBack, Android, Apple, Language as WebIcon, Info, Image as ImageIcon, CheckCircle, Save } from "@mui/icons-material";
+import { CloudUpload, LooksOne, LooksTwo, Gamepad, ArrowBack, Android, Apple, Language as WebIcon, Info, Image as ImageIcon, CheckCircle, Save, Warning, Close, ErrorOutline } from "@mui/icons-material";
 import { PlatformSupport } from "../page";
 import { saveGameFormData, loadGameFormData, clearGameFormData, publishGame, getPublishedGames, updateGame } from '@/utils/gameLocalStorage';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -157,67 +157,127 @@ export default function NewGame() {
     const [showAutoSaveHint, setShowAutoSaveHint] = useState(false);
     const [showSaveDraftDialog, setShowSaveDraftDialog] = useState(false);
     const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+    
+    // 审核拒绝相关状态
+    const [gameStatus, setGameStatus] = useState<'published' | 'reviewing' | 'draft' | 'rejected'>('draft');
+    const [rejectionReason, setRejectionReason] = useState<string | undefined>(undefined);
+    const [rejectedAt, setRejectedAt] = useState<number | undefined>(undefined);
+    const [showRejectionAlert, setShowRejectionAlert] = useState(true);
 
     // 从 Local Storage 加载数据（草稿或编辑模式）
     useEffect(() => {
-        // 如果是编辑模式，加载已发布游戏数据
-        if (editGameId) {
-            console.log('📝 编辑模式，游戏 ID:', editGameId);
-            setIsEditMode(true);
+        const loadGameData = () => {
+            // 如果是编辑模式，加载已发布游戏数据
+            if (editGameId) {
+                console.log('📝 编辑模式，游戏 ID:', editGameId);
+                setIsEditMode(true);
 
-            const publishedGames = getPublishedGames();
-            const gameToEdit = publishedGames.find(g => g.id === editGameId);
+                const publishedGames = getPublishedGames();
+                const gameToEdit = publishedGames.find(g => g.id === editGameId);
 
-            if (gameToEdit) {
-                console.log('✅ 找到要编辑的游戏:', gameToEdit.gameName);
-                setGameName(gameToEdit.gameName)
-                setGameIntro(gameToEdit.gameIntro)
-                setGameType(gameToEdit.gameType)
-                setAvatarSrc(gameToEdit.avatarSrc || undefined)
-                setHeaderImage(gameToEdit.headerImage || undefined)
+                if (gameToEdit) {
+                    console.log('✅ 找到要编辑的游戏:', gameToEdit.gameName);
+                    setGameName(gameToEdit.gameName)
+                    setGameIntro(gameToEdit.gameIntro)
+                    setGameType(gameToEdit.gameType)
+                    setAvatarSrc(gameToEdit.avatarSrc || undefined)
+                    setHeaderImage(gameToEdit.headerImage || undefined)
+                    setPlatforms({
+                        android: gameToEdit.platforms.android,
+                        ios: gameToEdit.platforms.ios,
+                        web: gameToEdit.platforms.web
+                    })
+                    setPlatformConfigs({
+                        androidPackageName: gameToEdit.platformConfigs?.androidPackageName || '',
+                        androidDownloadUrl: gameToEdit.platformConfigs?.androidDownloadUrl || '',
+                        iosPackageName: gameToEdit.platformConfigs?.iosPackageName || '',
+                        iosDownloadUrl: gameToEdit.platformConfigs?.iosDownloadUrl || '',
+                        webUrl: gameToEdit.platformConfigs?.webUrl || ''
+                    })
+                    setScreenshots(gameToEdit.screenshots || [])
+                    
+                    // 加载审核状态和拒绝原因
+                    setGameStatus(gameToEdit.status)
+                    setRejectionReason(gameToEdit.rejectionReason)
+                    setRejectedAt(gameToEdit.rejectedAt)
+                    
+                    console.log('📊 游戏状态:', gameToEdit.status);
+                    if (gameToEdit.status === 'rejected') {
+                        console.log('❌ 游戏被拒绝，原因:', gameToEdit.rejectionReason);
+                    }
+                    
+                    return; // 编辑模式不加载草稿
+                } else {
+                    console.warn('⚠️ 未找到要编辑的游戏:', editGameId);
+                }
+            }
+
+            // 非编辑模式，加载草稿数据
+            const savedData = loadGameFormData()
+            if (savedData) {
+                setGameName(savedData.gameName)
+                setGameIntro(savedData.gameIntro)
+                setGameType(savedData.gameType)
+                setAvatarSrc(savedData.avatarSrc || undefined)
+                setHeaderImage(savedData.headerImage || undefined)
                 setPlatforms({
-                    android: gameToEdit.platforms.android,
-                    ios: gameToEdit.platforms.ios,
-                    web: gameToEdit.platforms.web
+                    android: savedData.platforms.android,
+                    ios: savedData.platforms.ios,
+                    web: savedData.platforms.web
                 })
                 setPlatformConfigs({
-                    androidPackageName: gameToEdit.platformConfigs?.androidPackageName || '',
-                    androidDownloadUrl: gameToEdit.platformConfigs?.androidDownloadUrl || '',
-                    iosPackageName: gameToEdit.platformConfigs?.iosPackageName || '',
-                    iosDownloadUrl: gameToEdit.platformConfigs?.iosDownloadUrl || '',
-                    webUrl: gameToEdit.platformConfigs?.webUrl || ''
+                    androidPackageName: savedData.platformConfigs?.androidPackageName || '',
+                    androidDownloadUrl: savedData.platformConfigs?.androidDownloadUrl || '',
+                    iosPackageName: savedData.platformConfigs?.iosPackageName || '',
+                    iosDownloadUrl: savedData.platformConfigs?.iosDownloadUrl || '',
+                    webUrl: savedData.platformConfigs?.webUrl || ''
                 })
-                setScreenshots(gameToEdit.screenshots || [])
-                return; // 编辑模式不加载草稿
-            } else {
-                console.warn('⚠️ 未找到要编辑的游戏:', editGameId);
+                setScreenshots(savedData.screenshots || [])
+                console.log('📦 已从缓存恢复游戏表单数据')
             }
+        };
+
+        // 初始加载
+        loadGameData();
+
+        // 监听 storage 事件，当其他标签页修改了 localStorage 时重新加载
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'published_games' && editGameId) {
+                console.log('🔄 检测到游戏数据变化（跨标签页），重新加载...');
+                loadGameData();
+            }
+        };
+
+        // 监听页面可见性变化，当页面重新可见时刷新数据
+        const handleVisibilityChange = () => {
+            if (!document.hidden && editGameId) {
+                console.log('👁️ 页面重新可见，检查游戏状态...');
+                loadGameData();
+            }
+        };
+
+        // 定期检查游戏状态（每3秒），用于检测控制台修改
+        let intervalId: NodeJS.Timeout | null = null;
+        if (editGameId) {
+            intervalId = setInterval(() => {
+                const publishedGames = getPublishedGames();
+                const currentGame = publishedGames.find(g => g.id === editGameId);
+                if (currentGame && currentGame.status !== gameStatus) {
+                    console.log('🔄 检测到游戏状态变化（控制台修改）:', currentGame.status);
+                    loadGameData();
+                }
+            }, 3000); // 每3秒检查一次
         }
 
-        // 非编辑模式，加载草稿数据
-        const savedData = loadGameFormData()
-        if (savedData) {
-            setGameName(savedData.gameName)
-            setGameIntro(savedData.gameIntro)
-            setGameType(savedData.gameType)
-            setAvatarSrc(savedData.avatarSrc || undefined)
-            setHeaderImage(savedData.headerImage || undefined)
-            setPlatforms({
-                android: savedData.platforms.android,
-                ios: savedData.platforms.ios,
-                web: savedData.platforms.web
-            })
-            setPlatformConfigs({
-                androidPackageName: savedData.platformConfigs?.androidPackageName || '',
-                androidDownloadUrl: savedData.platformConfigs?.androidDownloadUrl || '',
-                iosPackageName: savedData.platformConfigs?.iosPackageName || '',
-                iosDownloadUrl: savedData.platformConfigs?.iosDownloadUrl || '',
-                webUrl: savedData.platformConfigs?.webUrl || ''
-            })
-            setScreenshots(savedData.screenshots || [])
-            console.log('📦 已从缓存恢复游戏表单数据')
-        }
-    }, [editGameId])
+        window.addEventListener('storage', handleStorageChange);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [editGameId, gameStatus])
 
     // 保存表单数据到 Local Storage（防抖）
     useEffect(() => {
@@ -288,29 +348,82 @@ export default function NewGame() {
     };
 
     const handleSaveDraft = () => {
-        // 手动保存草稿
-        saveGameFormData({
-            gameName,
-            gameIntro,
-            gameType,
-            avatarSrc: avatarSrc || '',
-            headerImage: headerImage || '',
-            platforms: {
-                android: platforms.android,
-                ios: platforms.ios,
-                web: platforms.web
-            },
-            platformConfigs: {
-                androidPackageName: platformConfigs.androidPackageName,
-                androidDownloadUrl: platformConfigs.androidDownloadUrl,
-                iosPackageName: platformConfigs.iosPackageName,
-                iosDownloadUrl: platformConfigs.iosDownloadUrl,
-                webUrl: platformConfigs.webUrl
-            },
-            screenshots: screenshots,
-            savedAt: Date.now()
-        })
-        setShowSaveDraftDialog(true)
+        console.log('💾 保存草稿 - 编辑模式:', isEditMode, '游戏ID:', editGameId);
+        
+        // 如果是编辑模式（包括编辑被拒绝的游戏），更新原游戏状态为draft
+        if (isEditMode && editGameId) {
+            console.log('🔄 编辑模式：将游戏状态更新为draft');
+            updateGame(editGameId, {
+                gameName,
+                gameIntro,
+                gameType,
+                avatarSrc: avatarSrc || '',
+                headerImage: headerImage || '',
+                platforms: {
+                    android: platforms.android,
+                    ios: platforms.ios,
+                    web: platforms.web
+                },
+                platformConfigs: {
+                    androidPackageName: platformConfigs.androidPackageName,
+                    androidDownloadUrl: platformConfigs.androidDownloadUrl,
+                    iosPackageName: platformConfigs.iosPackageName,
+                    iosDownloadUrl: platformConfigs.iosDownloadUrl,
+                    webUrl: platformConfigs.webUrl
+                },
+                screenshots: screenshots,
+                savedAt: Date.now(),
+                // 将状态设为草稿
+                status: 'draft',
+                // 清除拒绝相关字段
+                rejectionReason: undefined,
+                rejectedAt: undefined
+            });
+            
+            // 更新本地状态
+            setGameStatus('draft');
+            setRejectionReason(undefined);
+            setRejectedAt(undefined);
+            setShowRejectionAlert(false);
+            
+            console.log('✅ 游戏已更新为草稿状态');
+            
+            // 触发游戏列表刷新
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('gamesListRefresh'));
+            }
+        } else {
+            // 非编辑模式，保存为新草稿
+            console.log('📝 新建模式：保存草稿到 game_form_data');
+            saveGameFormData({
+                gameName,
+                gameIntro,
+                gameType,
+                avatarSrc: avatarSrc || '',
+                headerImage: headerImage || '',
+                platforms: {
+                    android: platforms.android,
+                    ios: platforms.ios,
+                    web: platforms.web
+                },
+                platformConfigs: {
+                    androidPackageName: platformConfigs.androidPackageName,
+                    androidDownloadUrl: platformConfigs.androidDownloadUrl,
+                    iosPackageName: platformConfigs.iosPackageName,
+                    iosDownloadUrl: platformConfigs.iosDownloadUrl,
+                    webUrl: platformConfigs.webUrl
+                },
+                screenshots: screenshots,
+                savedAt: Date.now()
+            });
+            
+            // 触发游戏列表刷新（新草稿会在游戏列表中显示）
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('gamesListRefresh'));
+            }
+        }
+        
+        setShowSaveDraftDialog(true);
     };
 
     const handleSubmitGame = () => {
@@ -356,7 +469,12 @@ export default function NewGame() {
                         webUrl: platformConfigs.webUrl
                     },
                     screenshots: screenshots,
-                    savedAt: Date.now()
+                    savedAt: Date.now(),
+                    // 如果是草稿或被拒绝的游戏提交/重新提交，更新状态为审核中
+                    status: (gameStatus === 'draft' || gameStatus === 'rejected') ? 'reviewing' : gameStatus,
+                    // 清除拒绝相关字段
+                    rejectionReason: gameStatus === 'rejected' ? undefined : rejectionReason,
+                    rejectedAt: gameStatus === 'rejected' ? undefined : rejectedAt
                 });
 
                 console.log('✅ Game updated successfully');
@@ -485,6 +603,87 @@ export default function NewGame() {
                         </CardContent>
                     </Card>
                 </Box>
+
+                {/* Rejection Reason Alert */}
+                {isEditMode && gameStatus === 'rejected' && rejectionReason && showRejectionAlert && (
+                    <Box sx={{ mb: 3 }}>
+                        <Collapse in={showRejectionAlert}>
+                            <Alert
+                                severity="error"
+                                variant="filled"
+                                icon={<ErrorOutline sx={{ fontSize: 28 }} />}
+                                action={
+                                    <IconButton
+                                        aria-label="close"
+                                        color="inherit"
+                                        size="small"
+                                        onClick={() => setShowRejectionAlert(false)}
+                                    >
+                                        <Close fontSize="inherit" />
+                                    </IconButton>
+                                }
+                                sx={{
+                                    borderRadius: 3,
+                                    py: 2,
+                                    px: 3,
+                                    boxShadow: 6,
+                                    animation: 'slideDown 0.5s ease-out',
+                                    '@keyframes slideDown': {
+                                        from: { opacity: 0, transform: 'translateY(-20px)' },
+                                        to: { opacity: 1, transform: 'translateY(0)' }
+                                    }
+                                }}
+                            >
+                                <AlertTitle sx={{ 
+                                    fontSize: '1.1rem', 
+                                    fontWeight: 700,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    mb: 1
+                                }}>
+                                    <Warning sx={{ fontSize: 24 }} />
+                                    审核未通过 - Review Rejected
+                                </AlertTitle>
+                                <Box sx={{ ml: 4 }}>
+                                    <Typography variant="body1" sx={{ mb: 1.5, fontWeight: 500 }}>
+                                        您的游戏未通过审核，请根据以下原因进行修改后重新提交：
+                                    </Typography>
+                                    <Paper
+                                        elevation={0}
+                                        sx={{
+                                            p: 2,
+                                            bgcolor: 'rgba(255, 255, 255, 0.15)',
+                                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                                            borderRadius: 2,
+                                            mb: 1.5
+                                        }}
+                                    >
+                                        <Typography variant="body2" sx={{ 
+                                            color: 'white',
+                                            fontWeight: 500,
+                                            lineHeight: 1.6,
+                                            whiteSpace: 'pre-wrap'
+                                        }}>
+                                            📋 拒绝原因：{rejectionReason}
+                                        </Typography>
+                                    </Paper>
+                                    {rejectedAt && (
+                                        <Typography variant="caption" sx={{ 
+                                            opacity: 0.9,
+                                            display: 'block'
+                                        }}>
+                                            ⏰ 拒绝时间：{new Date(rejectedAt).toLocaleString('zh-CN')}
+                                        </Typography>
+                                    )}
+                                    <Typography variant="body2" sx={{ mt: 2, fontWeight: 500 }}>
+                                        💡 提示：修改完成后，点击"重新提交审核"按钮即可再次提交
+                                    </Typography>
+                                </Box>
+                            </Alert>
+                        </Collapse>
+                    </Box>
+                )}
 
                 {/* Auto-save Indicator */}
                 {showAutoSaveHint && (
@@ -660,14 +859,22 @@ export default function NewGame() {
                                 fontWeight: 600,
                                 fontSize: '0.95rem',
                                 minWidth: 160,
-                                background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                                background: (isEditMode && gameStatus === 'rejected')
+                                    ? 'linear-gradient(135deg, #f57c00 0%, #ff9800 100%)'
+                                    : 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
                                 boxShadow: 3,
                                 '&:hover': {
                                     boxShadow: 6,
                                 }
                             }}
                         >
-                            {isEditMode ? 'Update Game' : 'Submit for Review'}
+                            {isEditMode 
+                                ? (gameStatus === 'rejected' 
+                                    ? '🔄 重新提交审核' 
+                                    : gameStatus === 'draft'
+                                    ? 'Submit for Review'
+                                    : 'Update Game')
+                                : 'Submit for Review'}
                         </Button>
                     </Box>
                 </Box>
@@ -789,7 +996,13 @@ export default function NewGame() {
                                 <CheckCircle sx={{ fontSize: 50, color: 'success.main' }} />
                             </Box>
                             <Typography variant="h5" fontWeight={700} color="success.main">
-                                {isEditMode ? 'Game Updated Successfully!' : 'Game Submitted for Review!'}
+                                {isEditMode 
+                                    ? (gameStatus === 'rejected' 
+                                        ? 'Game Resubmitted for Review!' 
+                                        : gameStatus === 'draft'
+                                        ? 'Game Submitted for Review!'
+                                        : 'Game Updated Successfully!')
+                                    : 'Game Submitted for Review!'}
                             </Typography>
                         </Box>
                     </DialogTitle>
@@ -797,17 +1010,23 @@ export default function NewGame() {
                         <Box sx={{ textAlign: 'center', py: 2 }}>
                             <Typography variant="body1" paragraph>
                                 {isEditMode
-                                    ? '✅ Your game has been updated successfully.'
+                                    ? (gameStatus === 'rejected' 
+                                        ? '🎉 Your game has been resubmitted for review!'
+                                        : gameStatus === 'draft'
+                                        ? '🎉 Congratulations! Your game has been submitted for review.'
+                                        : '✅ Your game has been updated successfully.')
                                     : '🎉 Congratulations! Your game has been submitted for review.'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary" paragraph>
                                 {isEditMode
-                                    ? 'You can now view the updated game in your game list.'
+                                    ? (gameStatus === 'rejected' || gameStatus === 'draft'
+                                        ? 'Your game will be reviewed by our team. You can track the status in your game list.'
+                                        : 'You can now view the updated game in your game list.')
                                     : 'Your game will be reviewed by our team. You can track the status in your game list.'}
                             </Typography>
-                            <Alert severity={isEditMode ? "success" : "info"} sx={{ mt: 2, textAlign: 'left' }}>
+                            <Alert severity={isEditMode && gameStatus !== 'rejected' && gameStatus !== 'draft' ? "success" : "info"} sx={{ mt: 2, textAlign: 'left' }}>
                                 <Typography variant="body2">
-                                    {isEditMode
+                                    {isEditMode && gameStatus !== 'rejected' && gameStatus !== 'draft'
                                         ? '💫 All changes have been saved and applied.'
                                         : '⏳ Review typically takes 3-5 business days. You will be notified once approved.'}
                                 </Typography>

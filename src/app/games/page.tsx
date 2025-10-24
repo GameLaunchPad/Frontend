@@ -213,6 +213,7 @@ function GameDashboard() {
     total: allGames.length,
     published: allGames.filter(g => g.status === 'published').length,
     reviewing: allGames.filter(g => g.status === 'reviewing').length,
+    rejected: allGames.filter(g => g.status === 'rejected').length,
     drafts: allGames.filter(g => g.status === 'draft').length
   };
 
@@ -369,7 +370,7 @@ function GameDashboard() {
         {/* Statistics Cards */}
         <Box sx={{ mb: 4 }}>
           <Grid container spacing={3}>
-            <Grid size={3}>
+            <Grid size={2.4}>
               <Paper 
                 elevation={2} 
                 sx={{ 
@@ -397,7 +398,7 @@ function GameDashboard() {
                 </Typography>
               </Paper>
             </Grid>
-            <Grid size={3}>
+            <Grid size={2.4}>
               <Paper 
                 elevation={2} 
                 sx={{ 
@@ -425,7 +426,7 @@ function GameDashboard() {
               </Typography>
               </Paper>
             </Grid>
-            <Grid size={3}>
+            <Grid size={2.4}>
               <Paper 
                 elevation={2} 
                 sx={{ 
@@ -453,7 +454,35 @@ function GameDashboard() {
               </Typography>
               </Paper>
             </Grid>
-            <Grid size={3}>
+            <Grid size={2.4}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  p: 3, 
+                  borderRadius: 3,
+                  border: '1px solid',
+                  borderColor: 'grey.200',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: 6,
+                    transform: 'translateY(-4px)'
+                  }
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="h4" component="div" fontWeight={700}>
+                    {stats.rejected}
+              </Typography>
+                  <Avatar sx={{ bgcolor: 'error.light', width: 48, height: 48 }}>
+                    <Description />
+                  </Avatar>
+                </Box>
+                <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                Rejected
+              </Typography>
+              </Paper>
+            </Grid>
+            <Grid size={2.4}>
               <Paper 
                 elevation={2} 
                 sx={{ 
@@ -526,6 +555,7 @@ function GameDashboard() {
                   <MenuItem value="all">All Status</MenuItem>
                   <MenuItem value="published">Published</MenuItem>
                   <MenuItem value="reviewing">Reviewing</MenuItem>
+                  <MenuItem value="rejected">Rejected</MenuItem>
                   <MenuItem value="draft">Drafts</MenuItem>
             </TextField>
                 <TextField 
@@ -658,7 +688,7 @@ function CardLayout({ games }: LayoutProps) {
   return (
     <Grid container spacing={2}>
       {games.map((game) =>
-        <Grid key={game.id} size={4}>
+        <Grid key={game.id} size={4} sx={{ display: 'flex' }}>
           <GameCard gameInfo={game} />
         </Grid>
       )}
@@ -667,6 +697,26 @@ function CardLayout({ games }: LayoutProps) {
 }
 
 function ListLayout({ games }: LayoutProps) {
+  const getStatusColor = (status: string): 'success' | 'warning' | 'info' | 'error' | 'default' => {
+    switch(status) {
+      case 'published': return 'success';
+      case 'reviewing': return 'warning';
+      case 'rejected': return 'error';
+      case 'draft': return 'info';
+      default: return 'default';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch(status) {
+      case 'published': return 'Published';
+      case 'reviewing': return 'Reviewing';
+      case 'rejected': return 'Rejected';
+      case 'draft': return 'Draft';
+      default: return status;
+    }
+  };
+
   return (
     <Stack spacing={2}>
       {games.map((game) => {
@@ -681,13 +731,14 @@ function ListLayout({ games }: LayoutProps) {
               sx={{ 
                 p: 3,
                 borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'grey.200',
+                border: '2px solid',
+                borderColor: game.status === 'rejected' ? 'error.main' : 'grey.200',
                 transition: 'all 0.3s ease',
                 cursor: 'pointer',
+                bgcolor: game.status === 'rejected' ? 'error.50' : 'white',
                 '&:hover': {
                   boxShadow: 6,
-                  borderColor: 'primary.main',
+                  borderColor: game.status === 'rejected' ? 'error.dark' : 'primary.main',
                 }
               }}
             >
@@ -707,9 +758,17 @@ function ListLayout({ games }: LayoutProps) {
 
             {/* Game Info */}
             <Box sx={{ flex: 1 }}>
-              <Typography variant="h6" fontWeight={700} gutterBottom>
-                {game.gameName}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <Typography variant="h6" fontWeight={700}>
+                  {game.gameName}
+                </Typography>
+                <Chip 
+                  label={getStatusLabel(game.status)} 
+                  color={getStatusColor(game.status)}
+                  size="small"
+                  sx={{ fontWeight: 700 }}
+                />
+              </Box>
               <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                 <Chip 
                   icon={<GetApp />}
@@ -793,10 +852,11 @@ function ListLayout({ games }: LayoutProps) {
 }
 
 function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
-  const getStatusColor = (status: string): 'success' | 'warning' | 'info' | 'default' | 'primary' | 'secondary' | 'error' => {
+  const getStatusColor = (status: string): 'success' | 'warning' | 'info' | 'error' | 'default' | 'primary' | 'secondary' => {
     switch(status) {
       case 'published': return 'success';
       case 'reviewing': return 'warning';
+      case 'rejected': return 'error';
       case 'draft': return 'info';
       default: return 'default';
     }
@@ -806,6 +866,7 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
     switch(status) {
       case 'published': return 'Published';
       case 'reviewing': return 'Reviewing';
+      case 'rejected': return 'Rejected';
       case 'draft': return 'Draft';
       default: return status;
     }
@@ -816,20 +877,25 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
     : `/games/create?id=${gameInfo.id}`;
 
   return (
-    <Link href={editLink} passHref style={{ textDecoration: 'none' }}>
+    <Link href={editLink} passHref style={{ textDecoration: 'none', display: 'flex', width: '100%', height: '100%' }}>
       <Card 
         elevation={2}
         sx={{ 
           borderRadius: 3,
-          border: '1px solid',
-          borderColor: 'grey.200',
+          border: '2px solid',
+          borderColor: gameInfo.status === 'rejected' ? 'error.main' : 'grey.200',
           transition: 'all 0.3s ease',
           overflow: 'hidden',
           cursor: 'pointer',
+          bgcolor: gameInfo.status === 'rejected' ? 'error.50' : 'white',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
           '&:hover': {
             boxShadow: 6,
             transform: 'translateY(-8px)',
-            borderColor: 'primary.main',
+            borderColor: gameInfo.status === 'rejected' ? 'error.dark' : 'primary.main',
           }
         }}
       >
@@ -842,15 +908,20 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
             alt={gameInfo.gameName}
             sx={{ 
               height: 160,
-              objectFit: 'cover'
+              objectFit: 'cover',
+              filter: gameInfo.status === 'rejected' ? 'brightness(0.8)' : 'none'
             }} 
           />
         ) : (
           <CardMedia 
             sx={{ 
               height: 160,
-              bgcolor: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-              background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
+              bgcolor: gameInfo.status === 'rejected' 
+                ? 'error.main'
+                : 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+              background: gameInfo.status === 'rejected'
+                ? 'linear-gradient(135deg, #d32f2f 0%, #f44336 100%)'
+                : 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
             }} 
           />
         )}
@@ -885,13 +956,13 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
       </Box>
 
       {/* Game Info */}
-      <CardContent sx={{ pb: 2, pt: gameInfo.avatarSrc ? 4 : 2 }}>
-        <Typography gutterBottom variant="h6" component="div" fontWeight={700}>
+      <CardContent sx={{ pb: 2, pt: gameInfo.avatarSrc ? 4 : 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Typography gutterBottom variant="h6" component="div" fontWeight={700} sx={{ minHeight: '32px', display: 'flex', alignItems: 'center' }}>
           {gameInfo.gameName}
         </Typography>
         
         {/* Game Type & Platform Chips */}
-        <Box sx={{ mb: 2, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <Box sx={{ mb: 2, display: 'flex', gap: 0.5, flexWrap: 'wrap', minHeight: '32px', alignItems: 'flex-start' }}>
           <Chip label={gameInfo.gameType} size="small" color="primary" />
           {gameInfo.platforms.android && <Chip icon={<Android />} label="Android" size="small" color="success" variant="outlined" />}
           {gameInfo.platforms.ios && <Chip icon={<Apple />} label="iOS" size="small" color="primary" variant="outlined" />}
@@ -899,7 +970,7 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
         </Box>
 
         {/* Stats Grid */}
-        <Grid container spacing={1.5}>
+        <Grid container spacing={1.5} sx={{ mt: 'auto' }}>
           <Grid size={4}>
             <Paper 
               variant="outlined" 
@@ -907,18 +978,20 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
                 p: 1.5, 
                 textAlign: 'center',
                 borderRadius: 2,
-                bgcolor: 'grey.50'
+                bgcolor: 'grey.50',
+                height: '100%',
+                minHeight: 64
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5, height: 24 }}>
                 <GetApp sx={{ fontSize: 16, mr: 0.5, color: 'primary.main' }} />
-                <Typography variant="h6" component="div" fontWeight={700}>
-              {gameInfo.downloads}
-            </Typography>
+                <Typography variant="h6" component="div" fontWeight={700} sx={{ fontSize: '1.1rem', lineHeight: 1 }}>
+                  {gameInfo.downloads}
+                </Typography>
               </Box>
               <Typography variant="caption" color="text.secondary" fontWeight={500}>
-              Downloads
-            </Typography>
+                Downloads
+              </Typography>
             </Paper>
           </Grid>
           <Grid size={4}>
@@ -928,18 +1001,20 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
                 p: 1.5, 
                 textAlign: 'center',
                 borderRadius: 2,
-                bgcolor: 'grey.50'
+                bgcolor: 'grey.50',
+                height: '100%',
+                minHeight: 64
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5, height: 24 }}>
                 <Star sx={{ fontSize: 16, mr: 0.5, color: 'warning.main' }} />
-                <Typography variant="h6" component="div" fontWeight={700}>
+                <Typography variant="h6" component="div" fontWeight={700} sx={{ fontSize: '1.1rem', lineHeight: 1 }}>
                   {gameInfo.rating || 'N/A'}
-            </Typography>
+                </Typography>
               </Box>
               <Typography variant="caption" color="text.secondary" fontWeight={500}>
-              Rating
-            </Typography>
+                Rating
+              </Typography>
             </Paper>
           </Grid>
           <Grid size={4}>
@@ -949,15 +1024,19 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
                 p: 1.5, 
                 textAlign: 'center',
                 borderRadius: 2,
-                bgcolor: 'grey.50'
+                bgcolor: 'grey.50',
+                height: '100%',
+                minHeight: 64
               }}
             >
-              <Typography variant="body2" component="div" fontWeight={700} sx={{ mb: 0.5 }}>
-              {gameInfo.version}
-            </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5, height: 24 }}>
+                <Typography variant="h6" component="div" fontWeight={700} sx={{ fontSize: '1.1rem', lineHeight: 1 }}>
+                  {gameInfo.version}
+                </Typography>
+              </Box>
               <Typography variant="caption" color="text.secondary" fontWeight={500}>
-              Version
-            </Typography>
+                Version
+              </Typography>
             </Paper>
           </Grid>
         </Grid>
