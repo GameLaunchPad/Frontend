@@ -106,7 +106,7 @@ function SecondPage() {
                     </Button>
                     <Grid container spacing={2} sx={{ marginTop: 2 }}>
                         {['game_screenshot_1.png', 'game_screenshot_2.png', 'game_screenshot_3.png'].map((file, idx) => (
-                            <Grid item xs={4} key={idx}>
+                            <Grid size={4} key={idx}>
                                 <Card>
                                     <CardContent>
                                         <img src={`/${file}`} alt={`Screenshot ${idx + 1}`} style={{ width: '100%' }} />
@@ -125,7 +125,7 @@ function SecondPage() {
                 <CardContent>
                     <Typography variant="h6" gutterBottom>Installers</Typography>
                     <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
+                        <Grid size={{ xs: 12, md: 6 }}>
                             <TextField
                                 label="Android Installer"
                                 value="mygame_v1.0.apk"
@@ -138,7 +138,7 @@ function SecondPage() {
                                 Upload Time: 2024-09-25 14:30
                             </Typography>
                         </Grid>
-                        <Grid item xs={12} md={6}>
+                        <Grid size={{ xs: 12, md: 6 }}>
                             <TextField
                                 label="iOS Installer"
                                 fullWidth
