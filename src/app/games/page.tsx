@@ -951,7 +951,7 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
                 bgcolor: 'grey.50'
               }}
             >
-              <Typography variant="body2" component="div" fontWeight={700} sx={{ mb: 0.5 }}>
+              <Typography variant="h6" component="div" fontWeight={700} sx={{ mb: 0.5 }}>
               {gameInfo.version}
             </Typography>
               <Typography variant="caption" color="text.secondary" fontWeight={500}>
