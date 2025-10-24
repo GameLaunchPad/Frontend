@@ -13,7 +13,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -32,7 +32,7 @@
         }
         
         .header h1 {
-            color: #667eea;
+            color: #1976d2;
             font-size: 32px;
             margin-bottom: 10px;
         }
@@ -64,7 +64,7 @@
             font-weight: 500;
         }
         
-        .stat-card.total .number { color: #667eea; }
+        .stat-card.total .number { color: #1976d2; }
         .stat-card.published .number { color: #28a745; }
         .stat-card.reviewing .number { color: #ffc107; }
         .stat-card.draft .number { color: #17a2b8; }
@@ -96,7 +96,7 @@
         }
         
         .btn-primary {
-            background: #667eea;
+            background: #1976d2;
             color: white;
         }
         
@@ -149,9 +149,9 @@
         }
         
         .tab.active {
-            border-color: #667eea;
-            background: #f0f4ff;
-            color: #667eea;
+            border-color: #1976d2;
+            background: #e3f2fd;
+            color: #1976d2;
         }
         
         .game-card {
@@ -188,7 +188,7 @@
             width: 80px;
             height: 80px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -246,8 +246,8 @@
         }
         
         .badge-type {
-            background: #e7e7ff;
-            color: #667eea;
+            background: #e3f2fd;
+            color: #1976d2;
         }
         
         .badge-platform {
@@ -315,7 +315,11 @@
             <p style="color: #666; margin-top: 8px;">Game Review Management Panel</p>
         </div>
 
-        <!-- Statistics -->
+        <!-- Statistics -->}
+        <div class="header" style="margin-bottom: 15px; padding: 15px 20px;">
+            <h2 style="font-size: 20px; color: #1976d2; margin-bottom: 5px;">🎮 游戏审核统计</h2>
+            <p style="color: #666; font-size: 14px; margin: 0;">Game Review Statistics</p>
+        </div>
         <div class="stats">
             <div class="stat-card total">
                 <div class="number" id="stat-total">0</div>
@@ -332,6 +336,30 @@
             <div class="stat-card draft">
                 <div class="number" id="stat-draft">0</div>
                 <div class="label">Drafts</div>
+            </div>
+        </div>
+
+        <!-- Provider Statistics -->
+        <div class="header" style="margin-top: 30px; margin-bottom: 15px; padding: 15px 20px;">
+            <h2 style="font-size: 20px; color: #1976d2; margin-bottom: 5px;">🏢 厂商审核统计</h2>
+            <p style="color: #666; font-size: 14px; margin: 0;">Provider Review Statistics</p>
+        </div>
+        <div class="stats">
+            <div class="stat-card draft">
+                <div class="number" id="stat-cp-draft">0</div>
+                <div class="label">Draft</div>
+            </div>
+            <div class="stat-card reviewing">
+                <div class="number" id="stat-cp-reviewing">0</div>
+                <div class="label">Reviewing</div>
+            </div>
+            <div class="stat-card published">
+                <div class="number" id="stat-cp-approved">0</div>
+                <div class="label">Approved</div>
+            </div>
+            <div class="stat-card" style="color: #dc3545;">
+                <div class="number" id="stat-cp-rejected" style="color: #dc3545;">0</div>
+                <div class="label">Rejected</div>
             </div>
         </div>
 
@@ -362,6 +390,16 @@
             </div>
 
             <div id="games-container"></div>
+        </div>
+
+        <!-- Provider Review Section -->
+        <div class="header" style="margin-top: 40px; margin-bottom: 15px; padding: 20px;">
+            <h2 style="font-size: 24px; color: #1976d2; margin-bottom: 8px;">🏢 厂商材料审核</h2>
+            <p style="color: #666; font-size: 14px; margin: 0;">Provider Verification Review</p>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div id="provider-container"></div>
         </div>
     </div>
 
@@ -651,6 +689,209 @@
         // 刷新游戏列表
         function refreshGames() {
             loadGames();
+            loadProviderMaterial();
+        }
+
+        // ====== 厂商材料审核功能 ======
+        
+        // 加载厂商材料
+        function loadProviderMaterial() {
+            try {
+                const data = localStorage.getItem('cp_material_form_data');
+                
+                if (!data) {
+                    document.getElementById('provider-container').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p style="font-size: 18px; color: #666; margin-bottom: 10px;">暂无厂商提交材料</p>
+                            <p style="font-size: 14px; color: #999;">No provider verification materials submitted yet</p>
+                        </div>
+                    `;
+                    updateCPStats(0, 0, 0, 0);
+                    return;
+                }
+                
+                const cpData = JSON.parse(data);
+                
+                // 更新统计
+                const stats = {
+                    draft: cpData.reviewStatus === 0 ? 1 : 0,
+                    reviewing: cpData.reviewStatus === 1 ? 1 : 0,
+                    approved: cpData.reviewStatus === 2 ? 1 : 0,
+                    rejected: cpData.reviewStatus === 3 ? 1 : 0
+                };
+                updateCPStats(stats.draft, stats.reviewing, stats.approved, stats.rejected);
+                
+                // 渲染厂商卡片
+                renderProviderCard(cpData);
+                
+            } catch (error) {
+                console.error('❌ 加载厂商材料失败:', error);
+                document.getElementById('provider-container').innerHTML = `
+                    <div class="alert alert-error">
+                        ❌ 加载失败，请刷新页面重试
+                    </div>
+                `;
+            }
+        }
+        
+        // 渲染厂商卡片
+        function renderProviderCard(cpData) {
+            const statusMap = {
+                0: { text: '草稿', color: '#17a2b8', bgColor: '#d1ecf1' },
+                1: { text: '审核中', color: '#ffc107', bgColor: '#fff3cd' },
+                2: { text: '已通过', color: '#28a745', bgColor: '#d4edda' },
+                3: { text: '已拒绝', color: '#dc3545', bgColor: '#f8d7da' }
+            };
+            
+            const status = statusMap[cpData.reviewStatus] || statusMap[0];
+            const canReview = cpData.reviewStatus === 1; // 只有审核中才能操作
+            
+            const html = `
+                <div class="game-card" style="border-left: 4px solid ${status.color}; background: ${status.bgColor};">
+                    ${cpData.cpIcon ? 
+                        `<div class="game-icon"><img src="${cpData.cpIcon}" alt="${cpData.cpName}" /></div>` :
+                        `<div class="game-icon">🏢</div>`
+                    }
+                    <div class="game-info" style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <h3 style="margin: 0; font-size: 20px; color: #333;">${cpData.cpName || '未命名厂商'}</h3>
+                            <span class="badge" style="background: ${status.color}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                ${status.text}
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 12px;">
+                            <span class="badge badge-type">📋 ${cpData.businessLicense || 'N/A'}</span>
+                            ${cpData.website ? `<span class="badge badge-platform">🌐 ${cpData.website}</span>` : ''}
+                            ${cpData.contactEmail ? `<span class="badge badge-platform">✉️ ${cpData.contactEmail}</span>` : ''}
+                            ${cpData.contactPhone ? `<span class="badge badge-platform">📞 ${cpData.contactPhone}</span>` : ''}
+                        </div>
+                        <div style="color: #666; font-size: 14px; margin-bottom: 10px; line-height: 1.6;">
+                            ${cpData.introduction || '暂无公司介绍'}
+                        </div>
+                        <div style="color: #999; font-size: 13px;">
+                            📎 已上传文件: ${cpData.files?.length || 0} 个
+                            ${cpData.submittedAt ? ` | 提交时间: ${new Date(cpData.submittedAt).toLocaleString('zh-CN')}` : ''}
+                        </div>
+                        ${cpData.reviewComment ? `
+                            <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid ${status.color};">
+                                <strong style="color: ${status.color};">审核备注:</strong> ${cpData.reviewComment}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="game-actions" style="min-width: ${canReview ? '280px' : '120px'};">
+                        ${canReview ? `
+                            <button class="btn btn-success" onclick="approveProvider()" style="min-width: 120px;">
+                                ✅ 审核通过
+                            </button>
+                            <button class="btn btn-danger" onclick="rejectProvider()" style="min-width: 120px;">
+                                ❌ 拒绝审核
+                            </button>
+                        ` : `
+                            <span style="color: ${status.color}; font-weight: 600; font-size: 14px;">
+                                ${status.text}
+                            </span>
+                        `}
+                        <button class="btn btn-outline" onclick="viewProviderDetails()" style="min-width: 120px;">
+                            👁️ 查看详情
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('provider-container').innerHTML = html;
+        }
+        
+        // 更新厂商统计
+        function updateCPStats(draft, reviewing, approved, rejected) {
+            document.getElementById('stat-cp-draft').textContent = draft;
+            document.getElementById('stat-cp-reviewing').textContent = reviewing;
+            document.getElementById('stat-cp-approved').textContent = approved;
+            document.getElementById('stat-cp-rejected').textContent = rejected;
+        }
+        
+        // 审核通过厂商
+        function approveProvider() {
+            const comment = prompt('请输入审核备注（可选）:');
+            if (comment === null) return; // 用户取消
+            
+            try {
+                const data = localStorage.getItem('cp_material_form_data');
+                if (!data) return;
+                
+                const cpData = JSON.parse(data);
+                cpData.reviewStatus = 2; // Approved
+                cpData.reviewComment = comment || '审核通过';
+                
+                localStorage.setItem('cp_material_form_data', JSON.stringify(cpData));
+                console.log('✅ 厂商材料审核通过');
+                
+                showAlert('success', '✅ 厂商材料审核通过！');
+                loadProviderMaterial();
+            } catch (error) {
+                console.error('❌ 审核失败:', error);
+                showAlert('error', '❌ 审核失败，请重试');
+            }
+        }
+        
+        // 拒绝厂商审核
+        function rejectProvider() {
+            const reason = prompt('请输入拒绝原因（必填）:');
+            if (!reason || reason.trim() === '') {
+                alert('拒绝原因不能为空！');
+                return;
+            }
+            
+            try {
+                const data = localStorage.getItem('cp_material_form_data');
+                if (!data) return;
+                
+                const cpData = JSON.parse(data);
+                cpData.reviewStatus = 3; // Rejected
+                cpData.reviewComment = reason;
+                
+                localStorage.setItem('cp_material_form_data', JSON.stringify(cpData));
+                console.log('✅ 厂商材料审核被拒:', reason);
+                
+                showAlert('info', '❌ 厂商材料审核已拒绝');
+                loadProviderMaterial();
+            } catch (error) {
+                console.error('❌ 拒绝失败:', error);
+                showAlert('error', '❌ 操作失败，请重试');
+            }
+        }
+        
+        // 查看厂商详情
+        function viewProviderDetails() {
+            try {
+                const data = localStorage.getItem('cp_material_form_data');
+                if (!data) return;
+                
+                const cpData = JSON.parse(data);
+                
+                let details = `
+厂商名称: ${cpData.cpName || 'N/A'}
+营业执照: ${cpData.businessLicense || 'N/A'}
+官网: ${cpData.website || 'N/A'}
+联系邮箱: ${cpData.contactEmail || 'N/A'}
+联系电话: ${cpData.contactPhone || 'N/A'}
+邮寄地址: ${cpData.mailingAddress || 'N/A'}
+公司介绍: ${cpData.introduction || 'N/A'}
+上传文件数: ${cpData.files?.length || 0}
+提交状态: ${cpData.submitted ? '已提交' : '草稿'}
+审核状态: ${['草稿', '审核中', '已通过', '已拒绝'][cpData.reviewStatus] || '未知'}
+审核备注: ${cpData.reviewComment || '无'}
+                `;
+                
+                if (cpData.submittedAt) {
+                    details += `\n提交时间: ${new Date(cpData.submittedAt).toLocaleString('zh-CN')}`;
+                }
+                
+                alert(details);
+            } catch (error) {
+                console.error('❌ 查看详情失败:', error);
+                alert('查看详情失败');
+            }
         }
 
         // 显示提示
@@ -675,6 +916,7 @@
 
         // 初始化
         loadGames();
+        loadProviderMaterial();
         
         // 每5秒自动刷新
         setInterval(refreshGames, 5000);

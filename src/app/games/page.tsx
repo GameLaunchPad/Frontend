@@ -669,22 +669,28 @@ function CardLayout({ games }: LayoutProps) {
 function ListLayout({ games }: LayoutProps) {
   return (
     <Stack spacing={2}>
-      {games.map((game) => (
-        <Paper 
-          key={game.id}
-          elevation={2}
-          sx={{ 
-            p: 3,
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: 'grey.200',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              boxShadow: 6,
-              borderColor: 'primary.main',
-            }
-          }}
-        >
+      {games.map((game) => {
+        const editLink = game.id === 'draft_current' 
+          ? `/games/create` 
+          : `/games/create?id=${game.id}`;
+        
+        return (
+          <Link key={game.id} href={editLink} passHref style={{ textDecoration: 'none' }}>
+            <Paper 
+              elevation={2}
+              sx={{ 
+                p: 3,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.200',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 6,
+                  borderColor: 'primary.main',
+                }
+              }}
+            >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             {/* Game Icon */}
             <Avatar 
@@ -742,8 +748,13 @@ function ListLayout({ games }: LayoutProps) {
             {/* Actions */}
             <Stack direction="row" spacing={1}>
               <Button 
-                variant="outlined"
+                variant="outlined" 
                 size="small"
+                startIcon={<Edit />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // 整个行已经可以点击编辑了，这里保留按钮UI
+                }}
                 sx={{ 
                   textTransform: 'none', 
                   fontWeight: 600,
@@ -751,33 +762,17 @@ function ListLayout({ games }: LayoutProps) {
                   px: 2
                 }}
               >
-                View
+                Edit
               </Button>
-              <Link 
-                href={game.id === 'draft_current' 
-                  ? `/games/create` 
-                  : `/games/create?id=${game.id}`}
-                passHref 
-                style={{ textDecoration: 'none' }}
-              >
-                <Button 
-                  variant="outlined" 
-                  size="small"
-                  startIcon={<Edit />}
-                  sx={{ 
-                    textTransform: 'none', 
-                    fontWeight: 600,
-                    borderRadius: 1.5,
-                    px: 2
-                  }}
-                >
-                  Edit
-                </Button>
-              </Link>
               <Button 
                 variant="outlined"
                 size="small"
                 startIcon={<TrendingUp />}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Statistics 功能可以在这里实现
+                }}
                 sx={{ 
                   textTransform: 'none', 
                   fontWeight: 600,
@@ -790,7 +785,9 @@ function ListLayout({ games }: LayoutProps) {
             </Stack>
           </Box>
         </Paper>
-      ))}
+          </Link>
+        );
+      })}
     </Stack>
   );
 }
@@ -814,22 +811,28 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
     }
   };
 
+  const editLink = gameInfo.id === 'draft_current' 
+    ? `/games/create` 
+    : `/games/create?id=${gameInfo.id}`;
+
   return (
-    <Card 
-      elevation={2}
-      sx={{ 
-        borderRadius: 3,
-        border: '1px solid',
-        borderColor: 'grey.200',
-        transition: 'all 0.3s ease',
-        overflow: 'hidden',
-        '&:hover': {
-          boxShadow: 6,
-          transform: 'translateY(-8px)',
-          borderColor: 'primary.main',
-        }
-      }}
-    >
+    <Link href={editLink} passHref style={{ textDecoration: 'none' }}>
+      <Card 
+        elevation={2}
+        sx={{ 
+          borderRadius: 3,
+          border: '1px solid',
+          borderColor: 'grey.200',
+          transition: 'all 0.3s ease',
+          overflow: 'hidden',
+          cursor: 'pointer',
+          '&:hover': {
+            boxShadow: 6,
+            transform: 'translateY(-8px)',
+            borderColor: 'primary.main',
+          }
+        }}
+      >
       {/* Header Image */}
       <Box sx={{ position: 'relative' }}>
         {gameInfo.headerImage ? (
@@ -964,7 +967,12 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
       <Divider />
       <CardActions sx={{ justifyContent: 'center', py: 1.5 }}>
         <Button 
-          size="small"
+          size="small" 
+          startIcon={<Edit />}
+          onClick={(e) => {
+            e.stopPropagation();
+            // 整个卡片已经可以点击编辑了，这里保留按钮UI
+          }}
           sx={{ 
             textTransform: 'none', 
             fontWeight: 600,
@@ -972,31 +980,16 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
             px: 2
           }}
         >
-          View
+          Edit
         </Button>
-        <Link 
-          href={gameInfo.id === 'draft_current' 
-            ? `/games/create` 
-            : `/games/create?id=${gameInfo.id}`}
-          passHref 
-          style={{ textDecoration: 'none' }}
-        >
-          <Button 
-            size="small" 
-            startIcon={<Edit />}
-            sx={{ 
-              textTransform: 'none', 
-              fontWeight: 600,
-              borderRadius: 1.5,
-              px: 2
-            }}
-          >
-            Edit
-          </Button>
-        </Link>
         <Button 
           size="small"
           startIcon={<TrendingUp />}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Statistics 功能可以在这里实现
+          }}
           sx={{ 
             textTransform: 'none', 
             fontWeight: 600,
@@ -1008,5 +1001,6 @@ function GameCard({ gameInfo }: { gameInfo: PublishedGame }) {
         </Button>
       </CardActions>
     </Card>
+    </Link>
   );
 }

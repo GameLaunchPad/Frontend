@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>厂商材料测试工具 - CP Material Test Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #1976d2;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+        
+        .section h2 {
+            color: #1976d2;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: #1976d2;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #1976d2;
+            border: 2px solid #1976d2;
+        }
+        
+        .status {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 厂商材料测试工具</h1>
+        <p class="subtitle">CP Material Test Tool - 快速测试厂商审核功能</p>
+        
+        <!-- 快速操作 -->
+        <div class="section">
+            <h2>⚡ 快速操作</h2>
+            <button class="btn btn-primary" onclick="addDraftCP()">📝 添加草稿厂商</button>
+            <button class="btn btn-warning" onclick="addReviewingCP()">🟡 添加待审核厂商</button>
+            <button class="btn btn-success" onclick="addApprovedCP()">✅ 添加已通过厂商</button>
+            <button class="btn btn-danger" onclick="addRejectedCP()">❌ 添加已拒绝厂商</button>
+        </div>
+        
+        <!-- 当前状态 -->
+        <div class="section">
+            <h2>📊 当前状态</h2>
+            <button class="btn btn-outline" onclick="viewCurrentStatus()">👁️ 查看当前厂商数据</button>
+            <button class="btn btn-danger" onclick="clearCPData()">🗑️ 清空厂商数据</button>
+            <div id="status-display"></div>
+        </div>
+        
+        <!-- 链接 -->
+        <div class="section">
+            <h2>🔗 快速链接</h2>
+            <button class="btn btn-primary" onclick="window.location.href='/review_tool/review.html'">
+                🔍 打开审核管理面板
+            </button>
+            <button class="btn btn-outline" onclick="window.location.href='/cp-materials'">
+                📄 打开厂商材料页面
+            </button>
+        </div>
+        
+        <!-- 说明 -->
+        <div class="section">
+            <h2>📖 使用说明</h2>
+            <ol style="line-height: 2; color: #666;">
+                <li>点击上方按钮添加不同状态的测试数据</li>
+                <li>打开审核管理面板查看厂商审核部分</li>
+                <li>对"审核中"的厂商进行审核通过/拒绝操作</li>
+                <li>打开厂商材料页面查看状态变化</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // 添加草稿状态厂商
+        function addDraftCP() {
+            const data = {
+                cpName: "测试厂商公司 - 草稿",
+                businessLicense: "1234567890ABCDEF",
+                website: "https://test-company.com",
+                introduction: "这是一个测试厂商公司，当前处于草稿状态",
+                cpIcon: "",
+                contactEmail: "contact@test-company.com",
+                contactPhone: "+86 138-0000-0000",
+                mailingAddress: "北京市朝阳区测试大厦",
+                files: [
+                    { name: "营业执照.pdf", url: "test.pdf", size: 102400 },
+                    { name: "法人身份证.jpg", url: "test.jpg", size: 204800 }
+                ],
+                submitted: false,
+                reviewStatus: 0
+            };
+            
+            localStorage.setItem('cp_material_form_data', JSON.stringify(data));
+            showStatus('success', '✅ 草稿厂商已添加');
+        }
+        
+        // 添加待审核厂商
+        function addReviewingCP() {
+            const data = {
+                cpName: "优秀游戏工作室",
+                businessLicense: "9876543210ZYXWVU",
+                website: "https://awesome-games.com",
+                introduction: "我们是一家专注于手机游戏开发的工作室，已有5年行业经验，成功发布过10款游戏",
+                cpIcon: "",
+                contactEmail: "admin@awesome-games.com",
+                contactPhone: "+86 188-1234-5678",
+                mailingAddress: "上海市浦东新区游戏创业园区A座",
+                files: [
+                    { name: "营业执照副本.pdf", url: "license.pdf", size: 512000 },
+                    { name: "税务登记证.pdf", url: "tax.pdf", size: 256000 },
+                    { name: "公司介绍PPT.pdf", url: "intro.pdf", size: 1024000 }
+                ],
+                submitted: true,
+                submittedAt: Date.now(),
+                reviewStatus: 1
+            };
+            
+            localStorage.setItem('cp_material_form_data', JSON.stringify(data));
+            showStatus('warning', '🟡 待审核厂商已添加 - 可以在审核面板中进行审核');
+        }
+        
+        // 添加已通过厂商
+        function addApprovedCP() {
+            const data = {
+                cpName: "明星游戏开发公司",
+                businessLicense: "APPROVED123456789",
+                website: "https://star-game-dev.com",
+                introduction: "行业领先的游戏开发公司，拥有100+开发人员",
+                cpIcon: "",
+                contactEmail: "business@star-game-dev.com",
+                contactPhone: "+86 10-8888-8888",
+                mailingAddress: "深圳市南山区科技园",
+                files: [
+                    { name: "营业执照.pdf", url: "license.pdf", size: 512000 }
+                ],
+                submitted: true,
+                submittedAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
+                reviewStatus: 2,
+                reviewComment: "材料齐全，审核通过"
+            };
+            
+            localStorage.setItem('cp_material_form_data', JSON.stringify(data));
+            showStatus('success', '✅ 已通过厂商已添加');
+        }
+        
+        // 添加已拒绝厂商
+        function addRejectedCP() {
+            const data = {
+                cpName: "测试公司（材料不全）",
+                businessLicense: "REJECTED987654321",
+                website: "",
+                introduction: "测试公司",
+                cpIcon: "",
+                contactEmail: "test@example.com",
+                contactPhone: "",
+                mailingAddress: "",
+                files: [],
+                submitted: true,
+                submittedAt: Date.now() - 7 * 24 * 60 * 60 * 1000,
+                reviewStatus: 3,
+                reviewComment: "营业执照不清晰，缺少法人身份证明，请重新提交"
+            };
+            
+            localStorage.setItem('cp_material_form_data', JSON.stringify(data));
+            showStatus('danger', '❌ 已拒绝厂商已添加');
+        }
+        
+        // 查看当前状态
+        function viewCurrentStatus() {
+            const data = localStorage.getItem('cp_material_form_data');
+            const statusDisplay = document.getElementById('status-display');
+            
+            if (!data) {
+                statusDisplay.innerHTML = `
+                    <div class="status" style="background: #e0e0e0; color: #666; margin-top: 15px;">
+                        📭 当前无厂商数据
+                    </div>
+                `;
+                return;
+            }
+            
+            const cpData = JSON.parse(data);
+            const statusMap = ['🔵 草稿', '🟡 审核中', '✅ 已通过', '❌ 已拒绝'];
+            const colorMap = ['#17a2b8', '#ffc107', '#28a745', '#dc3545'];
+            
+            statusDisplay.innerHTML = `
+                <div class="status" style="background: ${colorMap[cpData.reviewStatus]}20; color: ${colorMap[cpData.reviewStatus]}; border: 2px solid ${colorMap[cpData.reviewStatus]}; margin-top: 15px;">
+                    <strong>${cpData.cpName}</strong> - ${statusMap[cpData.reviewStatus]}
+                </div>
+                <pre style="margin-top: 15px;">${JSON.stringify(cpData, null, 2)}</pre>
+            `;
+        }
+        
+        // 清空厂商数据
+        function clearCPData() {
+            if (confirm('确定要清空所有厂商数据吗？')) {
+                localStorage.removeItem('cp_material_form_data');
+                showStatus('success', '🗑️ 厂商数据已清空');
+                document.getElementById('status-display').innerHTML = '';
+            }
+        }
+        
+        // 显示状态消息
+        function showStatus(type, message) {
+            const colorMap = {
+                'success': '#28a745',
+                'warning': '#ffc107',
+                'danger': '#dc3545'
+            };
+            
+            const statusDisplay = document.getElementById('status-display');
+            statusDisplay.innerHTML = `
+                <div class="status" style="background: ${colorMap[type]}20; color: ${colorMap[type]}; border: 2px solid ${colorMap[type]}; margin-top: 15px;">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                statusDisplay.innerHTML = '';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+

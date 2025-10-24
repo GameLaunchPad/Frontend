@@ -118,6 +118,7 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                         platforms={platforms}
                         gameType={gameType}
                         platformConfigs={platformConfigs}
+                        screenshots={screenshots}
                     />
                     <Tips />
                 </Stack>
@@ -959,9 +960,10 @@ interface LivePreviewProps {
     platforms: PlatformSupport;
     gameType: string;
     platformConfigs: PlatformConfigs;
+    screenshots: string[];
 }
 
-function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, gameType, platformConfigs }: LivePreviewProps) {
+function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, gameType, platformConfigs, screenshots }: LivePreviewProps) {
     return (
         <Paper
             elevation={3}
@@ -1105,6 +1107,54 @@ function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, ga
                 </Box>
 
                 <Divider sx={{ mb: 2 }} />
+
+                {/* Screenshots Preview */}
+                {screenshots.length > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="caption" fontWeight={700} color="text.primary" sx={{ mb: 1, display: 'block' }}>
+                            Screenshots ({screenshots.length})
+                        </Typography>
+                        <Box sx={{ 
+                            display: 'flex', 
+                            gap: 0.5, 
+                            overflowX: 'auto',
+                            pb: 1,
+                            '&::-webkit-scrollbar': {
+                                height: 4
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                                bgcolor: 'primary.main',
+                                borderRadius: 2
+                            }
+                        }}>
+                            {screenshots.map((screenshot, idx) => (
+                                <Box
+                                    key={idx}
+                                    component="img"
+                                    src={screenshot}
+                                    alt={`Screenshot ${idx + 1}`}
+                                    sx={{
+                                        width: 80,
+                                        height: 60,
+                                        objectFit: 'cover',
+                                        borderRadius: 1,
+                                        border: '2px solid',
+                                        borderColor: 'primary.main',
+                                        flexShrink: 0,
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.2s',
+                                        '&:hover': {
+                                            transform: 'scale(1.1)',
+                                            zIndex: 1
+                                        }
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                    </Box>
+                )}
+
+                {screenshots.length > 0 && <Divider sx={{ mb: 2 }} />}
 
                 {/* Platforms */}
                 <Box sx={{ mb: 2 }}>

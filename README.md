@@ -19,17 +19,32 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 |------|-----|-------------|
 | 🎮 Game List | [http://localhost:3000/games](http://localhost:3000/games) | View all games with search and filter |
 | ➕ Create Game | [http://localhost:3000/games/create](http://localhost:3000/games/create) | Create new game or edit existing |
-| 🔍 Review Panel | [http://localhost:3000/review_tool/review.html](http://localhost:3000/review_tool/review.html) | Admin review management panel |
-| 📖 Review Guide | [public/review_tool/REVIEW_GUIDE.md](public/review_tool/REVIEW_GUIDE.md) | Complete review system documentation |
+| 🏢 Provider Materials | [http://localhost:3000/cp-materials](http://localhost:3000/cp-materials) | Submit provider verification materials |
+| 🔍 Review Panel | [http://localhost:3000/review_tool/review.html](http://localhost:3000/review_tool/review.html) | Admin review panel (Game + Provider) |
+| 🧪 CP Test Tool | [http://localhost:3000/test-cp-material.html](http://localhost:3000/test-cp-material.html) | Quick provider test data |
+| 📖 Review Guide | [public/review_tool/REVIEW_GUIDE.md](public/review_tool/REVIEW_GUIDE.md) | Game review system documentation |
+| 📖 Provider Review Guide | [PROVIDER_REVIEW_GUIDE.md](PROVIDER_REVIEW_GUIDE.md) | Provider review system documentation |
 
 ## ✨ Features
 
+### 🎮 Game Management
 - ✅ **Game Creation** - Create games with auto-save drafts
 - ✅ **Draft Display** - Drafts shown in game list
 - ✅ **Review Workflow** - Submit → Reviewing → Published
-- ✅ **Game Editing** - Edit any game from the list
+- ✅ **Game Editing** - Click card to edit, real-time preview
 - ✅ **Search & Filter** - Search by keyword, filter by status/platform
-- ✅ **Review Management** - Admin panel for approving/rejecting games
+- ✅ **Screenshots Preview** - Live preview panel with screenshots
+
+### 🏢 Provider Management
+- ✅ **Provider Verification** - Submit company verification materials
+- ✅ **Auto-save Drafts** - Automatic draft saving
+- ✅ **Review Workflow** - Draft → Reviewing → Approved/Rejected
+- ✅ **File Upload** - PDF, JPG, PNG support (max 10MB)
+
+### 🔍 Review Management
+- ✅ **Unified Panel** - Game + Provider review in one place
+- ✅ **Batch Operations** - Approve all reviewing items
+- ✅ **Real-time Updates** - Auto-refresh every 5 seconds
 - ✅ **Data Persistence** - All data stored in localStorage
 
 ## 📊 Game Status Flow
@@ -74,9 +89,11 @@ location.reload();
 
 ## 📚 Documentation
 
-- [Review System Guide](public/review_tool/REVIEW_GUIDE.md) - Complete guide for the review workflow
-- [Game Management Overview](GAME_MANAGEMENT_SYSTEM.md) - System overview and features
+- [Game Management System](GAME_MANAGEMENT_SYSTEM.md) - Complete game management guide
+- [Game Review Guide](public/review_tool/REVIEW_GUIDE.md) - Game review workflow
+- [Provider Review Guide](PROVIDER_REVIEW_GUIDE.md) - Provider review workflow
 - [Quick Start Guide](QUICK_START.md) - Quick start and link reference
+- [File Locations](FILE_LOCATIONS.md) - File structure and locations
 
 ## 🛠️ Third-party Libraries
 
