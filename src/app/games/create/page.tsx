@@ -2,11 +2,18 @@
 
 import { Avatar, Box, Button, ButtonBase, Card, CardContent, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControlLabel, Grid, Input, List, ListItem, ListItemIcon, ListItemText, MenuItem, Paper, Stack, TextField, Typography, Alert, CircularProgress } from "@mui/material";
 import React, { useState, useEffect } from "react";
-import { CloudUpload, LooksOne, LooksTwo, Gamepad, ArrowBack, Android, Apple, Language as WebIcon, Info, Image as ImageIcon, Code, NoteAdd, CheckCircle, Save } from "@mui/icons-material";
-import Image from "next/image";
+import { CloudUpload, LooksOne, LooksTwo, Gamepad, ArrowBack, Android, Apple, Language as WebIcon, Info, Image as ImageIcon, CheckCircle, Save } from "@mui/icons-material";
 import { PlatformSupport } from "../page";
 import { saveGameFormData, loadGameFormData, clearGameFormData, publishGame, getPublishedGames, updateGame } from '@/utils/gameLocalStorage';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+interface PlatformConfigs {
+    androidPackageName: string;
+    androidDownloadUrl: string;
+    iosPackageName: string;
+    iosDownloadUrl: string;
+    webUrl: string;
+}
 
 interface FirstPageProps {
     gameName: string;
@@ -21,14 +28,8 @@ interface FirstPageProps {
     onGameTypeChange: (type: string) => void;
     platforms: PlatformSupport,
     onPlatformChange: (platforms: PlatformSupport) => void;
-    platformConfigs: {
-        androidPackageName: string;
-        androidDownloadUrl: string;
-        iosPackageName: string;
-        iosDownloadUrl: string;
-        webUrl: string;
-    };
-    onPlatformConfigsChange: (configs: any) => void;
+    platformConfigs: PlatformConfigs;
+    onPlatformConfigsChange: (configs: PlatformConfigs) => void;
     screenshots: string[];
     onScreenshotsChange: (screenshots: string[]) => void;
 }
@@ -46,9 +47,9 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                         gameType={gameType}
                         onGameTypeChange={onGameTypeChange}
                     />
-                    <Paper 
-                        elevation={2} 
-                        sx={{ 
+                    <Paper
+                        elevation={2}
+                        sx={{
                             p: 3,
                             borderRadius: 3,
                             border: '1px solid',
@@ -56,10 +57,10 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                         }}
                     >
                         <Box sx={{ mb: 3 }}>
-                            <Typography 
-                                variant="h6" 
-                                sx={{ 
-                                    fontWeight: 700, 
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    fontWeight: 700,
                                     mb: 0.5,
                                     color: 'primary.main',
                                     display: 'flex',
@@ -75,7 +76,7 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                             <Divider />
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <UploadAvatars onAvatarUpdate={onAvatarUpdate} initialAvatarSrc={avatarSrc} />
+                            <UploadAvatars onAvatarUpdate={onAvatarUpdate} initialAvatarSrc={avatarSrc} />
                             <Box>
                                 <Typography variant="body2" color="text.secondary">
                                     Recommended size: 512x512px
@@ -89,7 +90,7 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                             </Box>
                         </Box>
                     </Paper>
-                    <HeaderImageUpload 
+                    <HeaderImageUpload
                         headerImage={headerImage}
                         onHeaderImageUpdate={onHeaderImageUpdate}
                     />
@@ -100,7 +101,7 @@ function FirstPage({ gameName, onGameNameChange, gameIntro, onGameIntroChange, a
                         onPlatformConfigsChange={onPlatformConfigsChange}
                     />
                     {(platforms.android == true || platforms.ios == true || platforms.web == true) && <DownloadConfig platforms={platforms} />}
-                    <GameScreenshots 
+                    <GameScreenshots
                         screenshots={screenshots}
                         onScreenshotsChange={onScreenshotsChange}
                     />
@@ -134,7 +135,7 @@ export default function NewGame() {
     const searchParams = useSearchParams();
     const editGameId = searchParams.get('id'); // 获取编辑的游戏 ID
     const [isEditMode, setIsEditMode] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage] = useState(1);
 
     const [gameName, setGameName] = useState('');
     const [gameIntro, setGameIntro] = useState('');
@@ -155,17 +156,17 @@ export default function NewGame() {
     const [showAutoSaveHint, setShowAutoSaveHint] = useState(false);
     const [showSaveDraftDialog, setShowSaveDraftDialog] = useState(false);
     const [showSubmitDialog, setShowSubmitDialog] = useState(false);
-    
+
     // 从 Local Storage 加载数据（草稿或编辑模式）
     useEffect(() => {
         // 如果是编辑模式，加载已发布游戏数据
         if (editGameId) {
             console.log('📝 编辑模式，游戏 ID:', editGameId);
             setIsEditMode(true);
-            
+
             const publishedGames = getPublishedGames();
             const gameToEdit = publishedGames.find(g => g.id === editGameId);
-            
+
             if (gameToEdit) {
                 console.log('✅ 找到要编辑的游戏:', gameToEdit.gameName);
                 setGameName(gameToEdit.gameName)
@@ -191,7 +192,7 @@ export default function NewGame() {
                 console.warn('⚠️ 未找到要编辑的游戏:', editGameId);
             }
         }
-        
+
         // 非编辑模式，加载草稿数据
         const savedData = loadGameFormData()
         if (savedData) {
@@ -216,17 +217,17 @@ export default function NewGame() {
             console.log('📦 已从缓存恢复游戏表单数据')
         }
     }, [editGameId])
-    
+
     // 保存表单数据到 Local Storage（防抖）
     useEffect(() => {
         // 编辑模式下不自动保存草稿（避免覆盖其他草稿）
         if (isEditMode) {
             return;
         }
-        
+
         // 显示自动保存提示
         setShowAutoSaveHint(true)
-        
+
         const timer = setTimeout(() => {
             saveGameFormData({
                 gameName,
@@ -252,7 +253,7 @@ export default function NewGame() {
             // 隐藏提示
             setTimeout(() => setShowAutoSaveHint(false), 2000)
         }, 500)  // 500ms 防抖
-        
+
         return () => clearTimeout(timer)
     }, [gameName, gameIntro, gameType, avatarSrc, headerImage, platforms, platformConfigs, screenshots, isEditMode])
 
@@ -284,7 +285,7 @@ export default function NewGame() {
             console.log('✅ 表单已重置，缓存已清除')
         }
     };
-    
+
     const handleSaveDraft = () => {
         // 手动保存草稿
         saveGameFormData({
@@ -315,7 +316,7 @@ export default function NewGame() {
         console.log('🎯 handleSubmitGame 被调用');
         console.log('📝 当前表单数据:', { gameName, gameType, avatarSrc, platforms });
         console.log('🔧 编辑模式:', isEditMode, '游戏 ID:', editGameId);
-        
+
         // 验证必填字段
         if (!gameName || !gameType || !avatarSrc) {
             console.warn('⚠️ 验证失败：缺少必填字段');
@@ -329,7 +330,7 @@ export default function NewGame() {
             return
         }
 
-                console.log('✅ 验证通过，开始' + (isEditMode ? '更新' : '提交审核') + '游戏...');
+        console.log('✅ 验证通过，开始' + (isEditMode ? '更新' : '提交审核') + '游戏...');
 
         try {
             if (isEditMode && editGameId) {
@@ -356,7 +357,7 @@ export default function NewGame() {
                     screenshots: screenshots,
                     savedAt: Date.now()
                 });
-                
+
                 console.log('✅ Game updated successfully');
             } else {
                 // 新建模式：提交审核
@@ -406,21 +407,21 @@ export default function NewGame() {
         <Box component="main" sx={{ flexGrow: 1, p: 3, minHeight: '100vh', bgcolor: 'grey.50' }}>
             <Box sx={{ maxWidth: 'xl', mx: 'auto' }}>
                 {/* Back Button */}
-                <Button 
+                <Button
                     startIcon={<ArrowBack />}
-                    variant="text" 
+                    variant="text"
                     color="primary"
                     href="/games"
                     sx={{ mb: 2 }}
                 >
                     Back to My Games
                 </Button>
-                
+
                 {/* Beautiful Title Card */}
                 <Box sx={{ mb: 4 }}>
-                    <Card 
+                    <Card
                         elevation={0}
-                        sx={{ 
+                        sx={{
                             background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
                             color: 'white',
                             borderRadius: 3,
@@ -456,10 +457,10 @@ export default function NewGame() {
                                     <Gamepad sx={{ fontSize: 40, color: 'white' }} />
                                 </Box>
                                 <Box sx={{ flex: 1 }}>
-                                    <Typography 
-                                        variant="h5" 
-                                        component="h1" 
-                                        sx={{ 
+                                    <Typography
+                                        variant="h5"
+                                        component="h1"
+                                        sx={{
                                             fontWeight: 700,
                                             mb: 1,
                                             letterSpacing: '-0.5px'
@@ -467,14 +468,14 @@ export default function NewGame() {
                                     >
                                         {isEditMode ? 'Edit Game' : 'Create New Game'}
                                     </Typography>
-                                    <Typography 
-                                        variant="body2" 
-                                        sx={{ 
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
                                             opacity: 0.95,
-                                            fontWeight: 400 
+                                            fontWeight: 400
                                         }}
                                     >
-                                        {isEditMode 
+                                        {isEditMode
                                             ? 'Update your game information and settings'
                                             : 'Submit your game to the platform and reach millions of players'}
                                     </Typography>
@@ -483,14 +484,14 @@ export default function NewGame() {
                         </CardContent>
                     </Card>
                 </Box>
-                
+
                 {/* Auto-save Indicator */}
                 {showAutoSaveHint && (
                     <Box sx={{ mb: 2 }}>
-                        <Alert 
-                            severity="success" 
+                        <Alert
+                            severity="success"
                             variant="filled"
-                            sx={{ 
+                            sx={{
                                 borderRadius: 2,
                                 py: 0.5,
                                 animation: 'fadeIn 0.3s ease-in-out',
@@ -507,330 +508,330 @@ export default function NewGame() {
                         </Alert>
                     </Box>
                 )}
-                
-            {currentPage === 1 && (
-                <FirstPage
-                    gameName={gameName}
-                    onGameNameChange={setGameName}
-                    gameIntro={gameIntro}
-                    onGameIntroChange={setGameIntro}
-                    avatarSrc={avatarSrc}
-                    onAvatarUpdate={setAvatarSrc}
-                    headerImage={headerImage}
-                    onHeaderImageUpdate={setHeaderImage}
-                    gameType={gameType}
-                    onGameTypeChange={setGameType}
-                    platforms={platforms}
-                    onPlatformChange={setPlatforms}
-                    platformConfigs={platformConfigs}
-                    onPlatformConfigsChange={setPlatformConfigs}
-                    screenshots={screenshots}
-                    onScreenshotsChange={setScreenshots}
-                />
-            )}
-            {currentPage === 2 && <SecondPage />}
-            {currentPage > 2 && (
-                <Alert severity="success" sx={{ mt: 3 }}>
-                    <Typography variant="h6">✅ Step Completed</Typography>
-                </Alert>
-            )}
-            
-            {/* Bottom Action Buttons */}
-            <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 2, 
-                pt: 4,
-                borderTop: '2px solid',
-                borderColor: 'divider',
-                mt: 5
-            }}>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button
-                        variant="outlined"
-                        startIcon={<ArrowBack />}
-                        href="/games"
-                        sx={{
-                            borderRadius: 2,
-                            px: 2.5,
-                            py: 1.2,
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            fontSize: '0.9rem'
-                        }}
-                    >
-                        Go Back to My Games
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={handleClickOpen}
-                        sx={{
-                            borderRadius: 2,
-                            px: 2.5,
-                            py: 1.2,
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            fontSize: '0.9rem'
-                        }}
-                    >
-                        Reset Form
-                    </Button>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button 
-                        variant="outlined"
-                        onClick={handleSaveDraft}
-                        startIcon={<Save />}
-                        sx={{
-                            borderRadius: 2,
-                            px: 2.5,
-                            py: 1.2,
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            fontSize: '0.9rem'
-                        }}
-                    >
-                        Save Draft
-                    </Button>
-                    <Dialog
-                        open={open}
-                        onClose={() => handleClose(false)}
-                        maxWidth="sm"
-                        fullWidth
-                        PaperProps={{
-                            sx: {
-                                borderRadius: 3,
-                                p: 2
-                            }
-                        }}
-                    >
-                        <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-                            <Typography variant="h6" fontWeight={700} color="error.main">
-                                Discard Changes?
-                            </Typography>
-                        </DialogTitle>
-                        <DialogContent>
-                            <DialogContentText sx={{ textAlign: 'center', py: 2 }}>
-                                All changes on this page will not be saved. This action cannot be undone.
-                            </DialogContentText>
-                        </DialogContent>
-                        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
-                            <Button 
-                                onClick={() => handleClose(false)}
-                                variant="outlined"
-                                sx={{
-                                    borderRadius: 2,
-                                    px: 4,
-                                    py: 1,
-                                    textTransform: 'none',
-                                    fontWeight: 600
-                                }}
-                            >
-                                Cancel
-                            </Button>
-                            <Button 
-                                onClick={() => handleClose(true)} 
-                                variant="contained"
-                                color="error"
-                                sx={{
-                                    borderRadius: 2,
-                                    px: 4,
-                                    py: 1,
-                                    textTransform: 'none',
-                                    fontWeight: 600
-                                }}
-                            >
-                                Confirm Reset
-                            </Button>
-                        </DialogActions>
-                    </Dialog>
-                    <Button
-                        variant="contained"
-                        startIcon={<CheckCircle />}
-                        onClick={handleSubmitGame}
-                        sx={{
-                            borderRadius: 2,
-                            px: 3,
-                            py: 1.2,
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            fontSize: '0.95rem',
-                            minWidth: 160,
-                            background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-                            boxShadow: 3,
-                            '&:hover': {
-                                boxShadow: 6,
-                            }
-                        }}
-                    >
-                        {isEditMode ? 'Update Game' : 'Submit for Review'}
-                    </Button>
-                </Box>
-            </Box>
-            
-            {/* 保存草稿成功弹窗 */}
-            <Dialog
-                open={showSaveDraftDialog}
-                onClose={() => setShowSaveDraftDialog(false)}
-                maxWidth="sm"
-                fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 3,
-                        p: 2
-                    }
-                }}
-            >
-                <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <Box
-                            sx={{
-                                width: 70,
-                                height: 70,
-                                borderRadius: '50%',
-                                bgcolor: 'info.light',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                animation: 'bounce 1s ease-in-out',
-                                '@keyframes bounce': {
-                                    '0%, 100%': { transform: 'translateY(0)' },
-                                    '50%': { transform: 'translateY(-10px)' }
-                                }
-                            }}
-                        >
-                            <Save sx={{ fontSize: 40, color: 'info.main' }} />
-                        </Box>
-                        <Typography variant="h6" fontWeight={700} color="info.main">
-                            Draft Saved!
-                        </Typography>
-                    </Box>
-                </DialogTitle>
-                <DialogContent>
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                        <Typography variant="body1" paragraph>
-                            Your game draft has been saved successfully.
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" paragraph>
-                            You can continue editing and submit when you&apos;re ready.
-                        </Typography>
-                        <Alert severity="info" sx={{ mt: 2, textAlign: 'left' }}>
-                            <Typography variant="body2">
-                                💡 Your draft is automatically saved. You can access it anytime by returning to this page.
-                            </Typography>
-                        </Alert>
-                    </Box>
-                </DialogContent>
-                <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-                    <Button
-                        variant="outlined"
-                        onClick={() => setShowSaveDraftDialog(false)}
-                        sx={{
-                            borderRadius: 2,
-                            px: 4,
-                            py: 1
-                        }}
-                    >
-                        Continue Editing
-                    </Button>
-                    <Button
-                        variant="contained"
-                        onClick={() => setShowSaveDraftDialog(false)}
-                        sx={{
-                            borderRadius: 2,
-                            px: 4,
-                            py: 1,
-                            background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
-                        }}
-                    >
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
 
-            {/* 提交成功弹窗 */}
-            <Dialog
-                open={showSubmitDialog}
-                onClose={() => {
-                    setShowSubmitDialog(false)
-                    router.push('/games')
-                }}
-                maxWidth="sm"
-                fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 3,
-                        p: 2
-                    }
-                }}
-            >
-                <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <Box
+                {currentPage === 1 && (
+                    <FirstPage
+                        gameName={gameName}
+                        onGameNameChange={setGameName}
+                        gameIntro={gameIntro}
+                        onGameIntroChange={setGameIntro}
+                        avatarSrc={avatarSrc}
+                        onAvatarUpdate={setAvatarSrc}
+                        headerImage={headerImage}
+                        onHeaderImageUpdate={setHeaderImage}
+                        gameType={gameType}
+                        onGameTypeChange={setGameType}
+                        platforms={platforms}
+                        onPlatformChange={setPlatforms}
+                        platformConfigs={platformConfigs}
+                        onPlatformConfigsChange={setPlatformConfigs}
+                        screenshots={screenshots}
+                        onScreenshotsChange={setScreenshots}
+                    />
+                )}
+                {currentPage === 2 && <SecondPage />}
+                {currentPage > 2 && (
+                    <Alert severity="success" sx={{ mt: 3 }}>
+                        <Typography variant="h6">✅ Step Completed</Typography>
+                    </Alert>
+                )}
+
+                {/* Bottom Action Buttons */}
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 2,
+                    pt: 4,
+                    borderTop: '2px solid',
+                    borderColor: 'divider',
+                    mt: 5
+                }}>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<ArrowBack />}
+                            href="/games"
                             sx={{
-                                width: 80,
-                                height: 80,
-                                borderRadius: '50%',
-                                bgcolor: 'success.light',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                animation: 'bounce 1s ease-in-out',
-                                '@keyframes bounce': {
-                                    '0%, 100%': { transform: 'translateY(0)' },
-                                    '50%': { transform: 'translateY(-10px)' }
+                                borderRadius: 2,
+                                px: 2.5,
+                                py: 1.2,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            Go Back to My Games
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={handleClickOpen}
+                            sx={{
+                                borderRadius: 2,
+                                px: 2.5,
+                                py: 1.2,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            Reset Form
+                        </Button>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleSaveDraft}
+                            startIcon={<Save />}
+                            sx={{
+                                borderRadius: 2,
+                                px: 2.5,
+                                py: 1.2,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            Save Draft
+                        </Button>
+                        <Dialog
+                            open={open}
+                            onClose={() => handleClose(false)}
+                            maxWidth="sm"
+                            fullWidth
+                            PaperProps={{
+                                sx: {
+                                    borderRadius: 3,
+                                    p: 2
                                 }
                             }}
                         >
-                            <CheckCircle sx={{ fontSize: 50, color: 'success.main' }} />
-                        </Box>
-                        <Typography variant="h5" fontWeight={700} color="success.main">
-                            {isEditMode ? 'Game Updated Successfully!' : 'Game Submitted for Review!'}
-                        </Typography>
+                            <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+                                <Typography variant="h6" fontWeight={700} color="error.main">
+                                    Discard Changes?
+                                </Typography>
+                            </DialogTitle>
+                            <DialogContent>
+                                <DialogContentText sx={{ textAlign: 'center', py: 2 }}>
+                                    All changes on this page will not be saved. This action cannot be undone.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+                                <Button
+                                    onClick={() => handleClose(false)}
+                                    variant="outlined"
+                                    sx={{
+                                        borderRadius: 2,
+                                        px: 4,
+                                        py: 1,
+                                        textTransform: 'none',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={() => handleClose(true)}
+                                    variant="contained"
+                                    color="error"
+                                    sx={{
+                                        borderRadius: 2,
+                                        px: 4,
+                                        py: 1,
+                                        textTransform: 'none',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    Confirm Reset
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                        <Button
+                            variant="contained"
+                            startIcon={<CheckCircle />}
+                            onClick={handleSubmitGame}
+                            sx={{
+                                borderRadius: 2,
+                                px: 3,
+                                py: 1.2,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.95rem',
+                                minWidth: 160,
+                                background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                                boxShadow: 3,
+                                '&:hover': {
+                                    boxShadow: 6,
+                                }
+                            }}
+                        >
+                            {isEditMode ? 'Update Game' : 'Submit for Review'}
+                        </Button>
                     </Box>
-                </DialogTitle>
-                <DialogContent>
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                        <Typography variant="body1" paragraph>
-                            {isEditMode 
-                                ? '✅ Your game has been updated successfully.'
-                                : '🎉 Congratulations! Your game has been submitted for review.'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" paragraph>
-                            {isEditMode
-                                ? 'You can now view the updated game in your game list.'
-                                : 'Your game will be reviewed by our team. You can track the status in your game list.'}
-                        </Typography>
-                        <Alert severity={isEditMode ? "success" : "info"} sx={{ mt: 2, textAlign: 'left' }}>
-                            <Typography variant="body2">
-                                {isEditMode
-                                    ? '💫 All changes have been saved and applied.'
-                                    : '⏳ Review typically takes 3-5 business days. You will be notified once approved.'}
+                </Box>
+
+                {/* 保存草稿成功弹窗 */}
+                <Dialog
+                    open={showSaveDraftDialog}
+                    onClose={() => setShowSaveDraftDialog(false)}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{
+                        sx: {
+                            borderRadius: 3,
+                            p: 2
+                        }
+                    }}
+                >
+                    <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                            <Box
+                                sx={{
+                                    width: 70,
+                                    height: 70,
+                                    borderRadius: '50%',
+                                    bgcolor: 'info.light',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    animation: 'bounce 1s ease-in-out',
+                                    '@keyframes bounce': {
+                                        '0%, 100%': { transform: 'translateY(0)' },
+                                        '50%': { transform: 'translateY(-10px)' }
+                                    }
+                                }}
+                            >
+                                <Save sx={{ fontSize: 40, color: 'info.main' }} />
+                            </Box>
+                            <Typography variant="h6" fontWeight={700} color="info.main">
+                                Draft Saved!
                             </Typography>
-                        </Alert>
-                    </Box>
-                </DialogContent>
-                <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-                    <Button
-                        variant="contained"
-                        onClick={() => {
-                            setShowSubmitDialog(false)
-                            router.push('/games')
-                        }}
-                        sx={{
-                            borderRadius: 2,
-                            px: 4,
-                            py: 1.2,
-                            background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-                            fontWeight: 600
-                        }}
-                    >
-                        Go to My Games
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                        </Box>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ textAlign: 'center', py: 2 }}>
+                            <Typography variant="body1" paragraph>
+                                Your game draft has been saved successfully.
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" paragraph>
+                                You can continue editing and submit when you&apos;re ready.
+                            </Typography>
+                            <Alert severity="info" sx={{ mt: 2, textAlign: 'left' }}>
+                                <Typography variant="body2">
+                                    💡 Your draft is automatically saved. You can access it anytime by returning to this page.
+                                </Typography>
+                            </Alert>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+                        <Button
+                            variant="outlined"
+                            onClick={() => setShowSaveDraftDialog(false)}
+                            sx={{
+                                borderRadius: 2,
+                                px: 4,
+                                py: 1
+                            }}
+                        >
+                            Continue Editing
+                        </Button>
+                        <Button
+                            variant="contained"
+                            onClick={() => setShowSaveDraftDialog(false)}
+                            sx={{
+                                borderRadius: 2,
+                                px: 4,
+                                py: 1,
+                                background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)'
+                            }}
+                        >
+                            Close
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* 提交成功弹窗 */}
+                <Dialog
+                    open={showSubmitDialog}
+                    onClose={() => {
+                        setShowSubmitDialog(false)
+                        router.push('/games')
+                    }}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{
+                        sx: {
+                            borderRadius: 3,
+                            p: 2
+                        }
+                    }}
+                >
+                    <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                            <Box
+                                sx={{
+                                    width: 80,
+                                    height: 80,
+                                    borderRadius: '50%',
+                                    bgcolor: 'success.light',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    animation: 'bounce 1s ease-in-out',
+                                    '@keyframes bounce': {
+                                        '0%, 100%': { transform: 'translateY(0)' },
+                                        '50%': { transform: 'translateY(-10px)' }
+                                    }
+                                }}
+                            >
+                                <CheckCircle sx={{ fontSize: 50, color: 'success.main' }} />
+                            </Box>
+                            <Typography variant="h5" fontWeight={700} color="success.main">
+                                {isEditMode ? 'Game Updated Successfully!' : 'Game Submitted for Review!'}
+                            </Typography>
+                        </Box>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ textAlign: 'center', py: 2 }}>
+                            <Typography variant="body1" paragraph>
+                                {isEditMode
+                                    ? '✅ Your game has been updated successfully.'
+                                    : '🎉 Congratulations! Your game has been submitted for review.'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" paragraph>
+                                {isEditMode
+                                    ? 'You can now view the updated game in your game list.'
+                                    : 'Your game will be reviewed by our team. You can track the status in your game list.'}
+                            </Typography>
+                            <Alert severity={isEditMode ? "success" : "info"} sx={{ mt: 2, textAlign: 'left' }}>
+                                <Typography variant="body2">
+                                    {isEditMode
+                                        ? '💫 All changes have been saved and applied.'
+                                        : '⏳ Review typically takes 3-5 business days. You will be notified once approved.'}
+                                </Typography>
+                            </Alert>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                setShowSubmitDialog(false)
+                                router.push('/games')
+                            }}
+                            sx={{
+                                borderRadius: 2,
+                                px: 4,
+                                py: 1.2,
+                                background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                                fontWeight: 600
+                            }}
+                        >
+                            Go to My Games
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Box>
         </Box>
     );
@@ -847,10 +848,10 @@ interface BasicInfoProps {
 
 function BasicInfo({ gameName, onGameNameChange, gameIntro, onGameIntroChange, gameType, onGameTypeChange }: BasicInfoProps) {
     return (
-        <Paper 
-            elevation={2} 
-            sx={{ 
-                flex: 3, 
+        <Paper
+            elevation={2}
+            sx={{
+                flex: 3,
                 p: 3,
                 borderRadius: 3,
                 border: '1px solid',
@@ -859,10 +860,10 @@ function BasicInfo({ gameName, onGameNameChange, gameIntro, onGameIntroChange, g
         >
             {/* Section Title */}
             <Box sx={{ mb: 3 }}>
-                <Typography 
-                    variant="h6" 
-                    sx={{ 
-                        fontWeight: 700, 
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
                         mb: 0.5,
                         color: 'primary.main',
                         display: 'flex',
@@ -879,71 +880,71 @@ function BasicInfo({ gameName, onGameNameChange, gameIntro, onGameIntroChange, g
             </Box>
             <Grid container component="form" spacing={3}>
                 <Grid size={{ xs: 12, md: 7 }}>
-                <TextField
+                    <TextField
                         label="Game Name"
                         fullWidth
-                    value={gameName}
-                    onChange={(e) => onGameNameChange(e.target.value)}
+                        value={gameName}
+                        onChange={(e) => onGameNameChange(e.target.value)}
                         placeholder="Enter your game name"
                         required
                         helperText="* Required field"
-                />
+                    />
                 </Grid>
                 <Grid size={{ xs: 12, md: 5 }}>
-                <TextField
-                    select
+                    <TextField
+                        select
                         label="Game Type"
                         fullWidth
-                    value={gameType}
-                    onChange={(e) => onGameTypeChange(e.target.value)}
+                        value={gameType}
+                        onChange={(e) => onGameTypeChange(e.target.value)}
                         required
                         helperText="* Required field"
-                    SelectProps={{
-                        MenuProps: {
-                            PaperProps: {
-                                style: {
-                                    maxHeight: 250,
+                        SelectProps={{
+                            MenuProps: {
+                                PaperProps: {
+                                    style: {
+                                        maxHeight: 250,
+                                    },
                                 },
                             },
-                        },
-                    }}
-                >
-                    <MenuItem value="">
-                        <em>Select Type</em>
-                    </MenuItem>
-                    <MenuItem value="Action">Action</MenuItem>
-                    <MenuItem value="Adventure">Adventure</MenuItem>
-                    <MenuItem value="RPG">RPG (Role-Playing Game)</MenuItem>
-                    <MenuItem value="Strategy">Strategy</MenuItem>
-                    <MenuItem value="Simulation">Simulation</MenuItem>
-                    <MenuItem value="Sports">Sports</MenuItem>
-                    <MenuItem value="Racing">Racing</MenuItem>
-                    <MenuItem value="Fighting">Fighting</MenuItem>
-                    <MenuItem value="Puzzle">Puzzle</MenuItem>
-                    <MenuItem value="Platformer">Platformer</MenuItem>
-                    <MenuItem value="Shooter">Shooter</MenuItem>
-                    <MenuItem value="MMO">MMO (Massively Multiplayer Online)</MenuItem>
-                    <MenuItem value="Music">Music/Rhythm</MenuItem>
-                    <MenuItem value="Casual">Casual</MenuItem>
-                    <MenuItem value="Card & Board">Card & Board Game</MenuItem>
-                    <MenuItem value="Educational">Educational</MenuItem>
-                    <MenuItem value="Sandbox">Sandbox</MenuItem>
-                    <MenuItem value="Open World">Open World</MenuItem>
-                    <MenuItem value="Horror">Horror</MenuItem>
-                    <MenuItem value="Stealth">Stealth</MenuItem>
-                    <MenuItem value="Survival">Survival</MenuItem>
-                </TextField>
+                        }}
+                    >
+                        <MenuItem value="">
+                            <em>Select Type</em>
+                        </MenuItem>
+                        <MenuItem value="Action">Action</MenuItem>
+                        <MenuItem value="Adventure">Adventure</MenuItem>
+                        <MenuItem value="RPG">RPG (Role-Playing Game)</MenuItem>
+                        <MenuItem value="Strategy">Strategy</MenuItem>
+                        <MenuItem value="Simulation">Simulation</MenuItem>
+                        <MenuItem value="Sports">Sports</MenuItem>
+                        <MenuItem value="Racing">Racing</MenuItem>
+                        <MenuItem value="Fighting">Fighting</MenuItem>
+                        <MenuItem value="Puzzle">Puzzle</MenuItem>
+                        <MenuItem value="Platformer">Platformer</MenuItem>
+                        <MenuItem value="Shooter">Shooter</MenuItem>
+                        <MenuItem value="MMO">MMO (Massively Multiplayer Online)</MenuItem>
+                        <MenuItem value="Music">Music/Rhythm</MenuItem>
+                        <MenuItem value="Casual">Casual</MenuItem>
+                        <MenuItem value="Card & Board">Card & Board Game</MenuItem>
+                        <MenuItem value="Educational">Educational</MenuItem>
+                        <MenuItem value="Sandbox">Sandbox</MenuItem>
+                        <MenuItem value="Open World">Open World</MenuItem>
+                        <MenuItem value="Horror">Horror</MenuItem>
+                        <MenuItem value="Stealth">Stealth</MenuItem>
+                        <MenuItem value="Survival">Survival</MenuItem>
+                    </TextField>
                 </Grid>
                 <Grid size={12}>
-                <TextField
-                    fullWidth
-                    multiline
+                    <TextField
+                        fullWidth
+                        multiline
                         label="Game Introduction"
-                    minRows={5}
-                    value={gameIntro}
-                    onChange={(e) => onGameIntroChange(e.target.value)}
+                        minRows={5}
+                        value={gameIntro}
+                        onChange={(e) => onGameIntroChange(e.target.value)}
                         placeholder="Describe your game, gameplay features, and what makes it unique..."
-                />
+                    />
                 </Grid>
             </Grid>
         </Paper>
@@ -957,20 +958,14 @@ interface LivePreviewProps {
     headerImage?: string;
     platforms: PlatformSupport;
     gameType: string;
-    platformConfigs: {
-        androidPackageName: string;
-        androidDownloadUrl: string;
-        iosPackageName: string;
-        iosDownloadUrl: string;
-        webUrl: string;
-    };
+    platformConfigs: PlatformConfigs;
 }
 
 function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, gameType, platformConfigs }: LivePreviewProps) {
     return (
-        <Paper 
-            elevation={3} 
-            sx={{ 
+        <Paper
+            elevation={3}
+            sx={{
                 flex: 1,
                 borderRadius: 3,
                 border: '2px solid',
@@ -981,9 +976,9 @@ function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, ga
         >
             {/* Header */}
             <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 2, textAlign: 'center' }}>
-                <Typography 
-                    variant="subtitle1" 
-                    sx={{ 
+                <Typography
+                    variant="subtitle1"
+                    sx={{
                         fontWeight: 700,
                         display: 'flex',
                         alignItems: 'center',
@@ -997,9 +992,9 @@ function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, ga
 
             {/* Header Image */}
             {headerImage ? (
-                <Box 
-                    sx={{ 
-                        width: '100%', 
+                <Box
+                    sx={{
+                        width: '100%',
                         height: 140,
                         position: 'relative' as const,
                         bgcolor: 'grey.200'
@@ -1018,9 +1013,9 @@ function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, ga
                     />
                 </Box>
             ) : (
-                <Box 
-                    sx={{ 
-                        width: '100%', 
+                <Box
+                    sx={{
+                        width: '100%',
                         height: 140,
                         bgcolor: 'grey.200',
                         display: 'flex',
@@ -1038,23 +1033,23 @@ function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, ga
             <Box sx={{ p: 2.5 }}>
                 {/* Game Icon & Title */}
                 <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                    <Avatar 
-                        src={avatarSrc} 
+                    <Avatar
+                        src={avatarSrc}
                         variant="rounded"
-                        sx={{ 
-                            width: 60, 
+                        sx={{
+                            width: 60,
                             height: 60,
                             border: '2px solid',
                             borderColor: avatarSrc ? 'primary.main' : 'grey.300',
                             boxShadow: avatarSrc ? 2 : 0
-                        }} 
+                        }}
                     />
                     <Box sx={{ flex: 1 }}>
                         <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5, lineHeight: 1.2 }}>
                             {name || 'Game Name'}
                         </Typography>
-                        <Chip 
-                            label={gameType || 'Type'} 
+                        <Chip
+                            label={gameType || 'Type'}
                             size="small"
                             color="primary"
                             sx={{ fontSize: '0.7rem', height: 20 }}
@@ -1063,11 +1058,11 @@ function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, ga
                 </Box>
 
                 {/* Start Game Button */}
-                <Button 
-                    variant="contained" 
+                <Button
+                    variant="contained"
                     fullWidth
                     disabled
-                    sx={{ 
+                    sx={{
                         mb: 2,
                         py: 1.2,
                         borderRadius: 2,
@@ -1094,10 +1089,10 @@ function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, ga
                     <Typography variant="caption" fontWeight={700} color="text.primary" sx={{ mb: 0.5, display: 'block' }}>
                         Game Introduction
                     </Typography>
-                    <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
                             fontSize: '0.8rem',
                             lineHeight: 1.5,
                             minHeight: 60,
@@ -1118,30 +1113,30 @@ function LivePreview({ name, introduction, avatarSrc, headerImage, platforms, ga
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         {platforms.android && (
-                            <Chip 
+                            <Chip
                                 icon={<Android />}
-                                label="Android" 
-                                size="small" 
+                                label="Android"
+                                size="small"
                                 color="success"
                                 variant="filled"
                                 sx={{ fontSize: '0.7rem' }}
                             />
                         )}
                         {platforms.ios && (
-                            <Chip 
+                            <Chip
                                 icon={<Apple />}
-                                label="iOS" 
-                                size="small" 
+                                label="iOS"
+                                size="small"
                                 color="primary"
                                 variant="filled"
                                 sx={{ fontSize: '0.7rem' }}
                             />
                         )}
                         {platforms.web && (
-                            <Chip 
+                            <Chip
                                 icon={<WebIcon />}
-                                label="Web" 
-                                size="small" 
+                                label="Web"
+                                size="small"
                                 color="info"
                                 variant="filled"
                                 sx={{ fontSize: '0.7rem' }}
@@ -1222,7 +1217,7 @@ function HeaderImageUpload({ headerImage, onHeaderImageUpdate }: HeaderImageUplo
                 alert('Header image file size should not exceed 10MB')
                 return
             }
-            
+
             // Convert to base64 for local preview
             const reader = new FileReader();
             reader.onload = () => {
@@ -1236,9 +1231,9 @@ function HeaderImageUpload({ headerImage, onHeaderImageUpdate }: HeaderImageUplo
     };
 
     return (
-        <Paper 
-            elevation={2} 
-            sx={{ 
+        <Paper
+            elevation={2}
+            sx={{
                 p: 3,
                 borderRadius: 3,
                 border: '1px solid',
@@ -1246,10 +1241,10 @@ function HeaderImageUpload({ headerImage, onHeaderImageUpdate }: HeaderImageUplo
             }}
         >
             <Box sx={{ mb: 3 }}>
-                <Typography 
-                    variant="h6" 
-                    sx={{ 
-                        fontWeight: 700, 
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
                         mb: 0.5,
                         color: 'primary.main',
                         display: 'flex',
@@ -1264,12 +1259,12 @@ function HeaderImageUpload({ headerImage, onHeaderImageUpdate }: HeaderImageUplo
                 </Typography>
                 <Divider />
             </Box>
-            
+
             {/* Preview or Upload Area */}
             {!previewSrc ? (
-                <Card 
-                    variant="outlined" 
-                    sx={{ 
+                <Card
+                    variant="outlined"
+                    sx={{
                         border: '3px dashed',
                         borderColor: 'grey.300',
                         textAlign: 'center',
@@ -1283,15 +1278,15 @@ function HeaderImageUpload({ headerImage, onHeaderImageUpdate }: HeaderImageUplo
                     }}
                 >
                     <CardContent>
-                        <ImageIcon 
-                            sx={{ 
-                                fontSize: 56, 
-                                color: 'primary.main', 
+                        <ImageIcon
+                            sx={{
+                                fontSize: 56,
+                                color: 'primary.main',
                                 mb: 2,
-                                opacity: 0.6 
-                            }} 
+                                opacity: 0.6
+                            }}
                         />
-                        <input 
+                        <input
                             type="file"
                             id="header-upload"
                             accept="image/*"
@@ -1327,9 +1322,9 @@ function HeaderImageUpload({ headerImage, onHeaderImageUpdate }: HeaderImageUplo
             ) : (
                 <Box>
                     {/* Preview Area */}
-                    <Box 
-                        sx={{ 
-                            width: '100%', 
+                    <Box
+                        sx={{
+                            width: '100%',
                             height: 280,
                             borderRadius: 2,
                             overflow: 'hidden',
@@ -1365,10 +1360,10 @@ function HeaderImageUpload({ headerImage, onHeaderImageUpdate }: HeaderImageUplo
                             }}
                         />
                     </Box>
-                    
+
                     {/* Action Buttons */}
                     <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                        <input 
+                        <input
                             type="file"
                             id="header-upload"
                             accept="image/*"
@@ -1412,7 +1407,7 @@ function HeaderImageUpload({ headerImage, onHeaderImageUpdate }: HeaderImageUplo
                     </Box>
                 </Box>
             )}
-            
+
             {previewSrc && (
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block', textAlign: 'center' }}>
                     💡 Recommended: 16:9 aspect ratio (e.g., 1920x1080px), JPG or PNG format, max 10MB
@@ -1437,7 +1432,7 @@ function UploadAvatars({ onAvatarUpdate, initialAvatarSrc }: UploadAvatarsProps)
                 alert('Icon file size should not exceed 5MB')
                 return
             }
-            
+
             // Convert to base64 for local preview
             const reader = new FileReader();
             reader.onload = () => {
@@ -1452,53 +1447,53 @@ function UploadAvatars({ onAvatarUpdate, initialAvatarSrc }: UploadAvatarsProps)
 
     return (
         <Box sx={{ position: 'relative', display: 'inline-block' }}>
-        <ButtonBase
-            component="label"
-            role={undefined}
+            <ButtonBase
+                component="label"
+                role={undefined}
                 tabIndex={-1}
-            aria-label="Avatar image"
-            sx={{
+                aria-label="Avatar image"
+                sx={{
                     borderRadius: 3,
                     transition: 'all 0.3s ease',
                     '&:hover': {
                         transform: 'scale(1.05)',
                     },
-                '&:has(:focus-visible)': {
+                    '&:has(:focus-visible)': {
                         outline: '3px solid',
                         outlineColor: 'primary.main',
                         outlineOffset: '4px',
-                },
-            }}
-        >
-                <Avatar 
-                    alt="Upload new avatar" 
-                    src={previewSrc} 
-                    sx={{ 
-                        width: 100, 
+                    },
+                }}
+            >
+                <Avatar
+                    alt="Upload new avatar"
+                    src={previewSrc}
+                    sx={{
+                        width: 100,
                         height: 100,
                         border: '3px solid',
                         borderColor: previewSrc ? 'primary.main' : 'grey.300',
                         boxShadow: previewSrc ? 3 : 0,
                         transition: 'all 0.3s ease'
-                    }} 
+                    }}
                 />
-            <input
-                type="file"
-                accept="image/*"
-                style={{
-                    border: 0,
-                    clip: 'rect(0 0 0 0)',
-                    height: '1px',
-                    margin: '-1px',
-                    overflow: 'hidden',
-                    padding: 0,
-                    position: 'absolute',
-                    whiteSpace: 'nowrap',
-                    width: '1px',
-                }}
-                onChange={handleAvatarChange}
-            />
-        </ButtonBase>
+                <input
+                    type="file"
+                    accept="image/*"
+                    style={{
+                        border: 0,
+                        clip: 'rect(0 0 0 0)',
+                        height: '1px',
+                        margin: '-1px',
+                        overflow: 'hidden',
+                        padding: 0,
+                        position: 'absolute',
+                        whiteSpace: 'nowrap',
+                        width: '1px',
+                    }}
+                    onChange={handleAvatarChange}
+                />
+            </ButtonBase>
             <Chip
                 label="Click to upload"
                 size="small"
@@ -1532,33 +1527,33 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
 
         try {
             const newScreenshots: string[] = [];
-            
+
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                
+
                 // Validate file size (5MB per screenshot)
                 if (file.size > 5 * 1024 * 1024) {
                     alert(`Screenshot ${file.name} exceeds 5MB`);
                     continue;
                 }
-                
+
                 // Validate file type
                 if (!file.type.startsWith('image/')) {
                     alert(`File ${file.name} is not an image`);
                     continue;
                 }
-                
+
                 // Convert to base64
                 const reader = new FileReader();
                 const base64Promise = new Promise<string>((resolve) => {
                     reader.onload = () => resolve(reader.result as string);
                     reader.readAsDataURL(file);
                 });
-                
+
                 const base64 = await base64Promise;
                 newScreenshots.push(base64);
             }
-            
+
             onScreenshotsChange([...screenshots, ...newScreenshots]);
             console.log(`✅ Uploaded ${newScreenshots.length} screenshot(s)`);
         } catch (error) {
@@ -1576,10 +1571,10 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
     };
 
     return (
-        <Paper 
-            elevation={2} 
-            sx={{ 
-                flex: 1, 
+        <Paper
+            elevation={2}
+            sx={{
+                flex: 1,
                 p: 3,
                 borderRadius: 3,
                 border: '1px solid',
@@ -1587,10 +1582,10 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
             }}
         >
             <Box sx={{ mb: 3 }}>
-                <Typography 
-                    variant="h6" 
-                    sx={{ 
-                        fontWeight: 700, 
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
                         mb: 0.5,
                         color: 'primary.main',
                         display: 'flex',
@@ -1605,11 +1600,11 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
                 </Typography>
                 <Divider />
             </Box>
-            
+
             {/* Upload Button */}
-            <Card 
+            <Card
                 variant="outlined"
-                sx={{ 
+                sx={{
                     border: '3px dashed',
                     borderColor: screenshots.length > 0 ? 'primary.main' : 'grey.300',
                     textAlign: 'center',
@@ -1623,15 +1618,15 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
                 }}
             >
                 <CardContent>
-                    <ImageIcon 
-                        sx={{ 
-                            fontSize: 56, 
-                            color: 'primary.main', 
+                    <ImageIcon
+                        sx={{
+                            fontSize: 56,
+                            color: 'primary.main',
                             mb: 2,
-                            opacity: 0.6 
-                        }} 
+                            opacity: 0.6
+                        }}
                     />
-                    <input 
+                    <input
                         type="file"
                         id="screenshots-upload"
                         accept="image/*"
@@ -1641,13 +1636,13 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
                     />
                     <Button
                         variant="contained"
-                color="primary"
-                component="label"
+                        color="primary"
+                        component="label"
                         htmlFor="screenshots-upload"
                         startIcon={uploading ? <CircularProgress size={20} /> : <CloudUpload />}
                         disabled={uploading}
                         size="large"
-                        sx={{ 
+                        sx={{
                             mb: 2,
                             py: 1.5,
                             px: 4,
@@ -1658,21 +1653,21 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
                         }}
                     >
                         {uploading ? 'Uploading...' : 'Choose Screenshots to Upload'}
-            </Button>
+                    </Button>
                     <Typography variant="body1" color="text.primary" gutterBottom fontWeight={500}>
                         Click to upload or drag files to this area
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                         Supports JPG, PNG formats • Max 5MB per file
-                                </Typography>
+                    </Typography>
                 </CardContent>
             </Card>
-            
+
             {/* Screenshots Grid */}
             {screenshots.length > 0 && (
                 <Box sx={{ mt: 3 }}>
-                    <Typography 
-                        variant="subtitle2" 
+                    <Typography
+                        variant="subtitle2"
                         fontWeight={600}
                         color="text.primary"
                         sx={{ mb: 2 }}
@@ -1682,7 +1677,7 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
                     <Grid container spacing={2}>
                         {screenshots.map((screenshot, idx) => (
                             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={idx}>
-                                <Card 
+                                <Card
                                     variant="outlined"
                                     sx={{
                                         position: 'relative' as const,
@@ -1696,9 +1691,9 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
                                         }
                                     }}
                                 >
-                                    <Box 
-                                        sx={{ 
-                                            width: '100%', 
+                                    <Box
+                                        sx={{
+                                            width: '100%',
                                             height: 180,
                                             overflow: 'hidden',
                                             bgcolor: 'grey.100',
@@ -1752,14 +1747,14 @@ function GameScreenshots({ screenshots, onScreenshotsChange }: GameScreenshotsPr
                                                 Delete
                                             </Button>
                                         </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                ))}
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        ))}
                     </Grid>
                 </Box>
             )}
-            
+
             {screenshots.length === 0 && (
                 <Alert severity="info" sx={{ mt: 2 }}>
                     <Typography variant="body2">
@@ -1779,18 +1774,18 @@ function Artifacts({ platforms }: { platforms: PlatformSupport }) {
                     <Android sx={{ color: 'success.main', fontSize: 28 }} />
                     <Typography variant="subtitle1" fontWeight={600}>Android Installer</Typography>
                 </Box>
-            <TextField
+                <TextField
                     label="Package File"
-                fullWidth
+                    fullWidth
                     placeholder="Select APK file"
-            />
+                />
                 <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
                     <Typography variant="body2" color="text.secondary">
-                File Size: N/A MB
-            </Typography>
+                        File Size: N/A MB
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">
-                Upload Time: 2024-09-25 14:30
-            </Typography>
+                        Upload Time: 2024-09-25 14:30
+                    </Typography>
                 </Box>
             </Card>
         </Grid>
@@ -1803,12 +1798,12 @@ function Artifacts({ platforms }: { platforms: PlatformSupport }) {
                     <Apple sx={{ color: 'primary.main', fontSize: 28 }} />
                     <Typography variant="subtitle1" fontWeight={600}>iOS Installer</Typography>
                 </Box>
-            <TextField
+                <TextField
                     label="Package File"
-                fullWidth
+                    fullWidth
                     placeholder="Select IPA file"
-                disabled
-            />
+                    disabled
+                />
             </Card>
         </Grid>
     );
@@ -1820,12 +1815,12 @@ function Artifacts({ platforms }: { platforms: PlatformSupport }) {
                     <WebIcon sx={{ color: 'info.main', fontSize: 28 }} />
                     <Typography variant="subtitle1" fontWeight={600}>Web Application</Typography>
                 </Box>
-            <Button
+                <Button
                     variant="contained"
-                color="primary"
-                component="label"
-                startIcon={<CloudUpload />}
-                    sx={{ 
+                    color="primary"
+                    component="label"
+                    startIcon={<CloudUpload />}
+                    sx={{
                         width: '100%',
                         py: 1.2,
                         borderRadius: 2,
@@ -1833,25 +1828,25 @@ function Artifacts({ platforms }: { platforms: PlatformSupport }) {
                         fontWeight: 600,
                         fontSize: '0.9rem'
                     }}
-            >
-                Upload Artifacts
-                <Input
-                    type="file"
-                    hidden
-                />
-            </Button>
+                >
+                    Upload Artifacts
+                    <Input
+                        type="file"
+                        hidden
+                    />
+                </Button>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
                     💡 The homepage should be index.html
-            </Typography>
+                </Typography>
             </Card>
         </Grid>
     );
 
     return (
-        <Paper 
-            elevation={2} 
-            sx={{ 
-                flex: 1, 
+        <Paper
+            elevation={2}
+            sx={{
+                flex: 1,
                 p: 3,
                 borderRadius: 3,
                 border: '1px solid',
@@ -1859,10 +1854,10 @@ function Artifacts({ platforms }: { platforms: PlatformSupport }) {
             }}
         >
             <Box sx={{ mb: 3 }}>
-                <Typography 
-                    variant="h6" 
-                    sx={{ 
-                        fontWeight: 700, 
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
                         mb: 0.5,
                         color: 'primary.main',
                         display: 'flex',
@@ -1888,10 +1883,10 @@ function Artifacts({ platforms }: { platforms: PlatformSupport }) {
 
 function Tips() {
     return (
-        <Paper 
-            elevation={2} 
-            sx={{ 
-                flex: 1, 
+        <Paper
+            elevation={2}
+            sx={{
+                flex: 1,
                 p: 3,
                 borderRadius: 3,
                 border: '1px solid',
@@ -1900,9 +1895,9 @@ function Tips() {
             }}
         >
             <Box sx={{ mb: 2 }}>
-                <Typography 
-                    variant="h6" 
-                    sx={{ 
+                <Typography
+                    variant="h6"
+                    sx={{
                         fontWeight: 700,
                         color: 'info.main',
                         display: 'flex',
@@ -1918,7 +1913,7 @@ function Tips() {
                     <ListItemIcon sx={{ minWidth: 36 }}>
                         <LooksOne color="info" />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                         primary="Fill all required fields"
                         primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
                     />
@@ -1927,7 +1922,7 @@ function Tips() {
                     <ListItemIcon sx={{ minWidth: 36 }}>
                         <LooksTwo color="info" />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                         primary="Upload clear game screenshots"
                         primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
                     />
@@ -1936,7 +1931,7 @@ function Tips() {
                     <ListItemIcon sx={{ minWidth: 36 }}>
                         <Info color="info" />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                         primary="Your draft is auto-saved"
                         primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
                     />
@@ -1945,7 +1940,7 @@ function Tips() {
                     <ListItemIcon sx={{ minWidth: 36 }}>
                         <CheckCircle color="info" />
                     </ListItemIcon>
-                    <ListItemText 
+                    <ListItemText
                         primary="Review takes 3-5 business days"
                         primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
                     />
@@ -1958,14 +1953,8 @@ function Tips() {
 interface SupportedPlatformsProps {
     platforms: PlatformSupport;
     onPlatformChange: (platforms: PlatformSupport) => void;
-    platformConfigs: {
-        androidPackageName: string;
-        androidDownloadUrl: string;
-        iosPackageName: string;
-        iosDownloadUrl: string;
-        webUrl: string;
-    };
-    onPlatformConfigsChange: (configs: any) => void;
+    platformConfigs: PlatformConfigs,
+    onPlatformConfigsChange: (configs: PlatformConfigs) => void;
 }
 
 function SupportedPlatforms({ platforms, onPlatformChange, platformConfigs, onPlatformConfigsChange }: SupportedPlatformsProps) {
@@ -1984,10 +1973,10 @@ function SupportedPlatforms({ platforms, onPlatformChange, platformConfigs, onPl
     };
 
     return (
-        <Paper 
-            elevation={2} 
-            sx={{ 
-                flex: 1, 
+        <Paper
+            elevation={2}
+            sx={{
+                flex: 1,
                 p: 3,
                 borderRadius: 3,
                 border: '1px solid',
@@ -1995,10 +1984,10 @@ function SupportedPlatforms({ platforms, onPlatformChange, platformConfigs, onPl
             }}
         >
             <Box sx={{ mb: 3 }}>
-                <Typography 
-                    variant="h6" 
-                    sx={{ 
-                        fontWeight: 700, 
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
                         mb: 0.5,
                         color: 'primary.main',
                         display: 'flex',
@@ -2016,14 +2005,14 @@ function SupportedPlatforms({ platforms, onPlatformChange, platformConfigs, onPl
             <Stack spacing={3}>
                 {/* Android */}
                 <Card variant="outlined" sx={{ p: 2.5, bgcolor: 'grey.50' }}>
-                    <FormControlLabel 
-                        control={<Checkbox checked={platforms.android} onChange={handleChange} name="android" />} 
+                    <FormControlLabel
+                        control={<Checkbox checked={platforms.android} onChange={handleChange} name="android" />}
                         label={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Android color="success" />
                                 <Typography fontWeight={600}>Android</Typography>
                             </Box>
-                        } 
+                        }
                     />
                     {platforms.android && (
                         <Box sx={{ mt: 2, ml: 4 }}>
@@ -2057,14 +2046,14 @@ function SupportedPlatforms({ platforms, onPlatformChange, platformConfigs, onPl
 
                 {/* iOS */}
                 <Card variant="outlined" sx={{ p: 2.5, bgcolor: 'grey.50' }}>
-                    <FormControlLabel 
-                        control={<Checkbox checked={platforms.ios} onChange={handleChange} name="ios" />} 
+                    <FormControlLabel
+                        control={<Checkbox checked={platforms.ios} onChange={handleChange} name="ios" />}
                         label={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Apple color="primary" />
                                 <Typography fontWeight={600}>iOS</Typography>
                             </Box>
-                        } 
+                        }
                     />
                     {platforms.ios && (
                         <Box sx={{ mt: 2, ml: 4 }}>
@@ -2098,14 +2087,14 @@ function SupportedPlatforms({ platforms, onPlatformChange, platformConfigs, onPl
 
                 {/* Web */}
                 <Card variant="outlined" sx={{ p: 2.5, bgcolor: 'grey.50' }}>
-                    <FormControlLabel 
-                        control={<Checkbox checked={platforms.web} onChange={handleChange} name="web" />} 
+                    <FormControlLabel
+                        control={<Checkbox checked={platforms.web} onChange={handleChange} name="web" />}
                         label={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <WebIcon color="info" />
                                 <Typography fontWeight={600}>Web</Typography>
                             </Box>
-                        } 
+                        }
                     />
                     {platforms.web && (
                         <Box sx={{ mt: 2, ml: 4 }}>
@@ -2136,16 +2125,16 @@ function DownloadConfig({ platforms }: { platforms: PlatformSupport }) {
             </Box>
             <Grid container spacing={2}>
                 <Grid size={12}>
-                    <TextField 
-                        label="Package Name" 
-                        placeholder="com.example.game" 
+                    <TextField
+                        label="Package Name"
+                        placeholder="com.example.game"
                         fullWidth
                     />
                 </Grid>
                 <Grid size={12}>
-                    <TextField 
-                        select 
-                        label="Minimum SDK Version" 
+                    <TextField
+                        select
+                        label="Minimum SDK Version"
                         fullWidth
                         defaultValue=""
                     >
@@ -2153,7 +2142,7 @@ function DownloadConfig({ platforms }: { platforms: PlatformSupport }) {
                         <MenuItem value="21">Android 5.0 (API 21)</MenuItem>
                         <MenuItem value="23">Android 6.0 (API 23)</MenuItem>
                         <MenuItem value="26">Android 8.0 (API 26)</MenuItem>
-            </TextField>
+                    </TextField>
                 </Grid>
             </Grid>
         </Card>
@@ -2167,15 +2156,15 @@ function DownloadConfig({ platforms }: { platforms: PlatformSupport }) {
             </Box>
             <Grid container spacing={2}>
                 <Grid size={12}>
-                    <TextField 
-                        label="Bundle ID" 
-                        placeholder="com.example.game" 
+                    <TextField
+                        label="Bundle ID"
+                        placeholder="com.example.game"
                         fullWidth
                     />
                 </Grid>
                 <Grid size={12}>
-                    <TextField 
-                        select 
+                    <TextField
+                        select
                         label="Minimum iOS Version"
                         fullWidth
                         defaultValue=""
@@ -2184,7 +2173,7 @@ function DownloadConfig({ platforms }: { platforms: PlatformSupport }) {
                         <MenuItem value="13">iOS 13.0</MenuItem>
                         <MenuItem value="14">iOS 14.0</MenuItem>
                         <MenuItem value="15">iOS 15.0</MenuItem>
-            </TextField>
+                    </TextField>
                 </Grid>
             </Grid>
         </Card>
@@ -2198,15 +2187,15 @@ function DownloadConfig({ platforms }: { platforms: PlatformSupport }) {
             </Box>
             <Grid container spacing={2}>
                 <Grid size={12}>
-                    <TextField 
-                        label="URL" 
-                        placeholder="https://game.example.com" 
+                    <TextField
+                        label="URL"
+                        placeholder="https://game.example.com"
                         fullWidth
                     />
                 </Grid>
                 <Grid size={12}>
-                    <TextField 
-                        select 
+                    <TextField
+                        select
                         label="Supported Browsers"
                         fullWidth
                         defaultValue=""
@@ -2215,17 +2204,17 @@ function DownloadConfig({ platforms }: { platforms: PlatformSupport }) {
                         <MenuItem value="chrome">Chrome</MenuItem>
                         <MenuItem value="firefox">Firefox</MenuItem>
                         <MenuItem value="safari">Safari</MenuItem>
-            </TextField>
+                    </TextField>
                 </Grid>
             </Grid>
         </Card>
     );
 
     return (
-        <Paper 
-            elevation={2} 
-            sx={{ 
-                flex: 1, 
+        <Paper
+            elevation={2}
+            sx={{
+                flex: 1,
                 p: 3,
                 borderRadius: 3,
                 border: '1px solid',
@@ -2233,10 +2222,10 @@ function DownloadConfig({ platforms }: { platforms: PlatformSupport }) {
             }}
         >
             <Box sx={{ mb: 3 }}>
-                <Typography 
-                    variant="h6" 
-                    sx={{ 
-                        fontWeight: 700, 
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
                         mb: 0.5,
                         color: 'primary.main',
                         display: 'flex',
