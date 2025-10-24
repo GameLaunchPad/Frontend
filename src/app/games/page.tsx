@@ -1,4 +1,6 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import {
   Box,
   Card,
@@ -46,13 +48,21 @@ function EdgeDrawer() {
       <Toolbar />
       <Box sx={{ overflow: 'auto' }}>
         <List>
-          {['My Games', 'New Game', 'Review Queue'].map((text) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          <ListItem key="My Games" disablePadding>
+            <ListItemButton>
+              <ListItemText primary="My Games" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="New Game" disablePadding>
+            <ListItemButton href="/games/create">
+              <ListItemText primary="New Game" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="Review Queue" disablePadding>
+            <ListItemButton>
+              <ListItemText primary="Review Queue" />
+            </ListItemButton>
+          </ListItem>
         </List>
         <Divider />
         <List>
@@ -88,6 +98,9 @@ function EdgeDrawer() {
 }
 
 function GameDashboard() {
+  enum Layout { Card, List };
+  const [layout, setLayout] = useState(Layout.Card);
+
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
       <GameHeading
@@ -158,18 +171,40 @@ function GameDashboard() {
           </Grid>
           <Grid container size={2} sx={{ justifyContent: 'end' }}>
             <ButtonGroup size="large">
-              <Button>Card</Button>
-              <Button>List</Button>
+              <Button onClick={() => setLayout(Layout.Card)}>Card</Button>
+              <Button onClick={() => setLayout(Layout.List)}>List</Button>
             </ButtonGroup>
           </Grid>
         </Grid>
       </Box>
       <Box mt={4}>
-        <Grid container spacing={2} columns={3}>
-          <GameCard />
-        </Grid>
+        {layout == Layout.Card ? <CardLayout /> : <ListLayout />}
       </Box>
     </Box>
+  );
+}
+
+function CardLayout() {
+  return (
+    <Grid container spacing={2} columns={3}>
+      <GameCard />
+    </Grid>
+  );
+}
+
+function ListLayout() {
+  return (
+    <List>
+      <ListItem>
+        <ListItemText primary="Game Name" secondary="N/A Downloads, N/A Rating, N/A Version" />
+        <ListItemText secondary="Android" />
+        <ButtonGroup variant="text">
+          <Button>View</Button>
+          <Button>Edit</Button>
+          <Button>Statistics</Button>
+        </ButtonGroup>
+      </ListItem>
+    </List>
   );
 }
 
