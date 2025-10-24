@@ -1,33 +1,36 @@
 // src/types/cp-info.ts
 
 /**
- * 厂商基本信息
- * 对应后端 gp_cp 表的数据结构
+ * Provider Information
+ * Corresponds to backend gp_cp table data structure
  */
 export interface CPInfo {
-  cp_id: string              // 厂商ID
-  cp_name: string            // 厂商名称
-  contact_email?: string     // 联系邮箱
-  mailing_address?: string   // 邮箱地址
-  contact_phone?: string     // 联系电话
-  phone_number?: string      // 电话号码
-  cp_icon?: string          // 厂商LOGO
-  verify_status: number      // 认证状态：0-未认证，1-已认证
-  register_time?: number     // 注册时间（时间戳）
-  registration_date?: number // 注册日期（时间戳）
+  cp_id: string              // Provider ID
+  cp_name: string            // Provider Name
+  business_license?: string  // Business License Number
+  contact_email?: string     // Contact Email
+  mailing_address?: string   // Mailing Address
+  contact_phone?: string     // Contact Phone
+  phone_number?: string      // Phone Number
+  website?: string           // Website
+  introduction?: string      // Company Introduction
+  cp_icon?: string          // Provider Icon/Logo
+  verify_status: number      // Verification Status: 0-Unverified, 1-Verified
+  register_time?: number     // Register Time (timestamp)
+  registration_date?: number // Registration Date (timestamp)
 }
 
 /**
- * 认证状态枚举
- * 让状态值更易读
+ * Verification Status Enum
+ * Makes status values more readable
  */
 export enum VerifyStatus {
-  Unverified = 0,  // 未认证
-  Verified = 1     // 已认证
+  Unverified = 0,  // Unverified
+  Verified = 1     // Verified
 }
 
 /**
- * API 响应格式
+ * API Response Format
  */
 export interface ApiResponse<T> {
   code: number

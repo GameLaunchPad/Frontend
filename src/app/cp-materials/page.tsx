@@ -19,7 +19,8 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider
+  Divider,
+  Avatar
 } from '@mui/material'
 import { CloudUpload, Delete, Description, AttachFile } from '@mui/icons-material'
 
@@ -34,12 +35,14 @@ export default function CPMaterialsPage() {
     cpName: '',
     businessLicense: '',
     website: '',
-    introduction: ''
+    introduction: '',
+    cpIcon: ''
   })
   
   const [files, setFiles] = useState<UploadedFile[]>([])
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [iconUploading, setIconUploading] = useState(false)
 
   // 处理文件选择
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,20 +55,20 @@ export default function CPMaterialsPage() {
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i]
         
-        // 验证文件大小（10MB）
+        // Validate file size (10MB)
         if (file.size > 10 * 1024 * 1024) {
-          alert(`文件 ${file.name} 超过 10MB`)
+          alert(`File ${file.name} exceeds 10MB`)
           continue
         }
         
-        // 验证文件类型
+        // Validate file type
         const validTypes = ['image/jpeg', 'image/png', 'application/pdf']
         if (!validTypes.includes(file.type)) {
-          alert(`文件 ${file.name} 格式不支持`)
+          alert(`File ${file.name} format is not supported`)
           continue
         }
         
-        // 上传文件
+        // Upload file
         const response = await uploadFile(file)
         
         if (response.code === 0 && response.data) {
@@ -77,27 +80,61 @@ export default function CPMaterialsPage() {
         }
       }
     } catch (error) {
-      console.error('上传失败:', error)
-      alert('上传失败，请重试')
+      console.error('Upload failed:', error)
+      alert('Upload failed, please retry')
     } finally {
       setUploading(false)
     }
   }
 
-  // 删除文件
+  // Remove file
   const handleRemoveFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index))
   }
 
-  // 提交表单
+  // Handle Icon upload
+  const handleIconChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Icon file size should not exceed 5MB')
+      return
+    }
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg']
+    if (!validTypes.includes(file.type)) {
+      alert('Only JPG and PNG formats are supported for icons')
+      return
+    }
+    
+    setIconUploading(true)
+    
+    try {
+      const response = await uploadFile(file)
+      
+      if (response.code === 0 && response.data) {
+        setFormData(prev => ({...prev, cpIcon: response.data!.url}))
+      }
+    } catch (error) {
+      console.error('Icon upload failed:', error)
+      alert('Icon upload failed, please retry')
+    } finally {
+      setIconUploading(false)
+    }
+  }
+
+  // Submit form
   const handleSubmit = async (mode: SubmitMode) => {
-    // 验证必填字段
+    // Validate required fields
     if (!formData.cpName) {
-      alert('请输入厂商名称')
+      alert('Please enter provider name')
       return
     }
     if (!formData.businessLicense) {
-      alert('请输入营业执照号')
+      alert('Please enter business license number')
       return
     }
     
@@ -115,15 +152,15 @@ export default function CPMaterialsPage() {
       })
       
       if (response.code === 0) {
-        const action = mode === SubmitMode.SubmitDraft ? '保存草稿' : '提交审核'
-        alert(`${action}成功！`)
+        const action = mode === SubmitMode.SubmitDraft ? 'Save Draft' : 'Submit for Review'
+        alert(`${action} successful!`)
         console.log('Material ID:', response.data?.material_id)
       } else {
-        alert(`操作失败: ${response.message}`)
+        alert(`Operation failed: ${response.message}`)
       }
     } catch (error) {
-      console.error('提交失败:', error)
-      alert('提交失败，请重试')
+      console.error('Submission failed:', error)
+      alert('Submission failed, please retry')
     } finally {
       setSubmitting(false)
     }
@@ -133,11 +170,11 @@ export default function CPMaterialsPage() {
     <Box component="main" sx={{ flexGrow: 1, p: 3, minHeight: '100vh', bgcolor: 'grey.50' }}>
       <Box sx={{ maxWidth: 'xl', mx: 'auto' }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-          上传审核材料/提交审核
+          Upload Materials / Submit for Review
         </Typography>
         
         <Paper elevation={1} sx={{ borderRadius: 2 }}>
-          {/* 顶部按钮栏 */}
+          {/* Top button bar */}
           <Box sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
@@ -147,7 +184,7 @@ export default function CPMaterialsPage() {
             borderColor: 'divider' 
           }}>
             <Button variant="outlined" color="primary">
-              资质材料管理
+              Material Management
             </Button>
             
             <Box sx={{ display: 'flex', gap: 2 }}>
@@ -157,10 +194,10 @@ export default function CPMaterialsPage() {
                 disabled={submitting}
                 startIcon={submitting ? <CircularProgress size={16} /> : null}
               >
-                {submitting ? '处理中...' : '保存草稿'}
+                {submitting ? 'Processing...' : 'Save Draft'}
               </Button>
               <Button variant="outlined" color="primary">
-                查看历史
+                View History
               </Button>
               <Button 
                 variant="contained"
@@ -168,70 +205,122 @@ export default function CPMaterialsPage() {
                 disabled={submitting}
                 startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : null}
               >
-                {submitting ? '提交中...' : '提交审核'}
+                {submitting ? 'Submitting...' : 'Submit for Review'}
               </Button>
             </Box>
           </Box>
 
-          {/* 表单内容 */}
+          {/* Form Content */}
           <Box sx={{ p: 3 }}>
             <Box component="form" onSubmit={(e) => e.preventDefault()}>
               <Grid container spacing={3}>
-                {/* 厂商名称 + 营业执照号 */}
+                {/* Provider Name + Business License */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="厂商名称"
+                    label="Provider Name"
                     value={formData.cpName}
                     onChange={(e) => setFormData({...formData, cpName: e.target.value})}
-                    placeholder="请输入厂商名称"
+                    placeholder="Enter provider name"
                     required
-                    helperText="* 必填字段"
+                    helperText="* Required field"
                   />
                 </Grid>
                 
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="营业执照号"
+                    label="Business License Number"
                     value={formData.businessLicense}
                     onChange={(e) => setFormData({...formData, businessLicense: e.target.value})}
-                    placeholder="请输入营业执照号"
+                    placeholder="Enter business license number"
                     required
-                    helperText="* 必填字段"
+                    helperText="* Required field"
                   />
                 </Grid>
 
-                {/* 官网地址 */}
+                {/* Website */}
                 <Grid size={12}>
                   <TextField
                     fullWidth
-                    label="官网地址"
+                    label="Website"
                     type="url"
                     value={formData.website}
                     onChange={(e) => setFormData({...formData, website: e.target.value})}
-                    placeholder="请输入官网地址"
+                    placeholder="Enter website URL"
                   />
                 </Grid>
 
-                {/* 企业简介 */}
+                {/* Introduction */}
                 <Grid size={12}>
                   <TextField
                     fullWidth
-                    label="企业简介"
+                    label="Company Introduction"
                     multiline
                     rows={5}
                     value={formData.introduction}
                     onChange={(e) => setFormData({...formData, introduction: e.target.value})}
-                    placeholder="请输入企业简介"
+                    placeholder="Enter company introduction"
                   />
+                </Grid>
+
+                {/* Provider Icon Upload */}
+                <Grid size={12}>
+                  <Typography variant="h6" gutterBottom>
+                    Provider Icon
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar
+                      src={formData.cpIcon}
+                      alt="Provider Icon"
+                      variant="rounded"
+                      sx={{ 
+                        width: 100, 
+                        height: 100,
+                        bgcolor: 'grey.200',
+                        border: '2px solid',
+                        borderColor: 'grey.300'
+                      }}
+                    />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <input 
+                        type="file"
+                        id="icon-upload"
+                        accept="image/jpeg,image/png,image/jpg"
+                        onChange={handleIconChange}
+                        style={{ display: 'none' }}
+                      />
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        htmlFor="icon-upload"
+                        startIcon={iconUploading ? <CircularProgress size={16} /> : <CloudUpload />}
+                        disabled={iconUploading}
+                      >
+                        {iconUploading ? 'Uploading...' : formData.cpIcon ? 'Change Icon' : 'Upload Icon'}
+                      </Button>
+                      {formData.cpIcon && (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          onClick={() => setFormData(prev => ({...prev, cpIcon: ''}))}
+                        >
+                          Remove Icon
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    Recommended: Square image, JPG or PNG format, max 5MB
+                  </Typography>
                 </Grid>
               </Grid>
 
-              {/* 文件上传区域 */}
+              {/* Certification Files Upload */}
               <Grid size={12} sx={{ mt: 2 }}>
                 <Typography variant="h6" gutterBottom>
-                  资质证明文件
+                  Certification Documents
                 </Typography>
                 <Card 
                   variant="outlined" 
@@ -262,22 +351,22 @@ export default function CPMaterialsPage() {
                       disabled={uploading}
                       sx={{ mb: 2 }}
                     >
-                      {uploading ? '上传中...' : '上传文件'}
+                      {uploading ? 'Uploading...' : 'Upload Files'}
                     </Button>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      点击上传或拖拽文件到此区域
+                      Click to upload or drag files to this area
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      支持 JPG、PNG、PDF 格式，单个文件不超过 10MB
+                      Supports JPG, PNG, PDF formats, max 10MB per file
                     </Typography>
                   </CardContent>
                 </Card>
                 
-                {/* 已上传文件列表 */}
+                {/* Uploaded Files List */}
                 {files.length > 0 && (
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle1" gutterBottom>
-                      已上传文件 ({files.length})
+                      Uploaded Files ({files.length})
                     </Typography>
                     <Grid container spacing={2}>
                       {files.map((file, index) => (
@@ -308,7 +397,7 @@ export default function CPMaterialsPage() {
                                   startIcon={<Delete />}
                                   onClick={() => handleRemoveFile(index)}
                                 >
-                                  删除
+                                  Delete
                                 </Button>
                               </Box>
                             </CardContent>

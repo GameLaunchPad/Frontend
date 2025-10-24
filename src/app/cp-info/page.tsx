@@ -27,67 +27,64 @@ import {
 } from '@mui/material'
 
 export default function CPInfoPage() {
-  // ========== 状态管理 ==========
-  // 用 useState 存储数据，这样数据变化时页面会自动更新
+  // State Management
   const [cpInfo, setCpInfo] = useState<CPInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  // useRouter 用于页面跳转
+  // useRouter for navigation
   // const router = useRouter()
 
-  // ========== 数据获取 ==========
-  // useEffect 在组件加载时自动执行
+  // Data Fetching
   useEffect(() => {
     const loadCPInfo = async () => {
       try {
         setLoading(true)
-        // 这里硬编码一个厂商ID，实际应该从登录状态获取
+        // Hardcoded provider ID, should get from login state in production
         const response = await getCPInfo('cp_123')
         
         if (response.code === 0 && response.data) {
           setCpInfo(response.data)
         } else {
-          setError('获取厂商信息失败')
+          setError('Failed to load provider information')
         }
       } catch (err) {
-        setError('网络错误，请稍后重试')
-        console.error('加载厂商信息失败:', err)
+        setError('Network error, please try again later')
+        console.error('Failed to load provider info:', err)
       } finally {
         setLoading(false)
       }
     }
 
     loadCPInfo()
-  }, []) // 空数组表示只在组件首次加载时执行
+  }, [])
 
-  // ========== 工具函数 ==========
-  // 格式化时间戳为可读日期
+  // Utility Functions
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return '--'
-    return new Date(timestamp).toLocaleDateString('zh-CN')
+    return new Date(timestamp).toLocaleDateString('en-US')
   }
 
-  // 获取认证状态的显示文本和样式
+  // Get verification status display text and style
   const getVerifyStatus = (status: number) => {
     if (status === 1) {
       return {
-        text: '已认证',
+        text: 'Verified',
         color: 'success' as const
       }
     }
     return {
-      text: '未认证',
+      text: 'Unverified',
       color: 'default' as const
     }
   }
 
-  // ========== 页面跳转处理 ==========
+  // Navigation handling
   // const handleNavigate = (path: string) => {
   //   router.push(path)
   // }
 
-  // ========== 加载状态 ==========
+  // Loading State
   if (loading) {
     return (
       <Box 
@@ -102,14 +99,14 @@ export default function CPInfoPage() {
         <Box sx={{ textAlign: 'center' }}>
           <CircularProgress size={64} sx={{ mb: 2 }} />
           <Typography variant="body1" color="text.secondary">
-            加载中...
+            Loading...
           </Typography>
         </Box>
       </Box>
     )
   }
 
-  // ========== 错误状态 ==========
+  // Error State
   if (error || !cpInfo) {
     return (
       <Box 
@@ -123,13 +120,13 @@ export default function CPInfoPage() {
       >
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="h6" color="error" sx={{ mb: 2 }}>
-            {error || '数据加载失败'}
+            {error || 'Failed to load data'}
           </Typography>
           <Button 
             variant="contained"
             onClick={() => window.location.reload()}
           >
-            重新加载
+            Reload
           </Button>
         </Box>
       </Box>
@@ -140,10 +137,10 @@ export default function CPInfoPage() {
 
   const drawerWidth = 240;
 
-  // ========== 主页面渲染 ==========
+  // Main Page Render
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'grey.50' }}>
-        {/* 左侧导航栏 */}
+        {/* Left Navigation Bar */}
 
         <Drawer
           variant="permanent"
@@ -170,18 +167,18 @@ export default function CPInfoPage() {
           </Box>
         </Drawer>
 
-        {/* 右侧主内容 */}
+        {/* Right Main Content */}
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Box sx={{ maxWidth: 'lg', mx: 'auto' }}>
-            {/* 厂商基本信息卡片 */}
+            {/* Provider Information Card */}
             <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-              {/* 卡片头部 */}
+              {/* Card Header */}
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                 <Typography variant="h6" component="h2" fontWeight="semibold">
-                  厂商基本信息
+                  Provider Information
                 </Typography>
                 
-                {/* 认证状态标签 */}
+                {/* Verification Status */}
                 <Chip 
                   label={verifyStatus.text}
                   color={verifyStatus.color}
@@ -189,13 +186,13 @@ export default function CPInfoPage() {
                 />
               </Box>
 
-              {/* 信息表单 */}
+              {/* Information Form */}
               <Grid container spacing={3}>
-                {/* 第一行：厂商名称 + 联系邮箱 */}
+                {/* Row 1: Provider Name + Contact Email */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="厂商名称"
+                    label="Provider Name"
                     value={cpInfo.cp_name}
                     InputProps={{
                       readOnly: true,
@@ -207,7 +204,7 @@ export default function CPInfoPage() {
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="联系邮箱"
+                    label="Contact Email"
                     value={cpInfo.contact_email || '--'}
                     InputProps={{
                       readOnly: true,
@@ -216,12 +213,12 @@ export default function CPInfoPage() {
                   />
                 </Grid>
 
-                {/* 第二行：厂商名称值 + 邮箱地址 */}
+                {/* Row 2: Business License + Contact Phone */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="厂商名称值"
-                    value={cpInfo.cp_name}
+                    label="Business License Number"
+                    value={cpInfo.business_license || '--'}
                     InputProps={{
                       readOnly: true,
                     }}
@@ -232,7 +229,32 @@ export default function CPInfoPage() {
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="邮箱地址"
+                    label="Contact Phone"
+                    value={cpInfo.contact_phone || '--'}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
+
+                {/* Row 3: Website + Mailing Address */}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Website"
+                    value={cpInfo.website || '--'}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
+                
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Mailing Address"
                     value={cpInfo.mailing_address || '--'}
                     InputProps={{
                       readOnly: true,
@@ -241,36 +263,11 @@ export default function CPInfoPage() {
                   />
                 </Grid>
 
-                {/* 第三行：联系电话 + 电话号码 */}
+                {/* Row 4: Register Time + Registration Date */}
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="联系电话"
-                    value={cpInfo.contact_phone || '--'}
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    variant="filled"
-                  />
-                </Grid>
-                
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="电话号码"
-                    value={cpInfo.phone_number || '--'}
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    variant="filled"
-                  />
-                </Grid>
-
-                {/* 第四行：注册时间 + 注册日期 */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="注册时间"
+                    label="Register Time"
                     value={formatDate(cpInfo.register_time)}
                     InputProps={{
                       readOnly: true,
@@ -282,7 +279,7 @@ export default function CPInfoPage() {
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="注册日期"
+                    label="Registration Date"
                     value={formatDate(cpInfo.registration_date)}
                     InputProps={{
                       readOnly: true,
@@ -291,41 +288,48 @@ export default function CPInfoPage() {
                   />
                 </Grid>
 
-                {/* LOGO 上传区域 */}
+                {/* Company Introduction */}
                 <Grid size={12}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    厂商LOGO
+                  <TextField
+                    fullWidth
+                    label="Company Introduction"
+                    value={cpInfo.introduction || '--'}
+                    multiline
+                    rows={4}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="filled"
+                  />
+                </Grid>
+
+                {/* Provider Icon */}
+                <Grid size={12}>
+                  <Typography variant="h6" gutterBottom>
+                    Provider Icon
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                    {/* LOGO 预览 */}
-                    <Card 
-                      variant="outlined"
+                    {/* Icon Preview */}
+                    <Avatar
+                      src={cpInfo.cp_icon}
+                      alt="Provider Icon"
+                      variant="rounded"
                       sx={{ 
                         width: 128, 
                         height: 128,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '2px dashed',
-                        borderColor: 'grey.300',
-                        bgcolor: 'grey.50'
+                        bgcolor: 'grey.200',
+                        border: '2px solid',
+                        borderColor: 'grey.300'
                       }}
                     >
-                      {cpInfo.cp_icon ? (
-                        <Avatar
-                          src={cpInfo.cp_icon} 
-                          alt="厂商LOGO"
-                          variant="square"
-                          sx={{ width: '100%', height: '100%' }}
-                        />
-                      ) : (
+                      {!cpInfo.cp_icon && (
                         <Typography variant="body2" color="text.secondary">
-                          LOGO
+                          No Icon
                         </Typography>
                       )}
-                    </Card>
+                    </Avatar>
                     
-                    {/* 品牌标识说明 */}
+                    {/* Brand Description */}
                     <Card 
                       variant="outlined"
                       sx={{ 
@@ -336,7 +340,7 @@ export default function CPInfoPage() {
                     >
                       <CardContent>
                         <Typography variant="body2" color="text.secondary">
-                          当前使用的品牌标识
+                          Current brand icon in use
                         </Typography>
                       </CardContent>
                     </Card>
