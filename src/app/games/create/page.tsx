@@ -677,7 +677,7 @@ export default function NewGame() {
                                         </Typography>
                                     )}
                                     <Typography variant="body2" sx={{ mt: 2, fontWeight: 500 }}>
-                                        💡 提示：修改完成后，点击"重新提交审核"按钮即可再次提交
+                                        💡 提示：修改完成后，点击&quot;重新提交审核&quot;按钮即可再次提交
                                     </Typography>
                                 </Box>
                             </Alert>

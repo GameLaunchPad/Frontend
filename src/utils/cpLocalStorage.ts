@@ -31,6 +31,8 @@ export interface CPMaterialFormData {
   submittedAt?: number  // 提交时间戳
   reviewStatus: ReviewStatus  // 审核状态
   reviewComment?: string  // 审核备注
+  rejectedAt?: number
+  rejectionReason?: string
 }
 
 const STORAGE_KEY = 'cp_material_form_data'
