@@ -326,7 +326,7 @@ export default function CPMaterialsPage() {
             startIcon={<ArrowBack />}
             variant="text" 
             color="primary"
-            href="/cp-info"
+            href="/Frontend/cp-info"
             sx={{ mb: 2 }}
           >
             Back to Material Management
@@ -1059,7 +1059,7 @@ export default function CPMaterialsPage() {
           </Button>
           <Button
             variant="contained"
-            href="/cp-info"
+            href="/Frontend/cp-info"
             sx={{
               borderRadius: 2,
               px: 4,

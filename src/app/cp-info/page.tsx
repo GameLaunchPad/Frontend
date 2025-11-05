@@ -401,7 +401,7 @@ export default function CPInfoPage() {
                       <Button
                         variant="contained"
                         startIcon={<Edit />}
-                        href="/cp-materials"
+                        href="/Frontend/cp-materials"
                         sx={{
                           bgcolor: 'rgba(255, 255, 255, 0.9)',
                           color: 'primary.main',
