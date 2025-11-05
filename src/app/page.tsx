@@ -284,7 +284,7 @@ export default function HomePage() {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
               }}>
                 <Image
-                  src={section.image}
+                  src={'/Frontend' + section.image}
                   alt={section.title}
                   fill={true}
                   style={{ objectFit: 'cover' }}
@@ -324,7 +324,7 @@ export default function HomePage() {
               }}>
                 <Box sx={{ position: 'relative', width: '100%', height: 120 }}>
                   <Image
-                    src={game.image}
+                    src={'/Frontend' + game.image}
                     alt={game.title}
                     fill={true}
                     style={{ objectFit: 'cover' }}
